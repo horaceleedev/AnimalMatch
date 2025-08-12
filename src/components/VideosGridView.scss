@@ -1,0 +1,45 @@
+.videos-grid, .videos-list {
+  display: grid;
+  row-gap: 10px;
+  column-gap: 10px;
+
+  &.videos-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, max-content));
+
+    .ant-card {
+      max-width: 400px;
+
+      video {
+        width: 100%;
+      }
+    }
+  }
+
+  &.videos-list {
+    grid-template-columns: repeat(auto-fit, 100%);
+
+    .ant-card {
+      max-height: 120px;
+
+      video {
+        height: 120px;
+        width: 150px;
+        background: black;
+        object-fit: contain;
+      }
+    }
+  }
+
+  .ant-card {
+    .ant-tag {
+      margin-inline-end: unset;
+    }
+  }
+}
+@media only screen and (max-width: 600px) {
+  .videos-grid, .videos-list {
+    .ant-card {
+      max-width: 100%; /* increase the max width on mobile */
+    }
+  }
+}

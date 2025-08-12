@@ -1,0 +1,8 @@
+.compare-modal {
+  width: 92vw !important;
+
+  .ant-modal-body {
+    height: calc(88vh - 52px);
+    overflow: scroll;
+  }
+}
