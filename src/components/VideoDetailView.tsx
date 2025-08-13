@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { Button, DatePicker, Divider, Form, Input, InputNumber, Select, Tag } from "antd";
 import dayjs from "dayjs";
 
-import { pick } from 'es-toolkit';
 import TextArea from 'antd/es/input/TextArea';
 import BasicMapView from '../components/BasicMapView.tsx';
 import { Individual, LocationInfo, MetadataFieldsType, Video } from '../types.ts';
@@ -47,7 +46,12 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({video, individualsInVi
         wrapperCol={{ span: 19 }}
         labelWrap
         layout="horizontal"
-        initialValues={pick({...video, recording_date: dayjs(video.recording_date)}, Object.keys(videoMetadataFields))}
+        fields={
+          Object.keys(videoMetadataFields).map(field => ({
+            name: field,
+            value: {...video, recording_date: dayjs(video.recording_date)}[field],
+          }))
+        }
         style={{ maxWidth: 600 }}
       >
         {

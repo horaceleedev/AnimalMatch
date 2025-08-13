@@ -1,6 +1,6 @@
-import { countBy } from "es-toolkit";
+import { countBy, orderBy } from "es-toolkit";
 
-import { Individual, LocationInfo, Video } from "../types";
+import { Individual, LocationInfo, MetadataFieldsType, Video } from "../types";
 
 export const getUniqueLocationsFromVideos = (videos: Video[]) => {
   const numVideosPerUniqueLocation = countBy(videos, x => JSON.stringify([x.lat, x.long]));
@@ -40,4 +40,24 @@ export const getUniqueLocationsFromIndividuals = (individuals: Individual[], all
     } as LocationInfo;
   });
   return uniqueLocations;
+}
+
+export const getUniqueValuesPerField = (metadataFields: MetadataFieldsType, processedRecords: Video[] | Individual[]) => {
+  let uniqueValuesPerField: Record<string, string[]> = {}; // an object where each key is a field name and its associated value is a list of unique values for that field
+  Object.entries(metadataFields).forEach(([fieldValue, field]) => {
+    if (field.type === 'select') {
+      const uniqueValues = Array.from(new Set(processedRecords.map(x => x[fieldValue])));
+      const uniqueValuesSorted = orderBy(uniqueValues, [x => x], ['asc']);
+      uniqueValuesPerField[fieldValue] = uniqueValuesSorted;
+      console.log(uniqueValuesSorted);
+    } else if (field.type === 'multiselect') {
+      const uniqueValues = Array.from(new Set(
+        processedRecords.map(x => x[fieldValue]).flat()
+      ));
+      const uniqueValuesSorted = orderBy(uniqueValues, [x => x], ['asc']);
+      uniqueValuesPerField[fieldValue] = uniqueValuesSorted;
+      // console.log(uniqueValuesSorted);
+    }
+  });
+  return uniqueValuesPerField;
 }

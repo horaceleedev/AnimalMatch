@@ -1,8 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { DatePicker, Form, Image, Input, InputNumber, Select, Tag } from "antd";
 import TextArea from 'antd/es/input/TextArea';
-import dayjs from "dayjs";
-import { intersection, pick } from 'es-toolkit';
 
 import { individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
 import VideosGridView from '../components/VideosGridView.tsx';
@@ -30,7 +28,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
   useEffect(() => {
     setShowMap(true);
   }, []);
-  
+
   return (
     <>
       {/* Images display */}
@@ -65,7 +63,12 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
         wrapperCol={{ span: 19 }}
         labelWrap
         layout="horizontal"
-        initialValues={pick(individual, Object.keys(individualsMetadataFields))}
+        fields={
+          Object.keys(individualsMetadataFields).map(field => ({
+            name: field,
+            value: individual[field],
+          }))
+        }
         style={{ maxWidth: 600 }}
       >
         {
