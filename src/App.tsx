@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Outlet, useLocation } from "react-router-dom";
-import { Layout } from 'antd';
+import { Layout, App as AntApp } from 'antd';
 const { Content } = Layout;
 import { useShallow } from 'zustand/react/shallow'
 
@@ -9,6 +9,8 @@ import AppHeader from "./components/AppHeader.tsx";
 import "./App.scss"
 
 const App: React.FC = () => {
+  const { message } = AntApp.useApp();
+
   const [fetchVideos, subscribeToVideos, unsubscribeFromVideos] = useVideoStore(
     useShallow((state) => [state.fetchVideos, state.subscribe, state.unsubscribe])
   );
@@ -18,8 +20,10 @@ const App: React.FC = () => {
 
   // App initialization
   useEffect(() => {
-    fetchVideos();
-    fetchIndividuals();
+    Promise.all([fetchVideos(), fetchIndividuals()]).catch((e) => {
+      message.error('Unable to load data');
+      console.error(e);
+    });
     subscribeToVideos();
     subscribeToIndividuals();
     return () => {

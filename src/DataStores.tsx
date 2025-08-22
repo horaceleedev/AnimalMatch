@@ -15,7 +15,7 @@ interface VideoStore {
   videos: Video[];
   uniqueLocations: LocationInfo[];
   uniqueValuesPerField: Record<string, string[]>;
-  fetchVideos: () => void;
+  fetchVideos: () => Promise<void>;
   subscribe: () => void;
   unsubscribe: () => void;
 };
@@ -112,7 +112,7 @@ interface IndividualsStore {
   unprocessedIndividuals: IndividualRecord[];
   individuals: Individual[];
   uniqueValuesPerField: Record<string, string[]>;
-  fetchIndividuals: () => void;
+  fetchIndividuals: () => Promise<void>;
   subscribe: () => void;
   unsubscribe: () => void;
   update: (id: string, data: Partial<Individual>) => Promise<void>;
@@ -214,7 +214,5 @@ const handlePocketBaseError = (e: unknown) => {
     console.info('This error was caught but ignored:', e)
     return;
   }
-  // TODO change this to Ant component
-  alert('An error occurred when fetching the data');
-  console.error(e);
+  throw e;
 }

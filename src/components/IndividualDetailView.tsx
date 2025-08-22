@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Button, DatePicker, Form, Image, Input, InputNumber, Select, Tag } from "antd";
+import { App, Button, DatePicker, Form, Image, Input, InputNumber, Select, Tag } from "antd";
 import TextArea from 'antd/es/input/TextArea';
 import { isEqual, pick, pickBy } from "es-toolkit";
 
@@ -26,6 +26,8 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
   uniqueLocations,
   updateIndividual,
 }: IndividualDetailViewProps) => {
+  const { message } = App.useApp();
+
   // Temporary hack needed because map wasn't showing up properly
   const [showMap, setShowMap] = useState(false);
   useEffect(() => {
@@ -41,8 +43,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
     // IndividualsStore if there is an update received from the server
     const _formData = pick(individual, Object.keys(individualsMetadataFields));
     if (hasUnsavedChanges && !isEqual(formData, _formData)) {
-      // TODO use Ant message or similar component
-      alert('Your local changes have been overwritten');
+      message.warning('Your changes have been overwritten by new data from the server');
     }
     setHasUnsavedChanges(false);
     setFormData(_formData);
@@ -65,11 +66,11 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
     try {
       await updateIndividual(individual.id, updatedData);
     } catch (e) {
-      alert('Save failed')
+      message.error('Your changes could not be saved. Please try again later.', 10);
       setIsSavingChanges(false);
       return;
     }
-    alert('Changes saved successfully')
+    message.success('Changes saved successfully');
     setIsSavingChanges(false);
   }
 
