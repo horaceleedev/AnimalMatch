@@ -1,7 +1,7 @@
 // This file contains the 'stores' which store the global state and data of the app
 import { create } from 'zustand';
 import proj4 from "proj4";
-import PocketBase from 'pocketbase';
+import PocketBase, { ClientResponseError } from 'pocketbase';
 import dayjs from 'dayjs';
 
 import type { Video, VideoRecord, LocationInfo, Individual, IndividualRecord } from "./types.ts";
@@ -26,9 +26,15 @@ export const useVideoStore = create<VideoStore>()((set) => ({
   uniqueLocations: [],
   uniqueValuesPerField: {},
   fetchVideos: async () => {
-    const records: VideoRecord[] = await pb.collection('videos').getFullList<VideoRecord>({
-      sort: 'filename',
-    });
+    let records: VideoRecord[] = [];
+    try {
+      records = await pb.collection('videos').getFullList<VideoRecord>({
+        sort: 'filename',
+      });
+    } catch (e) {
+      handlePocketBaseError(e);
+      return;
+    }
     const { processedVideos, uniqueLocations, uniqueValuesPerField } = processVideos(records);
     set({ unprocessedVideos: records, videos: processedVideos, uniqueLocations: uniqueLocations, uniqueValuesPerField: uniqueValuesPerField });
   },
@@ -117,9 +123,15 @@ export const useIndividualsStore = create<IndividualsStore>()((set) => ({
   uniqueValuesPerField: {},
   fetchIndividuals: async () => {
     console.log('Fetching individuals');
-    const records: IndividualRecord[] = await pb.collection('individuals').getFullList<IndividualRecord>({
-      sort: 'name',
-    });
+    let records: IndividualRecord[] = []
+    try {
+      records = await pb.collection('individuals').getFullList<IndividualRecord>({
+        sort: 'name',
+      });
+    } catch (e) {
+      handlePocketBaseError(e);
+      return;
+    }
     const { processedIndividuals, uniqueValuesPerField } = processIndividuals(records);
     set({ unprocessedIndividuals: records, individuals: processedIndividuals, uniqueValuesPerField: uniqueValuesPerField });
   },
@@ -186,3 +198,14 @@ const processIndividuals = (records: IndividualRecord[]) => {
   const uniqueValuesPerField = getUniqueValuesPerField(individualsMetadataFields, processedIndividuals);
   return { processedIndividuals, uniqueValuesPerField };
 };
+
+const handlePocketBaseError = (e: unknown) => {
+  if (e instanceof ClientResponseError && e.isAbort) {
+    // ignore error due to auto-cancellation (https://github.com/pocketbase/pocketbase/discussions/637#discussioncomment-3728552)
+    console.info('This error was caught but ignored:', e)
+    return;
+  }
+  // TODO change this to Ant component
+  alert('An error occurred when fetching the data');
+  console.error(e);
+}
