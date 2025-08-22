@@ -38,6 +38,7 @@ const CompareModal: React.FC = () => {
 
   const videos = useVideoStore((state) => state.videos);
   const individuals = useIndividualsStore((state) => state.individuals);
+  const update = useIndividualsStore((state) => state.update);
 
   const videoUniqueValuesPerField = useVideoStore((state) => state.uniqueValuesPerField);
   const uniqueVideoLocations = useVideoStore((state) => state.uniqueLocations);
@@ -203,6 +204,7 @@ const CompareModal: React.FC = () => {
         videosWithIndividual={individualDetailProps.videosWithIndividual}
         uniqueValuesPerField={individualsUniqueValuesPerField}
         uniqueLocations={uniqueIndividualLocations}
+        updateIndividual={update}
       />
     );
   } else {
@@ -228,6 +230,7 @@ const CompareModal: React.FC = () => {
           videosWithIndividual={compareIndividualDetailProps.videosWithIndividual}
           uniqueValuesPerField={individualsUniqueValuesPerField}
           uniqueLocations={uniqueIndividualLocations}
+          updateIndividual={update}
         />
       );
     } else {

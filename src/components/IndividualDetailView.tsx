@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { DatePicker, Form, Image, Input, InputNumber, Select, Tag } from "antd";
+import { Button, DatePicker, Form, Image, Input, InputNumber, Select, Tag } from "antd";
 import TextArea from 'antd/es/input/TextArea';
+import { isEqual, pick, pickBy } from "es-toolkit";
 
 import { individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
 import VideosGridView from '../components/VideosGridView.tsx';
@@ -14,6 +15,7 @@ type IndividualDetailViewProps = {
   videosWithIndividual: Video[];
   uniqueValuesPerField: Record<string, string[]>;
   uniqueLocations: LocationInfo[];
+  updateIndividual: (id: string, data: Partial<Individual>) => Promise<void>;
 }
 
 const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
@@ -22,12 +24,54 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
   videosWithIndividual,
   uniqueValuesPerField,
   uniqueLocations,
+  updateIndividual,
 }: IndividualDetailViewProps) => {
   // Temporary hack needed because map wasn't showing up properly
   const [showMap, setShowMap] = useState(false);
   useEffect(() => {
     setShowMap(true);
   }, []);
+
+  // Changes made in the form component are saved here
+  const [formData, setFormData] = useState<Partial<Individual>>({});
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isSavingChanges, setIsSavingChanges] = useState(false);
+  useEffect(() => {
+    // Initialize formData from the IndividualsStore, or reset it to the
+    // IndividualsStore if there is an update received from the server
+    const _formData = pick(individual, Object.keys(individualsMetadataFields));
+    if (hasUnsavedChanges && !isEqual(formData, _formData)) {
+      // TODO use Ant message or similar component
+      alert('Your local changes have been overwritten');
+    }
+    setHasUnsavedChanges(false);
+    setFormData(_formData);
+  }, [individual]);
+  const handleValuesChange = (_: any, allValues: any) => {
+    // TODO in the future, implement a more efficient check
+    // Currently a deep comparison between two objects is performed on each keystroke, which can be inefficient.
+    // Instead of comparing the full objects, only compare the fields that have been touched in the form
+    // e.g. using https://github.com/ant-design/ant-design/issues/26222#issuecomment-716275420
+    setHasUnsavedChanges(
+      !isEqual(allValues, pick(individual, Object.keys(individualsMetadataFields)))
+    );
+    setFormData(allValues);
+  };
+
+  const _updateIndividual = async () => {
+    // Pick just the keys and values from formData that were changed from the original data
+    const updatedData = pickBy(formData, (value, key) => !isEqual(value, individual[key]));
+    setIsSavingChanges(true);
+    try {
+      await updateIndividual(individual.id, updatedData);
+    } catch (e) {
+      alert('Save failed')
+      setIsSavingChanges(false);
+      return;
+    }
+    alert('Changes saved successfully')
+    setIsSavingChanges(false);
+  }
 
   return (
     <>
@@ -63,12 +107,11 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
         wrapperCol={{ span: 19 }}
         labelWrap
         layout="horizontal"
-        fields={
-          Object.keys(individualsMetadataFields).map(field => ({
-            name: field,
-            value: individual[field],
-          }))
-        }
+        fields={Object.entries(formData).map(([k, v]) => ({
+          name: k,
+          value: v,
+        }))}
+        onValuesChange={handleValuesChange}
         style={{ maxWidth: 600 }}
       >
         {
@@ -112,6 +155,15 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
             );
           })
         }
+        <Form.Item style={{float: 'right'}}>
+          <Button type="primary" htmlType="submit"
+            disabled={!hasUnsavedChanges}
+            loading={isSavingChanges}
+            onClick={() => _updateIndividual()}
+          >
+            Save changes
+          </Button>
+        </Form.Item>
       </Form>
       <div style={{padding: 10}}>
         <h2>Videos with this individual</h2>

@@ -115,6 +115,7 @@ interface IndividualsStore {
   fetchIndividuals: () => void;
   subscribe: () => void;
   unsubscribe: () => void;
+  update: (id: string, data: Partial<Individual>) => Promise<void>;
 };
 
 export const useIndividualsStore = create<IndividualsStore>()((set) => ({
@@ -182,6 +183,14 @@ export const useIndividualsStore = create<IndividualsStore>()((set) => ({
     console.log('Unsubscribing from individuals');
     pb.collection('individuals').unsubscribe('*'); // remove all '*' topic subscriptions
   },
+  update: async (id: string, data: Partial<Individual>) => {
+    // For now ignore the images/imageUrls key
+    // TODO later maybe convert back from URLs to filenames (and verify what happens in the backend)
+    if ('images' in data) delete data.images;
+    if ('imageUrls' in data) delete data.imageUrls;
+    
+    await pb.collection('individuals').update(id, data as Partial<IndividualRecord>);
+  }
 }));
 
 const processIndividuals = (records: IndividualRecord[]) => {
