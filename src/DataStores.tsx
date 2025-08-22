@@ -176,7 +176,7 @@ const processIndividuals = (records: IndividualRecord[]) => {
   const processedIndividuals: Individual[] = records.map((record: IndividualRecord) => {
     return {
       ...record,
-      images: record.images.map(imageFilename => 
+      imageUrls: record.images.map(imageFilename => 
         `http://127.0.0.1:8090/api/files/${record.collectionId}/${record.id}/${imageFilename}`
       ),
     };

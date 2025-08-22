@@ -32,13 +32,15 @@ export interface IndividualRecord extends RecordModel {
   name: string;
   is_named: boolean;
   videos: string[];
-  images: any[];
+  images: string[];
   age: string;
   sex: string;
   notes: string;
   custom_tags: string[];
 };
-export interface Individual extends IndividualRecord { };
+export interface Individual extends IndividualRecord {
+  imageUrls: string[];
+};
 
 export type MetadataFieldsType = Record<string, {
   displayName: string;
