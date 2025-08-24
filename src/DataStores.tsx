@@ -18,6 +18,7 @@ interface VideoStore {
   fetchVideos: () => Promise<void>;
   subscribe: () => void;
   unsubscribe: () => void;
+  update: (id: string, data: Partial<Video>) => Promise<void>;
 };
 
 export const useVideoStore = create<VideoStore>()((set) => ({
@@ -85,6 +86,16 @@ export const useVideoStore = create<VideoStore>()((set) => ({
     console.log('Unsubscribing from videos');
     pb.collection('videos').unsubscribe('*'); // remove all '*' topic subscriptions
   },
+  update: async (id: string, data: Partial<Video>) => {
+    // For now ignore the recording_date/url/lat/long key
+    // TODO later maybe convert back from URLs to filenames (and verify what happens in the backend)
+    if ('recording_date' in data) delete data.recording_date;
+    if ('url' in data) delete data.url;
+    if ('lat' in data) delete data.lat;
+    if ('long' in data) delete data.long;
+    
+    await pb.collection('videos').update(id, data as Partial<VideoRecord>);
+  }
 }));
 
 const processVideos = (records: VideoRecord[]) => {

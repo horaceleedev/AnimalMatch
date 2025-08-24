@@ -5,6 +5,7 @@ import { Button, Input, Modal, Popover, Space, Splitter, Tabs, Tooltip } from "a
 import type { TabsProps } from "antd";
 const { TextArea } = Input;
 import Icon, { ArrowLeftOutlined, CheckOutlined, CloseOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
+import { useShallow } from 'zustand/react/shallow';
 
 import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
@@ -36,13 +37,12 @@ const CompareModal: React.FC = () => {
     if (open === false) navigate(routerLocation.pathname.split('/').slice(0,2).join('/'));
   };
 
-  const videos = useVideoStore((state) => state.videos);
-  const individuals = useIndividualsStore((state) => state.individuals);
-  const update = useIndividualsStore((state) => state.update);
-
-  const videoUniqueValuesPerField = useVideoStore((state) => state.uniqueValuesPerField);
-  const uniqueVideoLocations = useVideoStore((state) => state.uniqueLocations);
-  const individualsUniqueValuesPerField = useIndividualsStore((state) => state.uniqueValuesPerField);
+  const [videos, updateVideo, videoUniqueValuesPerField, uniqueVideoLocations] = useVideoStore(
+    useShallow((state) => [state.videos, state.update, state.uniqueValuesPerField, state.uniqueLocations])
+  );
+  const [individuals, updateIndividual, individualsUniqueValuesPerField] = useIndividualsStore(
+    useShallow((state) => [state.individuals, state.update, state.uniqueValuesPerField])
+  )
   // TODO figure out if I should compute this (uniqueIndividualLocations) here or inside DataStores.tsx
   const uniqueIndividualLocations = useMemo(() => {
     return getUniqueLocationsFromIndividuals(individuals, videos);
@@ -194,6 +194,7 @@ const CompareModal: React.FC = () => {
         individualsInVideo={videoDetailProps.individualsInVideo}
         uniqueValuesPerField={videoUniqueValuesPerField}
         uniqueLocations={uniqueVideoLocations}
+        updateVideo={updateVideo}
       />
     );
   } else if (individualDetailProps) {
@@ -204,7 +205,7 @@ const CompareModal: React.FC = () => {
         videosWithIndividual={individualDetailProps.videosWithIndividual}
         uniqueValuesPerField={individualsUniqueValuesPerField}
         uniqueLocations={uniqueIndividualLocations}
-        updateIndividual={update}
+        updateIndividual={updateIndividual}
       />
     );
   } else {
@@ -220,6 +221,7 @@ const CompareModal: React.FC = () => {
           individualsInVideo={compareVideoDetailProps.individualsInVideo}
           uniqueValuesPerField={videoUniqueValuesPerField}
           uniqueLocations={uniqueVideoLocations}
+          updateVideo={updateVideo}
         />
       );
     } else if (compareIndividualDetailProps) {
@@ -230,7 +232,7 @@ const CompareModal: React.FC = () => {
           videosWithIndividual={compareIndividualDetailProps.videosWithIndividual}
           uniqueValuesPerField={individualsUniqueValuesPerField}
           uniqueLocations={uniqueIndividualLocations}
-          updateIndividual={update}
+          updateIndividual={updateIndividual}
         />
       );
     } else {
