@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { App, Button, DatePicker, Divider, Form, Input, InputNumber, Select, Tag } from "antd";
+import { Button, DatePicker, Divider, Form, Input, InputNumber, Select, Tag } from "antd";
 import dayjs from "dayjs";
-import { isEqual, pick, pickBy } from "es-toolkit";
 
 import TextArea from 'antd/es/input/TextArea';
 import BasicMapView from '../components/BasicMapView.tsx';
 import { Individual, LocationInfo, MetadataFieldsType, Video } from '../types.ts';
 import { individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
 import IndividualsGridView from "./IndividualsGridView.tsx";
+import useFormManager from "../utils/useFormManager.ts";
 import "./VideoDetailView.scss";
 
 type VideoDetailViewProps = {
@@ -27,53 +27,19 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
   uniqueLocations,
   updateVideo,
 }: VideoDetailViewProps) => {
-  const { message } = App.useApp();
-
   // Temporary hack needed because map wasn't showing up properly
   const [showMap, setShowMap] = useState(false);
   useEffect(() => {
     setShowMap(true);
   }, []);
 
-  // Changes made in the form component are saved here
-  const [formData, setFormData] = useState<Partial<Video>>({});
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [isSavingChanges, setIsSavingChanges] = useState(false);
-  useEffect(() => {
-    // Initialize formData from the VideoStore, or reset it to the
-    // VideoStore if there is an update received from the server
-    const _formData = pick(video, Object.keys(videoMetadataFields));
-    if (hasUnsavedChanges && !isEqual(formData, _formData)) {
-      message.warning('Your changes have been overwritten by new data from the server');
-    }
-    setHasUnsavedChanges(false);
-    setFormData(_formData);
-  }, [video]);
-  const handleValuesChange = (_: any, allValues: any) => {
-    // TODO in the future, implement a more efficient check
-    // Currently a deep comparison between two objects is performed on each keystroke, which can be inefficient.
-    // Instead of comparing the full objects, only compare the fields that have been touched in the form
-    // e.g. using https://github.com/ant-design/ant-design/issues/26222#issuecomment-716275420
-    setHasUnsavedChanges(
-      !isEqual(allValues, pick(video, Object.keys(videoMetadataFields)))
-    );
-    setFormData(allValues);
-  };
-
-  const _updateVideo = async () => {
-    // Pick just the keys and values from formData that were changed from the original data
-    const updatedData = pickBy(formData, (value, key) => !isEqual(value, video[key]));
-    setIsSavingChanges(true);
-    try {
-      await updateVideo(video.id, updatedData);
-    } catch (e) {
-      message.error('Your changes could not be saved. Please try again later.', 10);
-      setIsSavingChanges(false);
-      return;
-    }
-    message.success('Changes saved successfully');
-    setIsSavingChanges(false);
-  }
+  const {
+    formData,
+    hasUnsavedChanges,
+    isSavingChanges,
+    handleValuesChange,
+    saveChanges,
+  } = useFormManager(video, videoMetadataFields, updateVideo);
   
   return (
     <>
@@ -145,7 +111,7 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
           <Button type="primary" htmlType="submit"
             disabled={!hasUnsavedChanges}
             loading={isSavingChanges}
-            onClick={() => _updateVideo()}
+            onClick={() => saveChanges()}
           >
             Save changes
           </Button>

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react'
-import { App, Button, DatePicker, Form, Image, Input, InputNumber, Select, Tag } from "antd";
+import { Button, DatePicker, Form, Image, Input, InputNumber, Select, Tag } from "antd";
 import TextArea from 'antd/es/input/TextArea';
-import { isEqual, pick, pickBy } from "es-toolkit";
 
 import { individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
 import VideosGridView from '../components/VideosGridView.tsx';
 import IndividualsGridView from '../components/IndividualsGridView.tsx';
 import { Individual, LocationInfo, Video } from '../types.ts';
 import BasicMapView from './BasicMapView.tsx';
+import useFormManager from '../utils/useFormManager.ts';
 
 type IndividualDetailViewProps = {
   individual: Individual;
@@ -26,53 +26,19 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
   uniqueLocations,
   updateIndividual,
 }: IndividualDetailViewProps) => {
-  const { message } = App.useApp();
-
   // Temporary hack needed because map wasn't showing up properly
   const [showMap, setShowMap] = useState(false);
   useEffect(() => {
     setShowMap(true);
   }, []);
 
-  // Changes made in the form component are saved here
-  const [formData, setFormData] = useState<Partial<Individual>>({});
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [isSavingChanges, setIsSavingChanges] = useState(false);
-  useEffect(() => {
-    // Initialize formData from the IndividualsStore, or reset it to the
-    // IndividualsStore if there is an update received from the server
-    const _formData = pick(individual, Object.keys(individualsMetadataFields));
-    if (hasUnsavedChanges && !isEqual(formData, _formData)) {
-      message.warning('Your changes have been overwritten by new data from the server');
-    }
-    setHasUnsavedChanges(false);
-    setFormData(_formData);
-  }, [individual]);
-  const handleValuesChange = (_: any, allValues: any) => {
-    // TODO in the future, implement a more efficient check
-    // Currently a deep comparison between two objects is performed on each keystroke, which can be inefficient.
-    // Instead of comparing the full objects, only compare the fields that have been touched in the form
-    // e.g. using https://github.com/ant-design/ant-design/issues/26222#issuecomment-716275420
-    setHasUnsavedChanges(
-      !isEqual(allValues, pick(individual, Object.keys(individualsMetadataFields)))
-    );
-    setFormData(allValues);
-  };
-
-  const _updateIndividual = async () => {
-    // Pick just the keys and values from formData that were changed from the original data
-    const updatedData = pickBy(formData, (value, key) => !isEqual(value, individual[key]));
-    setIsSavingChanges(true);
-    try {
-      await updateIndividual(individual.id, updatedData);
-    } catch (e) {
-      message.error('Your changes could not be saved. Please try again later.', 10);
-      setIsSavingChanges(false);
-      return;
-    }
-    message.success('Changes saved successfully');
-    setIsSavingChanges(false);
-  }
+  const {
+    formData,
+    hasUnsavedChanges,
+    isSavingChanges,
+    handleValuesChange,
+    saveChanges,
+  } = useFormManager(individual, individualsMetadataFields, updateIndividual);
 
   return (
     <>
@@ -160,7 +126,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
           <Button type="primary" htmlType="submit"
             disabled={!hasUnsavedChanges}
             loading={isSavingChanges}
-            onClick={() => _updateIndividual()}
+            onClick={() => saveChanges()}
           >
             Save changes
           </Button>
