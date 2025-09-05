@@ -96,7 +96,9 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
                 />
               );
             } else if (value.inputType === 'date') {
-              inputElement = <DatePicker showTime needConfirm={false} disabled={disabled} />;
+              // inputElement = <DatePicker showTime needConfirm={false} disabled={disabled} />;
+              // Temporary hack TODO fix issue with DatePicker above
+              inputElement = <Input disabled={disabled} />;
             } else if (value.inputType === 'number') {
               inputElement = <InputNumber disabled={disabled} />;
             }
