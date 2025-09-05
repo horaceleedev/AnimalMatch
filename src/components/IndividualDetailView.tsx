@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { Button, DatePicker, Form, Image, Input, InputNumber, Select, Tag } from "antd";
-import TextArea from 'antd/es/input/TextArea';
+import { Image } from "antd";
 
 import { individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
 import VideosGridView from '../components/VideosGridView.tsx';
 import IndividualsGridView from '../components/IndividualsGridView.tsx';
 import { Individual, LocationInfo, Video } from '../types.ts';
 import BasicMapView from './BasicMapView.tsx';
-import useFormManager from '../utils/useFormManager.ts';
+import RecordMetadataForm from './RecordMetadataForm.tsx';
 
 type IndividualDetailViewProps = {
   individual: Individual;
@@ -31,14 +30,6 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
   useEffect(() => {
     setShowMap(true);
   }, []);
-
-  const {
-    formData,
-    hasUnsavedChanges,
-    isSavingChanges,
-    handleValuesChange,
-    saveChanges,
-  } = useFormManager(individual, individualsMetadataFields, updateIndividual);
 
   return (
     <>
@@ -69,69 +60,12 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
         }
       </div> */}
       <br />
-      <Form
-        labelCol={{ span: 5 }}
-        wrapperCol={{ span: 19 }}
-        labelWrap
-        layout="horizontal"
-        fields={Object.entries(formData).map(([k, v]) => ({
-          name: k,
-          value: v,
-        }))}
-        onValuesChange={handleValuesChange}
-        style={{ maxWidth: 600 }}
-      >
-        {
-          Object.entries(individualsMetadataFields).map(([fieldValue, value]) => {
-            let inputElement = <></>;
-            const disabled = value.isInternal || value.isUneditable;
-            if (value.type === 'rich_text') {
-              inputElement = <TextArea autoSize={{ minRows: 3, maxRows: 6 }} />
-            } else if (value.inputType === 'text') {
-              inputElement = <Input disabled={disabled} />;
-            } else if (value.valueEditorType === 'select') {
-              inputElement = (
-                <Select
-                  options={uniqueValuesPerField[fieldValue].map(val => ({ value: val, label: val }))}
-                  disabled={disabled}
-                  labelRender={(option) => (
-                    // <Tag icon={value.icon}>
-                    //   {option.label}
-                    // </Tag>
-                    <Tag>{option.label}</Tag>
-                  )}
-                />
-              );
-            } else if (value.valueEditorType === 'multiselect') {
-              inputElement = (
-                <Select
-                  mode="tags"
-                  options={uniqueValuesPerField[fieldValue].map(val => ({ value: val, label: val }))}
-                  disabled={disabled}
-                />
-              );
-            } else if (value.inputType === 'date') {
-              inputElement = <DatePicker showTime needConfirm={false} disabled={disabled} />;
-            } else if (value.inputType === 'number') {
-              inputElement = <InputNumber disabled={disabled} />;
-            }
-            return (
-              <Form.Item key={fieldValue} label={value.displayName} name={fieldValue}>
-                {inputElement}
-              </Form.Item>
-            );
-          })
-        }
-        <Form.Item style={{float: 'right'}}>
-          <Button type="primary" htmlType="submit"
-            disabled={!hasUnsavedChanges}
-            loading={isSavingChanges}
-            onClick={() => saveChanges()}
-          >
-            Save changes
-          </Button>
-        </Form.Item>
-      </Form>
+      <RecordMetadataForm
+        processedRecord={individual}
+        metadataFields={individualsMetadataFields}
+        uniqueValuesPerField={uniqueValuesPerField}
+        updateFunction={updateIndividual}
+      />
       <div style={{padding: 10}}>
         <h2>Videos with this individual</h2>
         <VideosGridView videos={videosWithIndividual} videoMetadataFields={videoMetadataFields} isListView={false} sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]} />

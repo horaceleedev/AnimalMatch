@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button, DatePicker, Divider, Form, Input, InputNumber, Select, Tag } from "antd";
+import { Button, Divider } from "antd";
 import dayjs from "dayjs";
 
-import TextArea from 'antd/es/input/TextArea';
 import BasicMapView from '../components/BasicMapView.tsx';
 import { Individual, LocationInfo, MetadataFieldsType, Video } from '../types.ts';
 import { individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
 import IndividualsGridView from "./IndividualsGridView.tsx";
-import useFormManager from "../utils/useFormManager.ts";
-import "./VideoDetailView.scss";
+import RecordMetadataForm from "./RecordMetadataForm.tsx";
 
 type VideoDetailViewProps = {
   video: Video,
@@ -32,14 +30,6 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
   useEffect(() => {
     setShowMap(true);
   }, []);
-
-  const {
-    formData,
-    hasUnsavedChanges,
-    isSavingChanges,
-    handleValuesChange,
-    saveChanges,
-  } = useFormManager(video, videoMetadataFields, updateVideo);
   
   return (
     <>
@@ -57,68 +47,13 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
       />
       <Divider />
       <h3>Video metadata</h3>
-      <Form
-        labelCol={{ span: 5 }}
-        wrapperCol={{ span: 19 }}
-        labelWrap
-        layout="horizontal"
-        fields={Object.entries(formData).map(([k, v]) => ({
-          name: k,
-          value: v,
-        }))}
-        onValuesChange={handleValuesChange}
-        style={{ maxWidth: 600 }}
-      >
-        {
-          Object.entries(videoMetadataFields).map(([fieldValue, value]) => {
-            let inputElement = <></>;
-            const disabled = value.isInternal || value.isUneditable;
-            if (value.type === 'rich_text') {
-              inputElement = <TextArea autoSize={{ minRows: 3, maxRows: 6 }} />
-            } else if (value.inputType === 'text') {
-              inputElement = <Input disabled={disabled} />;
-            } else if (value.valueEditorType === 'select') {
-              inputElement = <Select
-                options={uniqueValuesPerField[fieldValue].map(val => ({ value: val, label: val }))}
-                disabled={disabled}
-                labelRender={(option) => (
-                  <Tag icon={value.icon}>
-                    {option.label}
-                  </Tag>
-                )}
-              />;
-            } else if (value.valueEditorType === 'multiselect') {
-              inputElement = (
-                <Select
-                  mode="tags"
-                  options={uniqueValuesPerField[fieldValue].map(val => ({ value: val, label: val }))}
-                  disabled={disabled}
-                />
-              );
-            } else if (value.inputType === 'date') {
-              // inputElement = <DatePicker showTime needConfirm={false} disabled={disabled} />;
-              // Temporary hack TODO fix issue with DatePicker above
-              inputElement = <Input disabled={disabled} />;
-            } else if (value.inputType === 'number') {
-              inputElement = <InputNumber disabled={disabled} />;
-            }
-            return (
-              <Form.Item key={fieldValue} label={value.displayName} name={fieldValue}>
-                {inputElement}
-              </Form.Item>
-            );
-          })
-        }
-        <Form.Item style={{float: 'right'}}>
-          <Button type="primary" htmlType="submit"
-            disabled={!hasUnsavedChanges}
-            loading={isSavingChanges}
-            onClick={() => saveChanges()}
-          >
-            Save changes
-          </Button>
-        </Form.Item>
-      </Form>
+      <RecordMetadataForm
+        processedRecord={video}
+        metadataFields={videoMetadataFields}
+        uniqueValuesPerField={uniqueValuesPerField}
+        updateFunction={updateVideo}
+        showIconInSelectionFields={true}
+      />
       {
         showMap && // Temporary hack needed because map wasn't showing up properly
         <BasicMapView style={{height: 400, width: 600}} uniqueLocations={uniqueLocations} highlightLocationIds={[JSON.stringify([video.lat, video.long])]} />
