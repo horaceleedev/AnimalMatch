@@ -33,6 +33,7 @@ const useFormManager = <T extends RecordModel>(
     // Currently a deep comparison between two objects is performed on each keystroke, which can be inefficient.
     // Instead of comparing the full objects, only compare the fields that have been touched in the form
     // e.g. using https://github.com/ant-design/ant-design/issues/26222#issuecomment-716275420
+    // or using onFieldsChange from the Form component
     setHasUnsavedChanges(
       !isEqual(allValues, pick(processedRecord, Object.keys(metadataFields)))
     );
