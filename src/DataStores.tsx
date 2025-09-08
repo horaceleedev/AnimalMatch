@@ -51,46 +51,30 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
     subscribe: () => {
       console.log(`Subscribing to ${collectionName}`);
       pb.collection(collectionName).subscribe<TRecord>('*', function (e) {
-        const { action, record } = e;
-        if (action === 'create') {
-          set((state) => {
-            const records = [...state.unprocessedRecords, record];
+        set((state) => {
+          let records = [...state.unprocessedRecords];
+          const { action, record } = e;
+          if (action === 'create') {
+            records = [...records, record];
             // TODO sort records by sortField
-            const { processedRecords, uniqueValuesPerField, extra } = processRecords(records);
-            return {
-              unprocessedRecords: records,
-              processedRecords,
-              uniqueValuesPerField,
-              extra,
-            };
-          });
-        } else if (action === 'update') {
-          set((state) => {
-            const records = state.unprocessedRecords.map((item: TRecord) => item.id === record.id ? record : item);
+          } else if (action === 'update') {
+            records = records.map((item: TRecord) => item.id === record.id ? record : item);
             // TODO sort records by sortField
-            const { processedRecords, uniqueValuesPerField, extra } = processRecords(records);
-            return {
-              unprocessedRecords: records,
-              processedRecords,
-              uniqueValuesPerField,
-              extra,
-            };
-          });
-        } else if (action === 'delete') {
-          set((state) => {
-            const records = state.unprocessedRecords.filter((item: TRecord) => item.id !== record.id);
+          } else if (action === 'delete') {
+            records = records.filter((item: TRecord) => item.id !== record.id);
             // TODO sort records by sortField
-            const { processedRecords, uniqueValuesPerField, extra } = processRecords(records);
-            return {
-              unprocessedRecords: records,
-              processedRecords,
-              uniqueValuesPerField,
-              extra,
-            };
-          });
-        } else {
-          console.error(`Unknown action: ${action}`);
-        }
+          } else {
+            console.error(`Unknown action: ${action}`);
+            return {};
+          }
+          const { processedRecords, uniqueValuesPerField, extra } = processRecords(records);
+          return {
+            unprocessedRecords: records,
+            processedRecords,
+            uniqueValuesPerField,
+            extra,
+          };
+        });
       }, { /* other options like expand, custom headers, etc. */ });
     },
     unsubscribe: () => {
@@ -110,31 +94,30 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
 
 
 // --- Video store ---
-const processVideos = (records: VideoRecord[]) => {
-  const processedVideos: Video[] = records.map((record: VideoRecord) => {
-    // https://stackoverflow.com/a/18621244
-    const [long, lat] = proj4("+proj=utm +zone=29", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",[record.utm_easting, record.utm_northing]);
-    return {
-      ...record,
-      recording_date: dayjs(record.recording_date).format("YYYY-MM-DD HH:mm:ss"),
-      url: `http://127.0.0.1:8090/api/files/${record.collectionId}/${record.id}/${record.file}`,
-      lat,
-      long,
-    };
-  });
-  console.log('Processed videos', processedVideos);
-
-  const uniqueLocations = getUniqueLocationsFromVideos(processedVideos);
-  // console.log(uniqueLocations)
-  const uniqueValuesPerField = getUniqueValuesPerField(videoMetadataFields, processedVideos);
-
-  return { processedRecords: processedVideos, uniqueValuesPerField, extra: { uniqueLocations } };
-};
 export const useVideoStore = createRealtimeCollectionStore<VideoRecord, Video, { uniqueLocations: LocationInfo[] }>({
   collectionName: 'videos',
   sortField: 'filename',
   extraInitialState: { uniqueLocations: [] },
-  processRecords: processVideos,
+  processRecords: (records: VideoRecord[]) => {
+    const processedVideos: Video[] = records.map((record: VideoRecord) => {
+      // https://stackoverflow.com/a/18621244
+      const [long, lat] = proj4("+proj=utm +zone=29", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",[record.utm_easting, record.utm_northing]);
+      return {
+        ...record,
+        recording_date: dayjs(record.recording_date).format("YYYY-MM-DD HH:mm:ss"),
+        url: `http://127.0.0.1:8090/api/files/${record.collectionId}/${record.id}/${record.file}`,
+        lat,
+        long,
+      };
+    });
+    console.log('Processed videos', processedVideos);
+
+    const uniqueLocations = getUniqueLocationsFromVideos(processedVideos);
+    // console.log(uniqueLocations)
+    const uniqueValuesPerField = getUniqueValuesPerField(videoMetadataFields, processedVideos);
+
+    return { processedRecords: processedVideos, uniqueValuesPerField, extra: { uniqueLocations } };
+  },
   // For now ignore the recording_date/url/lat/long key
   // TODO later maybe convert back from URLs to filenames (and verify what happens in the backend)
   ignoredUpdateKeys: ['recording_date', 'url', 'lat', 'long'],
@@ -142,24 +125,23 @@ export const useVideoStore = createRealtimeCollectionStore<VideoRecord, Video, {
 
 
 // --- Individuals store ---
-const processIndividuals = (records: IndividualRecord[]) => {
-  const processedIndividuals: Individual[] = records.map((record: IndividualRecord) => {
-    return {
-      ...record,
-      imageUrls: record.images.map(imageFilename => 
-        `http://127.0.0.1:8090/api/files/${record.collectionId}/${record.id}/${imageFilename}`
-      ),
-    };
-  });
-  console.log('Processed individuals', processedIndividuals);
-
-  const uniqueValuesPerField = getUniqueValuesPerField(individualsMetadataFields, processedIndividuals);
-  return { processedRecords: processedIndividuals, uniqueValuesPerField };
-};
 export const useIndividualsStore = createRealtimeCollectionStore<IndividualRecord, Individual>({
   collectionName: 'individuals',
   sortField: 'name',
-  processRecords: processIndividuals,
+  processRecords: (records: IndividualRecord[]) => {
+    const processedIndividuals: Individual[] = records.map((record: IndividualRecord) => {
+      return {
+        ...record,
+        imageUrls: record.images.map(imageFilename => 
+          `http://127.0.0.1:8090/api/files/${record.collectionId}/${record.id}/${imageFilename}`
+        ),
+      };
+    });
+    console.log('Processed individuals', processedIndividuals);
+
+    const uniqueValuesPerField = getUniqueValuesPerField(individualsMetadataFields, processedIndividuals);
+    return { processedRecords: processedIndividuals, uniqueValuesPerField };
+  },
   // For now ignore the images/imageUrls key
   // TODO later maybe convert back from URLs to filenames (and verify what happens in the backend)
   ignoredUpdateKeys: ['images', 'imageUrls'],
