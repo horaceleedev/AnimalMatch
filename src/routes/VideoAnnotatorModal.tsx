@@ -20,8 +20,8 @@ const VideoAnnotatorModal: React.FC = () => {
     // Navigate back to the /videos/:videoId page when the modal is closed
     if (open === false) navigate('/videos/'+videoId);
   };
-  
-  const videos = useVideoStore((state) => state.videos);
+
+  const videos = useVideoStore((state) => state.processedRecords);
   const video = videos.find(x => x.id === videoId);
   if (!video) {
     console.error(`Video with id ${videoId} not found`);

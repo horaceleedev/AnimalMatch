@@ -36,8 +36,8 @@ const initialQuery: RuleGroupType = { combinator: 'and', rules: [] };
 
 const VideosDashboardPage: React.FC = () => {
   const [view, setView] = useState(viewsTabsItems[0].key);
-  const videos = useVideoStore((state) => state.videos);
-  const uniqueLocations = useVideoStore((state) => state.uniqueLocations);
+  const videos = useVideoStore((state) => state.processedRecords);
+  const uniqueLocations = useVideoStore((state) => state.extra.uniqueLocations);
   const uniqueValuesPerField = useVideoStore((state) => state.uniqueValuesPerField);
 
   const [sortFields, setSortFields] = useState<string[]>([]);

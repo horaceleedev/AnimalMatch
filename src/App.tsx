@@ -12,10 +12,10 @@ const App: React.FC = () => {
   const { message } = AntApp.useApp();
 
   const [fetchVideos, subscribeToVideos, unsubscribeFromVideos] = useVideoStore(
-    useShallow((state) => [state.fetchVideos, state.subscribe, state.unsubscribe])
+    useShallow((state) => [state.fetch, state.subscribe, state.unsubscribe])
   );
   const [fetchIndividuals, subscribeToIndividuals, unsubscribeFromIndividuals] = useIndividualsStore(
-    useShallow((state) => [state.fetchIndividuals, state.subscribe, state.unsubscribe])
+    useShallow((state) => [state.fetch, state.subscribe, state.unsubscribe])
   );
 
   // App initialization

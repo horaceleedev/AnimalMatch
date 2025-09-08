@@ -1,7 +1,7 @@
 // This file contains the 'stores' which store the global state and data of the app
 import { create } from 'zustand';
 import proj4 from "proj4";
-import PocketBase, { ClientResponseError } from 'pocketbase';
+import PocketBase, { ClientResponseError, RecordModel } from 'pocketbase';
 import dayjs from 'dayjs';
 
 import type { Video, VideoRecord, LocationInfo, Individual, IndividualRecord } from "./types.ts";
@@ -10,94 +10,106 @@ import { getUniqueLocationsFromVideos, getUniqueValuesPerField } from './utils/u
 
 const pb = new PocketBase('http://127.0.0.1:8090');
 
-interface VideoStore {
-  unprocessedVideos: VideoRecord[];
-  videos: Video[];
-  uniqueLocations: LocationInfo[];
+// Create a Zustand store for a PocketBase collection with real-time updates
+interface CollectionStore<TRecord, TProcessed, TExtra> {
+  unprocessedRecords: TRecord[];
+  processedRecords: TProcessed[];
   uniqueValuesPerField: Record<string, string[]>;
-  fetchVideos: () => Promise<void>;
+  extra: TExtra;
+  fetch: () => Promise<void>;
   subscribe: () => void;
   unsubscribe: () => void;
-  update: (id: string, data: Partial<Video>) => Promise<void>;
+  update: (id: string, data: Partial<TProcessed>) => Promise<void>;
+};
+const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed extends RecordModel, TExtra extends Record<string, any> = {}>(opts: {
+  collectionName: string;
+  sortField?: string;
+  extraInitialState?: TExtra;
+  processRecords: (records: TRecord[]) => { processedRecords: TProcessed[]; uniqueValuesPerField: Record<string, string[]>; extra?: TExtra };
+  ignoredUpdateKeys?: string[];
+}) => {
+  const { collectionName, sortField, extraInitialState = {}, processRecords, ignoredUpdateKeys = [] } = opts;
+
+  return create<CollectionStore<TRecord, TProcessed, TExtra>>()((set) => ({
+    unprocessedRecords: [] as TRecord[],
+    processedRecords: [] as TProcessed[],
+    uniqueValuesPerField: {} as Record<string, string[]>,
+    extra: extraInitialState as TExtra,
+    fetch: async () => {
+      let records: TRecord[] = [];
+      try {
+        records = await pb.collection(collectionName).getFullList<TRecord>({
+          sort: sortField,
+        });
+      } catch (e) {
+        handlePocketBaseError(e);
+        return;
+      }
+      const { processedRecords, uniqueValuesPerField, extra } = processRecords(records);
+      set({ unprocessedRecords: records, processedRecords, uniqueValuesPerField, extra });
+    },
+    subscribe: () => {
+      console.log(`Subscribing to ${collectionName}`);
+      pb.collection(collectionName).subscribe<TRecord>('*', function (e) {
+        const { action, record } = e;
+        if (action === 'create') {
+          set((state) => {
+            const records = [...state.unprocessedRecords, record];
+            // TODO sort records by sortField
+            const { processedRecords, uniqueValuesPerField, extra } = processRecords(records);
+            return {
+              unprocessedRecords: records,
+              processedRecords,
+              uniqueValuesPerField,
+              extra,
+            };
+          });
+        } else if (action === 'update') {
+          set((state) => {
+            const records = state.unprocessedRecords.map((item: TRecord) => item.id === record.id ? record : item);
+            // TODO sort records by sortField
+            const { processedRecords, uniqueValuesPerField, extra } = processRecords(records);
+            return {
+              unprocessedRecords: records,
+              processedRecords,
+              uniqueValuesPerField,
+              extra,
+            };
+          });
+        } else if (action === 'delete') {
+          set((state) => {
+            const records = state.unprocessedRecords.filter((item: TRecord) => item.id !== record.id);
+            // TODO sort records by sortField
+            const { processedRecords, uniqueValuesPerField, extra } = processRecords(records);
+            return {
+              unprocessedRecords: records,
+              processedRecords,
+              uniqueValuesPerField,
+              extra,
+            };
+          });
+        } else {
+          console.error(`Unknown action: ${action}`);
+        }
+      }, { /* other options like expand, custom headers, etc. */ });
+    },
+    unsubscribe: () => {
+      console.log(`Unsubscribing from ${collectionName}`);
+      pb.collection(collectionName).unsubscribe('*');
+    },
+    update: async (id: string, data: Partial<TProcessed>) => {
+      // remove some keys before sending to backend
+      const payload = { ...data };
+      for (const k of ignoredUpdateKeys) {
+        if (k in payload) delete payload[k];
+      }
+      await pb.collection(collectionName).update(id, payload);
+    },
+  }));
 };
 
-export const useVideoStore = create<VideoStore>()((set) => ({
-  unprocessedVideos: [],
-  videos: [],
-  uniqueLocations: [],
-  uniqueValuesPerField: {},
-  fetchVideos: async () => {
-    let records: VideoRecord[] = [];
-    try {
-      records = await pb.collection('videos').getFullList<VideoRecord>({
-        sort: 'filename',
-      });
-    } catch (e) {
-      handlePocketBaseError(e);
-      return;
-    }
-    const { processedVideos, uniqueLocations, uniqueValuesPerField } = processVideos(records);
-    set({ unprocessedVideos: records, videos: processedVideos, uniqueLocations: uniqueLocations, uniqueValuesPerField: uniqueValuesPerField });
-  },
-  subscribe: () => {
-    console.log('Subscribing to videos');
-    // Subscribe to changes in any video record
-    pb.collection('videos').subscribe<VideoRecord>('*', function (e) {
-      const { action, record } = e;
-      if (action === 'create') {
-        set((state) => {
-          const records = [...state.unprocessedVideos, record];
-          // TODO sort records by filename or some other field
-          const { processedVideos, uniqueValuesPerField } = processVideos(records);
-          return {
-            unprocessedVideos: records,
-            videos: processedVideos,
-            uniqueValuesPerField: uniqueValuesPerField,
-          };
-        });
-      } else if (action === 'update') {
-        set((state) => {
-          const records = state.unprocessedVideos.map(item => item.id === record.id ? record : item);
-          // TODO sort records by filename or some other field
-          const { processedVideos, uniqueValuesPerField } = processVideos(records);
-          return {
-            unprocessedVideos: records,
-            videos: processedVideos,
-            uniqueValuesPerField: uniqueValuesPerField,
-          };
-        });
-      } else if (action === 'delete') {
-        set((state) => {
-          const records = state.unprocessedVideos.filter(item => item.id !== record.id);
-          // TODO sort records by filename or some other field
-          const { processedVideos, uniqueValuesPerField } = processVideos(records);
-          return {
-            unprocessedVideos: records,
-            videos: processedVideos,
-            uniqueValuesPerField: uniqueValuesPerField,
-          };
-        });
-      } else {
-        console.error(`Unknown action: ${action}`);
-      }
-    }, { /* other options like expand, custom headers, etc. */ });
-  },
-  unsubscribe: () => {
-    console.log('Unsubscribing from videos');
-    pb.collection('videos').unsubscribe('*'); // remove all '*' topic subscriptions
-  },
-  update: async (id: string, data: Partial<Video>) => {
-    // For now ignore the recording_date/url/lat/long key
-    // TODO later maybe convert back from URLs to filenames (and verify what happens in the backend)
-    if ('recording_date' in data) delete data.recording_date;
-    if ('url' in data) delete data.url;
-    if ('lat' in data) delete data.lat;
-    if ('long' in data) delete data.long;
-    
-    await pb.collection('videos').update(id, data as Partial<VideoRecord>);
-  }
-}));
 
+// --- Video store ---
 const processVideos = (records: VideoRecord[]) => {
   const processedVideos: Video[] = records.map((record: VideoRecord) => {
     // https://stackoverflow.com/a/18621244
@@ -116,94 +128,20 @@ const processVideos = (records: VideoRecord[]) => {
   // console.log(uniqueLocations)
   const uniqueValuesPerField = getUniqueValuesPerField(videoMetadataFields, processedVideos);
 
-  return { processedVideos, uniqueLocations, uniqueValuesPerField };
+  return { processedRecords: processedVideos, uniqueValuesPerField, extra: { uniqueLocations } };
 };
+export const useVideoStore = createRealtimeCollectionStore<VideoRecord, Video, { uniqueLocations: LocationInfo[] }>({
+  collectionName: 'videos',
+  sortField: 'filename',
+  extraInitialState: { uniqueLocations: [] },
+  processRecords: processVideos,
+  // For now ignore the recording_date/url/lat/long key
+  // TODO later maybe convert back from URLs to filenames (and verify what happens in the backend)
+  ignoredUpdateKeys: ['recording_date', 'url', 'lat', 'long'],
+});
 
-interface IndividualsStore {
-  unprocessedIndividuals: IndividualRecord[];
-  individuals: Individual[];
-  uniqueValuesPerField: Record<string, string[]>;
-  fetchIndividuals: () => Promise<void>;
-  subscribe: () => void;
-  unsubscribe: () => void;
-  update: (id: string, data: Partial<Individual>) => Promise<void>;
-};
 
-export const useIndividualsStore = create<IndividualsStore>()((set) => ({
-  unprocessedIndividuals: [],
-  individuals: [],
-  uniqueValuesPerField: {},
-  fetchIndividuals: async () => {
-    console.log('Fetching individuals');
-    let records: IndividualRecord[] = []
-    try {
-      records = await pb.collection('individuals').getFullList<IndividualRecord>({
-        sort: 'name',
-      });
-    } catch (e) {
-      handlePocketBaseError(e);
-      return;
-    }
-    const { processedIndividuals, uniqueValuesPerField } = processIndividuals(records);
-    set({ unprocessedIndividuals: records, individuals: processedIndividuals, uniqueValuesPerField: uniqueValuesPerField });
-  },
-  subscribe: () => {
-    console.log('Subscribing to individuals');
-    // Subscribe to changes in any individual record
-    pb.collection('individuals').subscribe<IndividualRecord>('*', function (e) {
-      const { action, record } = e;
-      if (action === 'create') {
-        set((state) => {
-          const records = [...state.unprocessedIndividuals, record];
-          // TODO sort records by name or some other field
-          const { processedIndividuals, uniqueValuesPerField } = processIndividuals(records);
-          return {
-            unprocessedIndividuals: records,
-            individuals: processedIndividuals,
-            uniqueValuesPerField: uniqueValuesPerField,
-          };
-        });
-      } else if (action === 'update') {
-        set((state) => {
-          const records = state.unprocessedIndividuals.map(item => item.id === record.id ? record : item);
-          // TODO sort records by name or some other field
-          const { processedIndividuals, uniqueValuesPerField } = processIndividuals(records);
-          return {
-            unprocessedIndividuals: records,
-            individuals: processedIndividuals,
-            uniqueValuesPerField: uniqueValuesPerField,
-          };
-        });
-      } else if (action === 'delete') {
-        set((state) => {
-          const records = state.unprocessedIndividuals.filter(item => item.id !== record.id);
-          // TODO sort records by name or some other field
-          const { processedIndividuals, uniqueValuesPerField } = processIndividuals(records);
-          return {
-            unprocessedIndividuals: records,
-            individuals: processedIndividuals,
-            uniqueValuesPerField: uniqueValuesPerField,
-          };
-        });
-      } else {
-        console.error(`Unknown action: ${action}`);
-      }
-    }, { /* other options like expand, custom headers, etc. */ });
-  },
-  unsubscribe: () => {
-    console.log('Unsubscribing from individuals');
-    pb.collection('individuals').unsubscribe('*'); // remove all '*' topic subscriptions
-  },
-  update: async (id: string, data: Partial<Individual>) => {
-    // For now ignore the images/imageUrls key
-    // TODO later maybe convert back from URLs to filenames (and verify what happens in the backend)
-    if ('images' in data) delete data.images;
-    if ('imageUrls' in data) delete data.imageUrls;
-    
-    await pb.collection('individuals').update(id, data as Partial<IndividualRecord>);
-  }
-}));
-
+// --- Individuals store ---
 const processIndividuals = (records: IndividualRecord[]) => {
   const processedIndividuals: Individual[] = records.map((record: IndividualRecord) => {
     return {
@@ -216,8 +154,17 @@ const processIndividuals = (records: IndividualRecord[]) => {
   console.log('Processed individuals', processedIndividuals);
 
   const uniqueValuesPerField = getUniqueValuesPerField(individualsMetadataFields, processedIndividuals);
-  return { processedIndividuals, uniqueValuesPerField };
+  return { processedRecords: processedIndividuals, uniqueValuesPerField };
 };
+export const useIndividualsStore = createRealtimeCollectionStore<IndividualRecord, Individual>({
+  collectionName: 'individuals',
+  sortField: 'name',
+  processRecords: processIndividuals,
+  // For now ignore the images/imageUrls key
+  // TODO later maybe convert back from URLs to filenames (and verify what happens in the backend)
+  ignoredUpdateKeys: ['images', 'imageUrls'],
+});
+
 
 const handlePocketBaseError = (e: unknown) => {
   if (e instanceof ClientResponseError && e.isAbort) {

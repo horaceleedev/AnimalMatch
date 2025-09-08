@@ -6,9 +6,9 @@ import { individualsMetadataFields } from '../metadata.tsx';
 import IndividualsDashboardView from '../components/IndividualsDashboardView.tsx';
 
 const IndividualsDashboardPage: React.FC = () => {
-  const individuals = useIndividualsStore((state) => state.individuals);
+  const individuals = useIndividualsStore((state) => state.processedRecords);
   const uniqueValuesPerField = useIndividualsStore((state) => state.uniqueValuesPerField);
-  const videos = useVideoStore((state) => state.videos);
+  const videos = useVideoStore((state) => state.processedRecords);
 
   return (
     <>

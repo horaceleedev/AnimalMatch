@@ -24,11 +24,11 @@ const VideoDetailModal: React.FC = () => {
   };
 
   const uniqueValuesPerField = useVideoStore((state) => state.uniqueValuesPerField);
-  const uniqueLocations = useVideoStore((state) => state.uniqueLocations);
-  const videos = useVideoStore((state) => state.videos);
+  const uniqueLocations = useVideoStore((state) => state.extra.uniqueLocations);
+  const videos = useVideoStore((state) => state.processedRecords);
   const video = videos.find(x => x.id === videoId);
 
-  const individuals = useIndividualsStore((state) => state.individuals);
+  const individuals = useIndividualsStore((state) => state.processedRecords);
   const individualsInVideo = video ? (individuals.filter(x => x.videos.includes(video.id)) || []) : [];
 
   if (!video) {

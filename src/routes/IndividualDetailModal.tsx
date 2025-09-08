@@ -24,10 +24,10 @@ const IndividualDetailModal: React.FC = () => {
   };
 
   const uniqueValuesPerField = useIndividualsStore((state) => state.uniqueValuesPerField);
-  const individuals = useIndividualsStore((state) => state.individuals);
+  const individuals = useIndividualsStore((state) => state.processedRecords);
   const individual = individuals.find(x => x.id === individualId);
-  
-  const allVideos = useVideoStore((state) => state.videos);
+
+  const allVideos = useVideoStore((state) => state.processedRecords);
   const videosWithIndividual = useMemo(() => allVideos.filter(v => individual?.videos.includes(v.id)), [allVideos, individual]);
   const seenTogetherIndividuals = useMemo(
     () => individuals.filter(indiv => (indiv.id !== individual?.id) && intersection(indiv.videos, videosWithIndividual.map(x => x.id)).length > 0)

@@ -38,11 +38,11 @@ const CompareModal: React.FC = () => {
   };
 
   const [videos, updateVideo, videoUniqueValuesPerField, uniqueVideoLocations] = useVideoStore(
-    useShallow((state) => [state.videos, state.update, state.uniqueValuesPerField, state.uniqueLocations])
+    useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField, state.extra.uniqueLocations])
   );
   const [individuals, updateIndividual, individualsUniqueValuesPerField] = useIndividualsStore(
-    useShallow((state) => [state.individuals, state.update, state.uniqueValuesPerField])
-  )
+    useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField])
+  );
   // TODO figure out if I should compute this (uniqueIndividualLocations) here or inside DataStores.tsx
   const uniqueIndividualLocations = useMemo(() => {
     return getUniqueLocationsFromIndividuals(individuals, videos);
