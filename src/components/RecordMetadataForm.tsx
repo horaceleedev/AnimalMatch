@@ -84,7 +84,7 @@ const RecordMetadataForm = <T extends RecordModel>({
           );
         })
       }
-      <Form.Item style={{float: 'right'}}>
+      <Form.Item style={{alignSelf: 'flex-end'}}>
         <Button type="primary" htmlType="submit"
           disabled={!hasUnsavedChanges}
           loading={isSavingChanges}
