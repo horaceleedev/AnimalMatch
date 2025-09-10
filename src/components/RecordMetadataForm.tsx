@@ -31,6 +31,7 @@ const RecordMetadataForm = <T extends RecordModel>({
 
   return (
     <Form
+      className="record-metadata-form"
       labelCol={{ span: 5 }}
       wrapperCol={{ span: 19 }}
       labelWrap
@@ -40,7 +41,6 @@ const RecordMetadataForm = <T extends RecordModel>({
         value: v,
       }))}
       onValuesChange={handleValuesChange}
-      style={{ maxWidth: 600 }}
     >
       {
         Object.entries(metadataFields).map(([fieldValue, value]) => {
