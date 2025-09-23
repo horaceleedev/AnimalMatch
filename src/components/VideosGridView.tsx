@@ -86,9 +86,9 @@ const BasicVideosGridView: React.FC<BasicVideosGridViewProps> = ({ videos, video
 
 interface VideosGridViewProps extends BasicVideosGridViewProps {
   sortFields: string[];
-  sortOrders: string[];
+  sortOrders: ("asc" | "desc")[];
   groupFields: string[];
-  groupOrders: string[];
+  groupOrders: ("asc" | "desc")[];
 };
 
 const VideosGridView: React.FC<VideosGridViewProps> = ({ videos, videoMetadataFields, isListView, linkBase, sortFields, sortOrders, groupFields, groupOrders }: VideosGridViewProps) => {
@@ -99,7 +99,7 @@ const VideosGridView: React.FC<VideosGridViewProps> = ({ videos, videoMetadataFi
     orderBy(
       Object.entries(groupBy<Video, any>(videosSorted, v => v[groupFields[0]])),
       [([groupValue, _]) => groupValue],
-      [groupOrders[0] as "asc" | "desc"]
+      [groupOrders[0]]
     )
   ), [videosSorted]);
 

@@ -41,9 +41,9 @@ const VideosDashboardPage: React.FC = () => {
   const uniqueValuesPerField = useVideoStore((state) => state.uniqueValuesPerField);
 
   const [sortFields, setSortFields] = useState<string[]>([]);
-  const [sortOrders, setSortOrders] = useState<string[]>([]);
+  const [sortOrders, setSortOrders] = useState<("asc" | "desc")[]>([]);
   const [groupFields, setGroupFields] = useState<string[]>([]);
-  const [groupOrders, setGroupOrders] = useState<string[]>([]);
+  const [groupOrders, setGroupOrders] = useState<("asc" | "desc")[]>([]);
   const [query, _setQuery] = useState(initialQuery);
   const setQuery = () => {
     alert('Not implemented');

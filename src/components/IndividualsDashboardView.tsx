@@ -41,7 +41,7 @@ interface IndividualsDashboardViewProps {
   linkBase?: string;
   listViewButtons?: (individual: Individual) => JSX.Element;
   defaultGroupFields?: string[];
-  defaultGroupOrders?: string[];
+  defaultGroupOrders?: ("asc" | "desc")[];
 }
 const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
   individuals, videos, uniqueValuesPerField, individualsMetadataFields,
@@ -53,9 +53,9 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
   if (!defaultGroupFields) defaultGroupFields = ['is_named'];
   if (!defaultGroupOrders) defaultGroupOrders = ['desc'];
   const [sortFields, setSortFields] = useState<string[]>([]);
-  const [sortOrders, setSortOrders] = useState<string[]>([]);
+  const [sortOrders, setSortOrders] = useState<("asc" | "desc")[]>([]);
   const [groupFields, setGroupFields] = useState<string[]>(defaultGroupFields);
-  const [groupOrders, setGroupOrders] = useState<string[]>(defaultGroupOrders);
+  const [groupOrders, setGroupOrders] = useState<("asc" | "desc")[]>(defaultGroupOrders);
   const [query, _setQuery] = useState(initialQuery);
 
   const setQuery = (newQuery: RuleGroupType) => {

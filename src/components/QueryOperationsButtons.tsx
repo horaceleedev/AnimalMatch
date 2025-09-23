@@ -113,12 +113,12 @@ type QueryOperationsButtonsProps = {
   uniqueValuesPerField: Record<string, string[]>;
   sortFields: string[];
   setSortFields: (x: string[]) => void;
-  sortOrders: string[];
-  setSortOrders: (x: string[]) => void;
+  sortOrders: ("asc" | "desc")[];
+  setSortOrders: (x: ("asc" | "desc")[]) => void;
   groupFields: string[];
   setGroupFields: (x: string[]) => void;
-  groupOrders: string[];
-  setGroupOrders: (x: string[]) => void;
+  groupOrders: ("asc" | "desc")[];
+  setGroupOrders: (x: ("asc" | "desc")[]) => void;
   query: RuleGroupType;
   setQuery: (x: RuleGroupType) => void;
 }
@@ -169,7 +169,7 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
               <>
                 <Select
                   value={sortOrders[0]}
-                  onChange={(val: string) => setSortOrders([val])}
+                  onChange={(val: string) => setSortOrders([val as ("asc" | "desc")])}
                   options={[{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }]}
                 />
                 <Button type="text" icon={<CloseOutlined />} onClick={() => clearSort()} />
@@ -220,7 +220,7 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
               <>
                 <Select
                   value={groupOrders[0]}
-                  onChange={(val: string) => setGroupOrders([val])}
+                  onChange={(val: string) => setGroupOrders([val as ("asc" | "desc")])}
                   options={[{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }]}
                 />
                 <Button type="text" icon={<CloseOutlined />} onClick={() => clearGroup()} />

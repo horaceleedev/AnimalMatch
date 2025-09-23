@@ -126,9 +126,9 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
 
 interface IndividualsGridViewProps extends BasicIndividualsGridViewProps {
   sortFields: string[];
-  sortOrders: string[];
+  sortOrders: ("asc" | "desc")[];
   groupFields: string[];
-  groupOrders: string[];
+  groupOrders: ("asc" | "desc")[];
 };
 
 const IndividualsGridView: React.FC<IndividualsGridViewProps> = ({
@@ -142,7 +142,7 @@ const IndividualsGridView: React.FC<IndividualsGridViewProps> = ({
     orderBy(
       Object.entries(groupBy<Individual, any>(individualsSorted, indiv => indiv[groupFields[0]])),
       [([groupValue, _]) => groupValue],
-      [groupOrders[0] as "asc" | "desc"]
+      [groupOrders[0]]
     )
   ), [individualsSorted]);
   
