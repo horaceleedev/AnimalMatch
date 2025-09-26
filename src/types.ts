@@ -42,6 +42,26 @@ export interface Individual extends IndividualRecord {
   imageUrls: string[];
 };
 
+export interface CropRecord extends RecordModel {
+  collectionId: string;
+  collectionName: string;
+  created: string;
+  updated: string;
+  id: string;
+  image: string;
+  source_video: string;
+  individual: string;
+  body_part: string;
+  custom_tags: string[];
+  description: string;
+  frame_number: number;
+  timestamp: number;
+  bounding_box: object; // TODO define more specifically
+};
+export interface Crop extends CropRecord {
+  imageUrl: string;
+};
+
 export type MetadataFieldsType = Record<string, {
   displayName: string;
   icon?: JSX.Element;

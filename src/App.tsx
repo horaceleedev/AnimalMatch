@@ -4,7 +4,7 @@ import { Layout, App as AntApp } from 'antd';
 const { Content } = Layout;
 import { useShallow } from 'zustand/react/shallow'
 
-import { useIndividualsStore, useVideoStore } from "./DataStores.tsx";
+import { useCropsStore, useIndividualsStore, useVideoStore } from "./DataStores.tsx";
 import AppHeader from "./components/AppHeader.tsx";
 import "./App.scss"
 
@@ -17,18 +17,23 @@ const App: React.FC = () => {
   const [fetchIndividuals, subscribeToIndividuals, unsubscribeFromIndividuals] = useIndividualsStore(
     useShallow((state) => [state.fetch, state.subscribe, state.unsubscribe])
   );
+  const [fetchCrops, subscribeToCrops, unsubscribeFromCrops] = useCropsStore(
+    useShallow((state) => [state.fetch, state.subscribe, state.unsubscribe])
+  );
 
   // App initialization
   useEffect(() => {
-    Promise.all([fetchVideos(), fetchIndividuals()]).catch((e) => {
+    Promise.all([fetchVideos(), fetchIndividuals(), fetchCrops()]).catch((e) => {
       message.error('Unable to load data');
       console.error(e);
     });
     subscribeToVideos();
     subscribeToIndividuals();
+    subscribeToCrops();
     return () => {
       unsubscribeFromVideos();
       unsubscribeFromIndividuals();
+      unsubscribeFromCrops();
     };
   }, []);
 

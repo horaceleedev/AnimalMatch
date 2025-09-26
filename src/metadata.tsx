@@ -1,6 +1,6 @@
 import { Editor, type EditorType, type Editors, type ReactElement } from '@revolist/react-datagrid';
 
-import Icon, { CalendarOutlined, FileTextOutlined, IdcardOutlined, QuestionOutlined, TagsOutlined } from "@ant-design/icons";
+import Icon, { CalendarOutlined, ClockCircleOutlined, FileTextOutlined, IdcardOutlined, PlaySquareOutlined, QuestionOutlined, TagsOutlined } from "@ant-design/icons";
 import Location from './assets/material_symbols/location_on_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Forest from './assets/material_symbols/forest_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import CalendarMonth from './assets/material_symbols/calendar_month_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -8,6 +8,8 @@ import PIN from './assets/material_symbols/pin_24dp_5F6368_FILL0_wght400_GRAD0_o
 import Cake from './assets/material_symbols/cake_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import WC from './assets/material_symbols/wc_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Altitude from './assets/material_symbols/altitude_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
+import BoundingBoxIcon from "./assets/material_symbols/activity_zone_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
+import FaceZone from "./assets/material_symbols/familiar_face_and_zone_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 
 import { MetadataFieldsType } from './types';
 
@@ -174,7 +176,7 @@ export const tableColumns = [
     name: 'Custom tags',
     autoSize: true,
     editor: CUSTOM_EDITOR_NAME,
-  }
+  },
 ];
 export const gridEditors: Editors = { [CUSTOM_EDITOR_NAME]: Editor(CustomEditor) };
 
@@ -224,5 +226,55 @@ export const individualsMetadataFields: MetadataFieldsType = {
     icon: <TagsOutlined />,
     type: 'multiselect',
     valueEditorType: 'multiselect',
-  }
+  },
+};
+
+
+export const cropsMetadataFields: MetadataFieldsType = {
+  'id': {
+    displayName: 'Id',
+    icon: <Icon component={PIN} />,
+    type: 'text',
+    inputType: 'text',
+    isInternal: true,
+  },
+  'body_part': {
+    displayName: 'Body part',
+    icon: <Icon component={FaceZone} />,
+    type: 'select',
+    valueEditorType: 'select',
+  },
+  'custom_tags': {
+    displayName: 'Custom tags',
+    icon: <TagsOutlined />,
+    type: 'multiselect',
+    valueEditorType: 'multiselect',
+  },
+  'description': {
+    displayName: 'Description',
+    icon: <FileTextOutlined />,
+    type: 'rich_text',
+    inputType: 'text',
+  },
+  'frame_number': {
+    displayName: 'Frame number',
+    icon: <ClockCircleOutlined />,
+    type: 'number',
+    inputType: 'number',
+    isUneditable: true,
+  },
+  'timestamp': {
+    displayName: 'Timestamp (s)',
+    icon: <ClockCircleOutlined />,
+    type: 'number',
+    inputType: 'number',
+    isUneditable: true,
+  },
+  'bounding_box': {
+    displayName: 'Bounding box',
+    icon: <Icon component={BoundingBoxIcon} />,
+    type: 'text',
+    inputType: 'text',
+    isUneditable: true,
+  },
 };

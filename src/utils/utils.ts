@@ -42,7 +42,7 @@ export const getUniqueLocationsFromIndividuals = (individuals: Individual[], all
   return uniqueLocations;
 }
 
-export const getUniqueValuesPerField = (metadataFields: MetadataFieldsType, processedRecords: Video[] | Individual[]) => {
+export const getUniqueValuesPerField = (metadataFields: MetadataFieldsType, processedRecords: Record<string, any>[]) => {
   let uniqueValuesPerField: Record<string, string[]> = {}; // an object where each key is a field name and its associated value is a list of unique values for that field
   Object.entries(metadataFields).forEach(([fieldValue, field]) => {
     if (field.type === 'select') {

@@ -4,8 +4,8 @@ import proj4 from "proj4";
 import PocketBase, { ClientResponseError, RecordModel } from 'pocketbase';
 import dayjs from 'dayjs';
 
-import type { Video, VideoRecord, LocationInfo, Individual, IndividualRecord } from "./types.ts";
-import { individualsMetadataFields, videoMetadataFields } from "./metadata.tsx";
+import type { Video, VideoRecord, LocationInfo, Individual, IndividualRecord, CropRecord, Crop } from "./types.ts";
+import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from "./metadata.tsx";
 import { getUniqueLocationsFromVideos, getUniqueValuesPerField } from './utils/utils.ts';
 
 const pb = new PocketBase('http://127.0.0.1:8090');
@@ -145,6 +145,28 @@ export const useIndividualsStore = createRealtimeCollectionStore<IndividualRecor
   // For now ignore the images/imageUrls key
   // TODO later maybe convert back from URLs to filenames (and verify what happens in the backend)
   ignoredUpdateKeys: ['images', 'imageUrls'],
+});
+
+
+// --- Crops store ---
+export const useCropsStore = createRealtimeCollectionStore<CropRecord, Crop>({
+  collectionName: 'crops',
+  sortField: 'individual',
+  processRecords: (records: CropRecord[]) => {
+    const processedCrops: Crop[] = records.map((record: CropRecord) => {
+      return {
+        ...record,
+        imageUrl: `http://127.0.0.1:8090/api/files/${record.collectionId}/${record.id}/${record.image}`,
+      };
+    });
+    console.log('Processed crops', processedCrops);
+
+    const uniqueValuesPerField = getUniqueValuesPerField(cropsMetadataFields, processedCrops);
+    return { processedRecords: processedCrops, uniqueValuesPerField };
+  },
+  // For now ignore the image/imageUrl key
+  // TODO later maybe convert back from URLs to filenames (and verify what happens in the backend)
+  ignoredUpdateKeys: ['image', 'imageUrl'],
 });
 
 
