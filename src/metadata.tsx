@@ -12,6 +12,7 @@ import BoundingBoxIcon from "./assets/material_symbols/activity_zone_24dp_5F6368
 import FaceZone from "./assets/material_symbols/familiar_face_and_zone_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 
 import { MetadataFieldsType } from './types';
+import { IndividualLinkButton, VideoLinkButton } from './components/smart-components/LinkButtons';
 
 // -------- Column metadata --------
 
@@ -237,6 +238,24 @@ export const cropsMetadataFields: MetadataFieldsType = {
     type: 'text',
     inputType: 'text',
     isInternal: true,
+  },
+  'source_video': {
+    displayName: 'Linked video',
+    icon: <PlaySquareOutlined />,
+    type: 'select',
+    valueEditorType: 'select',
+    size: 'large',
+    labelRender: (option) => <VideoLinkButton id={option.value as string} />,
+    isUneditable: true,
+  },
+  'individual': {
+    displayName: 'Linked individual',
+    icon: <IdcardOutlined />,
+    type: 'select',
+    valueEditorType: 'select',
+    size: 'large',
+    labelRender: (option) => <IndividualLinkButton id={option.value as string} />,
+    isUneditable: true,
   },
   'body_part': {
     displayName: 'Body part',

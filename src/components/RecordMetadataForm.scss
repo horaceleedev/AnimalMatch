@@ -5,5 +5,11 @@
 
   .ant-form-item {
     margin-bottom: 10px;
+
+    .ant-select-selection-item {
+      /* unset the default 'overflow: hidden' style so that the box shadow of
+         IndividualLinkButton / VideoLinkButton is visible */
+      overflow: unset;
+    }
   }
 }

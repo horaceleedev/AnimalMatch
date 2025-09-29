@@ -1,4 +1,5 @@
 import { type RecordModel } from 'pocketbase';
+import type { LabelInValueType } from "rc-select/lib/Select";
 
 export interface VideoRecord extends RecordModel {
   collectionId: string;
@@ -68,6 +69,8 @@ export type MetadataFieldsType = Record<string, {
   type: 'text' | 'number' | 'date' | 'boolean' | 'select' | 'multiselect' | 'rich_text';
   inputType?: string;
   valueEditorType?: string;
+  size?: 'small' | 'middle' | 'large';
+  labelRender?: (option: LabelInValueType) => React.ReactNode;
   displayBooleanValuesAs?: string[];
   isInternal?: boolean;
   isUneditable?: boolean;

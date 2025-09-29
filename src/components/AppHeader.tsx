@@ -14,6 +14,10 @@ const headerMenuItems = [
     label: <Link to={`individuals`}>Individuals</Link>,
   },
   {
+    key: 'crops',
+    label: <Link to={`crops`}>Crops</Link>,
+  },
+  {
     key: 'project-settings',
     label: 'Project Settings',
   },
@@ -38,7 +42,10 @@ const AppHeader: React.FC<AppHeaderProps> = ({currentMenuPage}: AppHeaderProps) 
         defaultSelectedKeys={['videos']}
         selectedKeys={[currentMenuPage]}
         items={headerMenuItems}
-        style={{ flex: "0 0 auto", minWidth: 311 }}
+        style={{
+          flex: "0 0 auto",
+          minWidth: "calc(386px + 104px/2)" // 386px = width of 4 menu items, 104px = width of AnimalMatch text
+        }}
       />
 
       {/* Remove span later (temporarily added) */}

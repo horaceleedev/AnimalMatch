@@ -55,7 +55,11 @@ const RecordMetadataForm = <T extends RecordModel>({
               <Select
                 options={uniqueValuesPerField[fieldValue].map(val => ({ value: val, label: val }))}
                 disabled={disabled}
-                labelRender={(option) => (
+                size={value.size}
+                labelRender={
+                  value.labelRender ?
+                  value.labelRender : 
+                  (option) => (
                   <Tag icon={showIconInSelectionFields ? value.icon : undefined}>
                     {option.label}
                   </Tag>
