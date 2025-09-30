@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { Link } from "react-router-dom";
-import { Card, Collapse, Flex, Tag, Tooltip, Typography } from "antd";
+import { Card, Collapse, Flex, Space, Tag, Tooltip, Typography } from "antd";
 import { groupBy, orderBy } from "es-toolkit";
 
 
@@ -30,20 +30,22 @@ const BasicCropsGridView: React.FC<BasicCropsGridViewProps> = ({ crops, cropsMet
             >
               <Flex vertical justify="space-between">
                 <img src={crop.imageUrl} />
-                <Flex vertical align="flex-start" justify="space-between" style={{ padding: 12 }}>
-                  <Typography.Title level={5} style={{marginTop: 0, fontSize: 14}}>{crop.filename}</Typography.Title>
-                  <Flex wrap gap={4}>
-                    {
-                      ['body_part'].map(field => (
-                        <Tooltip title={cropsMetadataFields[field].displayName} key={field}>
-                          <Tag icon={cropsMetadataFields[field].icon}>
-                            {crop[field]}
-                          </Tag>
-                        </Tooltip>
-                      ))
-                    }
-                  </Flex>
-                </Flex>
+                <Space wrap size={4} style={{ width: '100%', padding: "8px 12px 12px 12px" }}>
+                  {
+                    ['body_part'].map(field => (
+                      <Tooltip title={cropsMetadataFields[field].displayName} key={field}>
+                        <Tag icon={cropsMetadataFields[field].icon}>
+                          {crop[field]}
+                        </Tag>
+                      </Tooltip>
+                    ))
+                  }
+                  {
+                    crop.custom_tags.map(tag => (
+                      <Tag key={tag}>{tag}</Tag>
+                    ))
+                  }
+                </Space>
               </Flex>
             </Card>
           </Link>
