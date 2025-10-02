@@ -196,7 +196,7 @@ export const individualsMetadataFields: MetadataFieldsType = {
     type: 'text',
     inputType: 'text',
   },
-  'is_named': {
+  'is_identified': {
     displayName: 'Is identified',
     icon: <QuestionOutlined />,
     type: 'boolean',

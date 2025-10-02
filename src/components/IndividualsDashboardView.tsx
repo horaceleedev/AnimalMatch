@@ -50,7 +50,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
 }: IndividualsDashboardViewProps) => {
   const [view, setView] = useState(viewsTabsItems[0].key);
 
-  if (!defaultGroupFields) defaultGroupFields = ['is_named'];
+  if (!defaultGroupFields) defaultGroupFields = ['is_identified'];
   if (!defaultGroupOrders) defaultGroupOrders = ['desc'];
   const [sortFields, setSortFields] = useState<string[]>([]);
   const [sortOrders, setSortOrders] = useState<("asc" | "desc")[]>([]);
