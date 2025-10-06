@@ -30,22 +30,33 @@ const BasicCropsGridView: React.FC<BasicCropsGridViewProps> = ({ crops, cropsMet
             >
               <Flex vertical justify="space-between">
                 <img src={crop.imageUrl} />
-                <Space wrap size={4} style={{ width: '100%', padding: "8px 12px 12px 12px" }}>
+                <Flex vertical style={{ padding: '8px 12px 12px 12px', width: '100%' }}>
+                  <Space wrap size={4}>
+                    {
+                      ['body_part'].map(field => (
+                        <Tooltip title={cropsMetadataFields[field].displayName} key={field}>
+                          <Tag icon={cropsMetadataFields[field].icon}>
+                            {crop[field]}
+                          </Tag>
+                        </Tooltip>
+                      ))
+                    }
+                    {
+                      crop.custom_tags.map(tag => (
+                        <Tag key={tag}>{tag}</Tag>
+                      ))
+                    }
+                  </Space>
                   {
-                    ['body_part'].map(field => (
-                      <Tooltip title={cropsMetadataFields[field].displayName} key={field}>
-                        <Tag icon={cropsMetadataFields[field].icon}>
-                          {crop[field]}
-                        </Tag>
-                      </Tooltip>
-                    ))
+                    crop.description &&
+                    <Typography.Paragraph
+                      ellipsis={{ rows: 2 }}
+                      style={{ margin: 0, marginTop: 6, fontSize: 12, lineHeight: 1.2 }}
+                    >
+                      {crop.description}
+                    </Typography.Paragraph>
                   }
-                  {
-                    crop.custom_tags.map(tag => (
-                      <Tag key={tag}>{tag}</Tag>
-                    ))
-                  }
-                </Space>
+                </Flex>
               </Flex>
             </Card>
           </Link>
