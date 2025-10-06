@@ -38,7 +38,7 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
       <Link to="annotate"><Button type="primary">Annotate individuals</Button></Link>
       <br />
       <Divider />
-      <h3>Individuals/tracks</h3>
+      <h3>Individuals</h3>
       <IndividualsGridView 
         individuals={individualsInVideo} individualsMetadataFields={individualsMetadataFields}
         // isListView={true}
