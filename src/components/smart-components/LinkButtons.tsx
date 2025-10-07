@@ -1,6 +1,6 @@
 import { Card, Flex, Typography } from "antd";
 import { Link } from "react-router-dom";
-import { useIndividualsStore, useVideoStore } from "../../DataStores";
+import { useIndividualsStoreWithCrops, useVideoStore } from "../../DataStores";
 
 
 interface LinkButtonProps {
@@ -12,7 +12,9 @@ export const IndividualLinkButton: React.FC<LinkButtonProps> = ({ id, linkBase }
   if (!linkBase) linkBase = "/individuals/";
   if (!linkBase.endsWith("/")) linkBase = linkBase + "/";
 
-  const individual = useIndividualsStore((state) => state.processedRecords.find(i => i.id === id));
+  // TODO see if there is an efficient implementation without loading all individuals
+  const { individuals } = useIndividualsStoreWithCrops();
+  const individual = individuals.find(i => i.id === id);
 
   return (
     <Link key={id} to={linkBase + id}>
@@ -23,7 +25,7 @@ export const IndividualLinkButton: React.FC<LinkButtonProps> = ({ id, linkBase }
         styles={{ body: { padding: 0 } }}
       >
         <Flex gap="small" align="center">
-          <img src={individual?.imageUrls[0]} height={30} />
+          <img src={individual?.crops[0]?.imageUrl} height={30} />
           <Typography.Title level={5} style={{margin: 0, fontSize: 12}}>{individual?.name}</Typography.Title>
         </Flex>
       </Card>

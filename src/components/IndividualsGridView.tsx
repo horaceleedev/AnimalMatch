@@ -60,10 +60,10 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
             <Card hoverable bordered={true} size="small" cover={
               <div style={{display: 'flex', overflow: 'scroll', height: 150, columnGap: 5, borderRadius: 5}}>
                 {
-                  individual.imageUrls.map(img => (
+                  individual.crops.map(crop => (
                     <img
-                      key={img}
-                      src={img}
+                      key={crop.id}
+                      src={crop.imageUrl}
                       style={{display: 'inline-block', height: 150, borderRadius: 5}}
                     />
                   ))

@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
 import { Outlet } from 'react-router-dom';
 
-import { useIndividualsStore, useVideoStore } from '../DataStores.tsx';
+import { useIndividualsStoreWithCrops, useVideoStore } from '../DataStores.tsx';
 import { individualsMetadataFields } from '../metadata.tsx';
 import IndividualsDashboardView from '../components/IndividualsDashboardView.tsx';
 
 const IndividualsDashboardPage: React.FC = () => {
-  const individuals = useIndividualsStore((state) => state.processedRecords);
-  const uniqueValuesPerField = useIndividualsStore((state) => state.uniqueValuesPerField);
+  const { individuals, individualsUniqueValuesPerField: uniqueValuesPerField } = useIndividualsStoreWithCrops();
   const videos = useVideoStore((state) => state.processedRecords);
 
   return (

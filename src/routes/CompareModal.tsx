@@ -9,7 +9,7 @@ import { useShallow } from 'zustand/react/shallow';
 
 import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
-import { useIndividualsStore, useVideoStore } from "../DataStores.tsx";
+import { useIndividualsStoreWithCrops, useVideoStore } from "../DataStores.tsx";
 import { individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
 import VideoDetailView from '../components/VideoDetailView.tsx';
 import IndividualDetailView from '../components/IndividualDetailView.tsx';
@@ -40,9 +40,7 @@ const CompareModal: React.FC = () => {
   const [videos, updateVideo, videoUniqueValuesPerField, uniqueVideoLocations] = useVideoStore(
     useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField, state.extra.uniqueLocations])
   );
-  const [individuals, updateIndividual, individualsUniqueValuesPerField] = useIndividualsStore(
-    useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField])
-  );
+  const { individuals, updateIndividual, individualsUniqueValuesPerField } = useIndividualsStoreWithCrops();
   // TODO figure out if I should compute this (uniqueIndividualLocations) here or inside DataStores.tsx
   const uniqueIndividualLocations = useMemo(() => {
     return getUniqueLocationsFromIndividuals(individuals, videos);

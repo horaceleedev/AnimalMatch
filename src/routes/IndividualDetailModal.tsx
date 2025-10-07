@@ -6,7 +6,7 @@ import { intersection } from 'es-toolkit';
 
 import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
-import { useIndividualsStore, useVideoStore } from "../DataStores.tsx";
+import { useIndividualsStoreWithCrops, useVideoStore } from "../DataStores.tsx";
 import IndividualDetailView from '../components/IndividualDetailView.tsx';
 
 const IndividualDetailModal: React.FC = () => {
@@ -23,8 +23,7 @@ const IndividualDetailModal: React.FC = () => {
     if (open === false) navigate('/individuals');
   };
 
-  const uniqueValuesPerField = useIndividualsStore((state) => state.uniqueValuesPerField);
-  const individuals = useIndividualsStore((state) => state.processedRecords);
+  const { individuals, individualsUniqueValuesPerField: uniqueValuesPerField } = useIndividualsStoreWithCrops();
   const individual = individuals.find(x => x.id === individualId);
 
   const allVideos = useVideoStore((state) => state.processedRecords);

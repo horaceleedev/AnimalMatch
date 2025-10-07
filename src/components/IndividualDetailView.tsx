@@ -37,11 +37,11 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
       <div style={{display: "flex", flexWrap: "wrap", columnGap: 5, rowGap: 5}}>
         <Image.PreviewGroup>
           {
-            individual.imageUrls.map(img => (
+            individual.crops.map(crop => (
               <Image
-                key={img}
+                key={crop.id}
                 height={150}
-                src={img}
+                src={crop.imageUrl}
                 style={{width: 'unset'}}
               />
             ))
@@ -50,10 +50,10 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
       </div>
       {/* <div style={{display: 'flex', overflow: 'scroll', height: 150, columnGap: 5}}>
         {
-          individual.imageUrls.map(img => (
+          individual.crops.map(crop => (
             <img
-              key={img}
-              src={img}
+              key={crop.id}
+              src={crop.imageUrl}
               style={{display: 'inline-block', height: 150}}
             />
           ))

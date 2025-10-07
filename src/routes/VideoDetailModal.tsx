@@ -5,7 +5,7 @@ import Icon from '@ant-design/icons';
 
 import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
-import { useIndividualsStore, useVideoStore } from "../DataStores.tsx";
+import { useIndividualsStoreWithCrops, useVideoStore } from "../DataStores.tsx";
 import VideoDetailView from '../components/VideoDetailView.tsx';
 import "./VideoDetailModal.scss";
 
@@ -28,7 +28,7 @@ const VideoDetailModal: React.FC = () => {
   const videos = useVideoStore((state) => state.processedRecords);
   const video = videos.find(x => x.id === videoId);
 
-  const individuals = useIndividualsStore((state) => state.processedRecords);
+  const { individuals } = useIndividualsStoreWithCrops();
   const individualsInVideo = video ? (individuals.filter(x => x.videos.includes(video.id)) || []) : [];
 
   if (!video) {

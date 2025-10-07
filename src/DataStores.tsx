@@ -1,5 +1,7 @@
 // This file contains the 'stores' which store the global state and data of the app
 import { create } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
+import { useMemo } from 'react';
 import proj4 from "proj4";
 import PocketBase, { ClientResponseError, RecordModel } from 'pocketbase';
 import dayjs from 'dayjs';
@@ -132,9 +134,7 @@ export const useIndividualsStore = createRealtimeCollectionStore<IndividualRecor
     const processedIndividuals: Individual[] = records.map((record: IndividualRecord) => {
       return {
         ...record,
-        imageUrls: record.images.map(imageFilename => 
-          `http://127.0.0.1:8090/api/files/${record.collectionId}/${record.id}/${imageFilename}`
-        ),
+        crops: [], // To be filled in later
       };
     });
     console.log('Processed individuals', processedIndividuals);
@@ -142,9 +142,8 @@ export const useIndividualsStore = createRealtimeCollectionStore<IndividualRecor
     const uniqueValuesPerField = getUniqueValuesPerField(individualsMetadataFields, processedIndividuals);
     return { processedRecords: processedIndividuals, uniqueValuesPerField };
   },
-  // For now ignore the images/imageUrls key
-  // TODO later maybe convert back from URLs to filenames (and verify what happens in the backend)
-  ignoredUpdateKeys: ['images', 'imageUrls'],
+  // For now ignore the crops key
+  ignoredUpdateKeys: ['crops'],
 });
 
 
@@ -168,6 +167,29 @@ export const useCropsStore = createRealtimeCollectionStore<CropRecord, Crop>({
   // TODO later maybe convert back from URLs to filenames (and verify what happens in the backend)
   ignoredUpdateKeys: ['image', 'imageUrl'],
 });
+
+
+// --- Individuals store with crops included ---
+export const useIndividualsStoreWithCrops = () => {
+  const [individuals, updateIndividual, individualsUniqueValuesPerField] = useIndividualsStore(
+    useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField])
+  );
+  const crops = useCropsStore((state) => state.processedRecords);
+
+  // Add a `crops` field to each individual
+  const individualsWithCrops: Individual[] = useMemo(() => {
+    return individuals.map(indiv => ({
+      ...indiv,
+      crops: crops.filter(crop => crop.individual === indiv.id),
+    }));
+  }, [individuals, crops]);
+
+  return {
+    individuals: individualsWithCrops,
+    updateIndividual,
+    individualsUniqueValuesPerField
+  };
+};
 
 
 const handlePocketBaseError = (e: unknown) => {

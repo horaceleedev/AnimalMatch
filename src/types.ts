@@ -33,14 +33,13 @@ export interface IndividualRecord extends RecordModel {
   name: string;
   is_identified: boolean;
   videos: string[];
-  images: string[];
   age: string;
   sex: string;
   notes: string;
   custom_tags: string[];
 };
 export interface Individual extends IndividualRecord {
-  imageUrls: string[];
+  crops: Crop[];
 };
 
 export interface CropRecord extends RecordModel {
