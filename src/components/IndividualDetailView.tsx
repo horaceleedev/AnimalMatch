@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Image } from "antd";
+import { Button, Flex, Image, Tabs, theme, type TabsProps } from "antd";
+import StickyBox from 'react-sticky-box';
 
 import { individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
 import VideosGridView from '../components/VideosGridView.tsx';
@@ -7,6 +8,8 @@ import IndividualsGridView from '../components/IndividualsGridView.tsx';
 import { Individual, LocationInfo, Video } from '../types.ts';
 import BasicMapView from './BasicMapView.tsx';
 import RecordMetadataForm from './RecordMetadataForm.tsx';
+
+const numCropsToShow = 10;
 
 type IndividualDetailViewProps = {
   individual: Individual;
@@ -31,62 +34,122 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
     setShowMap(true);
   }, []);
 
+  const {
+    token: { colorBgContainer },
+  } = theme.useToken();
+  const renderStickyTabBar: TabsProps['renderTabBar'] = (props, DefaultTabBar) => (
+    <StickyBox style={{ zIndex: 1 }}>
+      <DefaultTabBar {...props} style={{ background: colorBgContainer }} />
+    </StickyBox>
+  );
+  const [activeTabKey, setActiveTabKey] = useState('overview');
+
   return (
-    <>
+    <div style={{ padding: 10 /* padding needed for drop-shadows to display properly when this component is used inside a modal */ }}>
       {/* Images display */}
-      <div style={{display: "flex", flexWrap: "wrap", columnGap: 5, rowGap: 5}}>
+      <Flex gap={5} style={{marginTop: 10, marginBottom: 20, width: 'fit-content', maxWidth: '100%', overflow: 'scroll'}}>
         <Image.PreviewGroup>
           {
-            individual.crops.map(crop => (
-              <Image
-                key={crop.id}
-                height={150}
-                src={crop.imageUrl}
-                style={{width: 'unset'}}
-              />
-            ))
+            individual.crops
+              .slice(0, numCropsToShow)
+              .map(crop => (
+                <Image
+                  key={crop.id}
+                  height={150}
+                  src={crop.imageUrl}
+                  style={{width: 'unset'}}
+                />
+              ))
           }
         </Image.PreviewGroup>
-      </div>
-      {/* <div style={{display: 'flex', overflow: 'scroll', height: 150, columnGap: 5}}>
         {
-          individual.crops.map(crop => (
-            <img
-              key={crop.id}
-              src={crop.imageUrl}
-              style={{display: 'inline-block', height: 150}}
-            />
-          ))
+          // Show button to view more crops if truncated
+          (individual.crops.length > numCropsToShow) &&
+          <Button
+            color="default"
+            variant="link"
+            style={{alignSelf: 'center'}}
+            onClick={() => setActiveTabKey('crops')}
+          >+{individual.crops.length - numCropsToShow} more</Button>
         }
-      </div> */}
-      <br />
-      <RecordMetadataForm
-        processedRecord={individual}
-        metadataFields={individualsMetadataFields}
-        uniqueValuesPerField={uniqueValuesPerField}
-        updateFunction={updateIndividual}
+      </Flex>
+      <Tabs
+        defaultActiveKey="overview"
+        renderTabBar={renderStickyTabBar}
+        activeKey={activeTabKey}
+        onChange={(key) => setActiveTabKey(key)}
+        items={[
+          {
+            key: 'overview',
+            label: 'Overview',
+            children: (
+              <>
+                <RecordMetadataForm
+                  processedRecord={individual}
+                  metadataFields={individualsMetadataFields}
+                  uniqueValuesPerField={uniqueValuesPerField}
+                  updateFunction={updateIndividual}
+                />
+                {
+                  showMap && // Temporary hack needed because map wasn't showing up properly
+                  <BasicMapView
+                    style={{height: 400, width: 600}}
+                    uniqueLocations={uniqueLocations} 
+                    highlightLocationIds={videosWithIndividual.map(video => JSON.stringify([video.lat, video.long]))}
+                  />
+                }
+              </>
+            ),
+          },
+          {
+            key: 'videos',
+            label: 'Videos',
+            children: (
+              <>
+                <h3 style={{marginTop: 0}}>Videos with this individual</h3>
+                {
+                  videosWithIndividual.length > 0 ?
+                  <VideosGridView
+                    videos={videosWithIndividual}
+                    videoMetadataFields={videoMetadataFields}
+                    isListView={false}
+                    sortFields={[]}
+                    sortOrders={[]}
+                    groupFields={[]}
+                    groupOrders={[]}
+                  />
+                  :
+                  <p>No videos with this individual</p>
+                }
+              </>
+            ),
+          },
+          {
+            key: 'co-occurrences',
+            label: 'Co-occurrences',
+            children: (
+              <>
+                <h3 style={{marginTop: 0}}>Other individuals seen together with this individual</h3>
+                {
+                  (seenTogetherIndividuals.length > 0) ?
+                  <IndividualsGridView
+                    individuals={seenTogetherIndividuals}
+                    individualsMetadataFields={individualsMetadataFields}
+                    sortFields={[]}
+                    sortOrders={[]}
+                    groupFields={[]}
+                    groupOrders={[]}
+                  />
+                  :
+                  <p>No other individuals seen together</p>
+                }
+              </>
+            ),
+          },
+        ]}
       />
-      <div style={{padding: 10}}>
-        <h2>Videos with this individual</h2>
-        <VideosGridView videos={videosWithIndividual} videoMetadataFields={videoMetadataFields} isListView={false} sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]} />
-        {
-          (seenTogetherIndividuals.length > 0) &&
-          <>
-            <h2>Other individuals seen together with this individual</h2>
-            <IndividualsGridView individuals={seenTogetherIndividuals} individualsMetadataFields={individualsMetadataFields} sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]} />
-          </>
-        }
-      </div>
-      {
-        showMap && // Temporary hack needed because map wasn't showing up properly
-        <BasicMapView
-          style={{height: 400, width: 600}}
-          uniqueLocations={uniqueLocations} 
-          highlightLocationIds={videosWithIndividual.map(video => JSON.stringify([video.lat, video.long]))}
-        />
-      }
-    </>
+    </div>
   )
-}
+};
 
-export default IndividualDetailView
+export default IndividualDetailView;
