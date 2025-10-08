@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react'
 import { Button, Flex, Image, Tabs, theme, type TabsProps } from "antd";
 import StickyBox from 'react-sticky-box';
 
-import { individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
+import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
 import VideosGridView from '../components/VideosGridView.tsx';
 import IndividualsGridView from '../components/IndividualsGridView.tsx';
 import { Individual, LocationInfo, Video } from '../types.ts';
 import BasicMapView from './BasicMapView.tsx';
 import RecordMetadataForm from './RecordMetadataForm.tsx';
+import CropsDashboardView from './CropsDashboardView.tsx';
 
 const numCropsToShow = 10;
 
@@ -16,6 +17,7 @@ type IndividualDetailViewProps = {
   seenTogetherIndividuals: Individual[];
   videosWithIndividual: Video[];
   uniqueValuesPerField: Record<string, string[]>;
+  cropsUniqueValuesPerField: Record<string, string[]>;
   uniqueLocations: LocationInfo[];
   updateIndividual: (id: string, data: Partial<Individual>) => Promise<void>;
 }
@@ -25,6 +27,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
   seenTogetherIndividuals,
   videosWithIndividual,
   uniqueValuesPerField,
+  cropsUniqueValuesPerField,
   uniqueLocations,
   updateIndividual,
 }: IndividualDetailViewProps) => {
@@ -97,6 +100,27 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                     uniqueLocations={uniqueLocations} 
                     highlightLocationIds={videosWithIndividual.map(video => JSON.stringify([video.lat, video.long]))}
                   />
+                }
+              </>
+            ),
+          },
+          {
+            key: 'crops',
+            label: 'Crops',
+            children: (
+              <>
+                <h3 style={{marginTop: 0}}>All crops for this individual</h3>
+                {
+                  (individual.crops.length > 0) ?
+                  <CropsDashboardView
+                    crops={individual.crops}
+                    uniqueValuesPerField={cropsUniqueValuesPerField}
+                    cropsMetadataFields={cropsMetadataFields}
+                    onlyShowGridView={true}
+                    // linkBase={undefined}
+                  />
+                  :
+                  <p>No crops available for this individual</p>
                 }
               </>
             ),

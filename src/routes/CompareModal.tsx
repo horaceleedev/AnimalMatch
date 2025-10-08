@@ -40,7 +40,7 @@ const CompareModal: React.FC = () => {
   const [videos, updateVideo, videoUniqueValuesPerField, uniqueVideoLocations] = useVideoStore(
     useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField, state.extra.uniqueLocations])
   );
-  const { individuals, updateIndividual, individualsUniqueValuesPerField } = useIndividualsStoreWithCrops();
+  const { individuals, updateIndividual, individualsUniqueValuesPerField, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
   // TODO figure out if I should compute this (uniqueIndividualLocations) here or inside DataStores.tsx
   const uniqueIndividualLocations = useMemo(() => {
     return getUniqueLocationsFromIndividuals(individuals, videos);
@@ -202,6 +202,7 @@ const CompareModal: React.FC = () => {
         seenTogetherIndividuals={individualDetailProps.seenTogetherIndividuals}
         videosWithIndividual={individualDetailProps.videosWithIndividual}
         uniqueValuesPerField={individualsUniqueValuesPerField}
+        cropsUniqueValuesPerField={cropsUniqueValuesPerField}
         uniqueLocations={uniqueIndividualLocations}
         updateIndividual={updateIndividual}
       />
@@ -229,6 +230,7 @@ const CompareModal: React.FC = () => {
           seenTogetherIndividuals={compareIndividualDetailProps.seenTogetherIndividuals}
           videosWithIndividual={compareIndividualDetailProps.videosWithIndividual}
           uniqueValuesPerField={individualsUniqueValuesPerField}
+          cropsUniqueValuesPerField={cropsUniqueValuesPerField}
           uniqueLocations={uniqueIndividualLocations}
           updateIndividual={updateIndividual}
         />

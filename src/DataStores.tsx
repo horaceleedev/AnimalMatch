@@ -174,7 +174,9 @@ export const useIndividualsStoreWithCrops = () => {
   const [individuals, updateIndividual, individualsUniqueValuesPerField] = useIndividualsStore(
     useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField])
   );
-  const crops = useCropsStore((state) => state.processedRecords);
+  const [crops, cropsUniqueValuesPerField] = useCropsStore(
+    useShallow((state) => [state.processedRecords, state.uniqueValuesPerField])
+  );
 
   // Add a `crops` field to each individual
   const individualsWithCrops: Individual[] = useMemo(() => {
@@ -187,7 +189,8 @@ export const useIndividualsStoreWithCrops = () => {
   return {
     individuals: individualsWithCrops,
     updateIndividual,
-    individualsUniqueValuesPerField
+    individualsUniqueValuesPerField,
+    cropsUniqueValuesPerField,
   };
 };
 
