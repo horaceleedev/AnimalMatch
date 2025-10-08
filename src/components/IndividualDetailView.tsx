@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Flex, Image, Tabs, theme, type TabsProps } from "antd";
+import React, { useEffect, useMemo, useState } from 'react'
+import { Button, Flex, Image, Select, Space, Tabs, theme, type TabsProps } from "antd";
 import StickyBox from 'react-sticky-box';
 
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
@@ -11,6 +11,7 @@ import RecordMetadataForm from './RecordMetadataForm.tsx';
 import CropsDashboardView from './CropsDashboardView.tsx';
 
 const numCropsToShow = 10;
+const ANY_BODY_PART = "any body part";
 
 type IndividualDetailViewProps = {
   individual: Individual;
@@ -37,6 +38,13 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
     setShowMap(true);
   }, []);
 
+  const bodyPartOptions = [ANY_BODY_PART, ...(cropsUniqueValuesPerField['body_part'] ?? [])];
+  const [selectedBodyPart, setSelectedBodyPart] = useState(ANY_BODY_PART);
+  const availableBodyParts = useMemo(
+    () => new Set(individual.crops.map(crop => crop.body_part)),
+    [individual.crops]
+  );
+
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -50,10 +58,25 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
   return (
     <div style={{ padding: 10 /* padding needed for drop-shadows to display properly when this component is used inside a modal */ }}>
       {/* Images display */}
+      {/* Body part selector */}
+      <Space>
+        <span>Show crops of:</span>
+        <Select
+          variant="borderless"
+          popupMatchSelectWidth={false}
+          defaultValue={ANY_BODY_PART}
+          options={
+            bodyPartOptions.map(bodyPart => ({ value: bodyPart, label: bodyPart, disabled: bodyPart !== ANY_BODY_PART && !availableBodyParts.has(bodyPart) }))
+          }
+          value={selectedBodyPart}
+          onChange={(value) => setSelectedBodyPart(value)}
+        />
+      </Space>
       <Flex gap={5} style={{marginTop: 10, marginBottom: 20, width: 'fit-content', maxWidth: '100%', overflow: 'scroll'}}>
         <Image.PreviewGroup>
           {
             individual.crops
+              .filter(crop => (selectedBodyPart === ANY_BODY_PART || crop.body_part === selectedBodyPart))
               .slice(0, numCropsToShow)
               .map(crop => (
                 <Image
