@@ -25,7 +25,7 @@ export const IndividualLinkButton: React.FC<LinkButtonProps> = ({ id, linkBase }
         styles={{ body: { padding: 0 } }}
       >
         <Flex gap="small" align="center">
-          <img src={individual?.crops[0]?.imageUrl} height={30} />
+          <img src={individual?.crops[0]?.imageUrl} height={26} style={{margin: 3, borderRadius: 5}} />
           <Typography.Title level={5} style={{margin: 0, fontSize: 12}}>{individual?.name}</Typography.Title>
         </Flex>
       </Card>
@@ -49,7 +49,7 @@ export const VideoLinkButton: React.FC<LinkButtonProps> = ({ id, linkBase }: Lin
       >
         <Flex gap="small" align="center">
           {/* TODO replace <video> with thumbnail later */}
-          <video src={video?.url} height={30} />
+          <video src={video?.url} height={26} style={{margin: 3, borderRadius: 5}} />
           <Typography.Title level={5} style={{margin: 0, fontSize: 12}}>{video?.filename}</Typography.Title>
         </Flex>
       </Card>
