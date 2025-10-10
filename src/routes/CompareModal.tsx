@@ -429,7 +429,7 @@ const CompareModal: React.FC = () => {
                 </h3>
                 {
                   (individualDetailProps && !compareId && compareType === "individuals") && 
-                  <span>Note: the individual on the left and all other individuals seen together have been omitted from the list below.</span>
+                  <span>Note: the individual on the left and its co-occurrences have been omitted from the list below.</span>
                 }
 
                 {rightPanel}
