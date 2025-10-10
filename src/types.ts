@@ -68,6 +68,7 @@ export type MetadataFieldsType = Record<string, {
   type: 'text' | 'number' | 'date' | 'boolean' | 'select' | 'multiselect' | 'rich_text';
   inputType?: string;
   valueEditorType?: string;
+  presetOptions?: string[];
   size?: 'small' | 'middle' | 'large';
   labelRender?: (option: LabelInValueType) => React.ReactNode;
   displayBooleanValuesAs?: string[];

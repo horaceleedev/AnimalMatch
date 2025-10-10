@@ -209,12 +209,14 @@ export const individualsMetadataFields: MetadataFieldsType = {
     icon: <Icon component={Cake} />,
     type: 'select',
     valueEditorType: 'select',
+    presetOptions: ['infant', 'juvenile', 'adolescent', 'adult', 'unknown age'],
   },
   'sex': {
     displayName: 'Sex',
     icon: <Icon component={WC} />,
     type: 'select',
     valueEditorType: 'select',
+    presetOptions: ['male', 'female', 'unknown/other sex'],
   },
   'notes': {
     displayName: 'Notes',
@@ -262,6 +264,7 @@ export const cropsMetadataFields: MetadataFieldsType = {
     icon: <Icon component={FaceZone} />,
     type: 'select',
     valueEditorType: 'select',
+    presetOptions: ['full body', 'face', 'butt', 'ear'],
   },
   'custom_tags': {
     displayName: 'Custom tags',

@@ -46,6 +46,12 @@ export const getUniqueValuesPerField = (metadataFields: MetadataFieldsType, proc
   let uniqueValuesPerField: Record<string, string[]> = {}; // an object where each key is a field name and its associated value is a list of unique values for that field
   Object.entries(metadataFields).forEach(([fieldValue, field]) => {
     if (field.type === 'select') {
+      // Use preset options if available
+      if (field.presetOptions) {
+        uniqueValuesPerField[fieldValue] = field.presetOptions;
+        return;
+      }
+
       const uniqueValues = Array.from(new Set(processedRecords.map(x => x[fieldValue])));
       const uniqueValuesSorted = orderBy(uniqueValues, [x => x], ['asc']);
       uniqueValuesPerField[fieldValue] = uniqueValuesSorted;
