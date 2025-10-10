@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate, useParams } from "react-router-dom";
 import { useShallow } from 'zustand/react/shallow';
-import { Modal } from "antd";
+import { Flex, Image, Modal } from "antd";
 
 import { useCropsStore } from "../DataStores.tsx";
 import RecordMetadataForm from '../components/RecordMetadataForm.tsx';
@@ -43,7 +43,9 @@ const CropDetailModal: React.FC = () => {
       afterOpenChange={handleOpenChange}
       centered={true}
     >
-      <img src={crop.imageUrl} style={{width: '100%', height: 300, objectFit: 'contain'}} />
+      <Flex justify="center" style={{marginBottom: 10}}>
+        <Image src={crop.imageUrl} style={{height: 300, objectFit: 'contain'}} />
+      </Flex>
       <RecordMetadataForm
         processedRecord={crop}
         metadataFields={cropsMetadataFields}

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Button, Flex, Image, Select, Space, Tabs, theme, type TabsProps } from "antd";
 import StickyBox from 'react-sticky-box';
+import { Link } from 'react-router-dom';
 
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
 import VideosGridView from '../components/VideosGridView.tsx';
@@ -9,6 +10,7 @@ import { Individual, LocationInfo, Video } from '../types.ts';
 import BasicMapView from './BasicMapView.tsx';
 import RecordMetadataForm from './RecordMetadataForm.tsx';
 import CropsDashboardView from './CropsDashboardView.tsx';
+import "./IndividualDetailView.scss";
 
 const numCropsToShow = 10;
 const ANY_BODY_PART = "any body part";
@@ -56,7 +58,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
   const [activeTabKey, setActiveTabKey] = useState('overview');
 
   return (
-    <div style={{ padding: 10 /* padding needed for drop-shadows to display properly when this component is used inside a modal */ }}>
+    <div className="individual-detail-view">
       {/* Images display */}
       {/* Body part selector */}
       <Space>
@@ -73,21 +75,16 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
         />
       </Space>
       <Flex gap={5} style={{marginTop: 10, marginBottom: 20, width: 'fit-content', maxWidth: '100%', overflow: 'scroll'}}>
-        <Image.PreviewGroup>
-          {
-            individual.crops
-              .filter(crop => (selectedBodyPart === ANY_BODY_PART || crop.body_part === selectedBodyPart))
-              .slice(0, numCropsToShow)
-              .map(crop => (
-                <Image
-                  key={crop.id}
-                  height={150}
-                  src={crop.imageUrl}
-                  style={{width: 'unset'}}
-                />
-              ))
-          }
-        </Image.PreviewGroup>
+        {
+          individual.crops
+            .filter(crop => (selectedBodyPart === ANY_BODY_PART || crop.body_part === selectedBodyPart))
+            .slice(0, numCropsToShow)
+            .map(crop => (
+              <Link key={crop.id} to={"/crops/" + crop.id}>
+                <img src={crop.imageUrl} height={150} className="individual-preview-image" />
+              </Link>
+            ))
+        }
         {
           // Show button to view more crops if truncated
           (individual.crops.length > numCropsToShow) &&
