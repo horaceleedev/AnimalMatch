@@ -8,6 +8,7 @@ import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght40
 
 import { useIndividualsStoreWithCrops, useVideoStore } from "../DataStores.tsx";
 import IndividualDetailView from '../components/IndividualDetailView.tsx';
+import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 
 const IndividualDetailModal: React.FC = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const IndividualDetailModal: React.FC = () => {
     if (open === false) navigate('/individuals');
   };
 
-  const { individuals, individualsUniqueValuesPerField: uniqueValuesPerField } = useIndividualsStoreWithCrops();
+  const { individuals, updateIndividual, individualsUniqueValuesPerField, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
   const individual = individuals.find(x => x.id === individualId);
 
   const allVideos = useVideoStore((state) => state.processedRecords);
@@ -31,7 +32,11 @@ const IndividualDetailModal: React.FC = () => {
   const seenTogetherIndividuals = useMemo(
     () => individuals.filter(indiv => (indiv.id !== individual?.id) && intersection(indiv.videos, videosWithIndividual.map(x => x.id)).length > 0)
   , [individuals, videosWithIndividual]);
-  
+  // TODO figure out if I should compute this (uniqueIndividualLocations) here or inside DataStores.tsx
+  const uniqueIndividualLocations = useMemo(() => {
+    return getUniqueLocationsFromIndividuals(individuals, allVideos);
+  }, [individuals, allVideos]);
+
   if (!individual) {
     console.error(`Individual with id ${individualId} not found`);
     return <></>;
@@ -56,7 +61,15 @@ const IndividualDetailModal: React.FC = () => {
       afterOpenChange={handleOpenChange}
       centered={true}
     >
-      <IndividualDetailView individual={individual} seenTogetherIndividuals={seenTogetherIndividuals} videosWithIndividual={videosWithIndividual} uniqueValuesPerField={uniqueValuesPerField} />
+      <IndividualDetailView
+        individual={individual} 
+        seenTogetherIndividuals={seenTogetherIndividuals}
+        videosWithIndividual={videosWithIndividual}
+        uniqueValuesPerField={individualsUniqueValuesPerField}
+        cropsUniqueValuesPerField={cropsUniqueValuesPerField}
+        uniqueLocations={uniqueIndividualLocations}
+        updateIndividual={updateIndividual}
+      />
     </Modal>
   );
 };
