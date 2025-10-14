@@ -11,6 +11,7 @@ import IndividualDetailView from '../components/IndividualDetailView.tsx';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import { RecordDetailModalProps, RecordType } from '../types.ts';
 import InnerModal from './InnerModal.tsx';
+import "./IndividualDetailModal.scss";
 
 
 const IndividualDetailModal: React.FC<RecordDetailModalProps> = ({
@@ -76,6 +77,7 @@ const IndividualDetailModal: React.FC<RecordDetailModalProps> = ({
       onCancel={handleDismiss}
       afterOpenChange={handleOpenChange}
       centered={true}
+      className="individual-detail-modal"
     >
       <IndividualDetailView
         individual={individual} 

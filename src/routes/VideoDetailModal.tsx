@@ -70,6 +70,7 @@ const VideoDetailModal: React.FC<RecordDetailModalProps> = ({
       onCancel={handleDismiss}
       afterOpenChange={handleOpenChange}
       centered={true}
+      className="video-detail-modal"
     >
       <VideoDetailView
         video={video}
