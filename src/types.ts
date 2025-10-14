@@ -74,8 +74,7 @@ export type MetadataFieldsType = Record<string, {
   inputType?: string;
   valueEditorType?: string;
   presetOptions?: string[];
-  size?: 'small' | 'middle' | 'large';
-  labelRender?: (option: LabelInValueType) => React.ReactNode;
+  renderType?: 'video_link' | 'individual_link';
   displayBooleanValuesAs?: string[];
   isInternal?: boolean;
   isUneditable?: boolean;

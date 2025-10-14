@@ -1,9 +1,11 @@
 import { Button, DatePicker, Form, Input, InputNumber, Select, Tag } from "antd";
+import type { LabelInValueType } from "rc-select/lib/Select";
 import TextArea from 'antd/es/input/TextArea';
 import { RecordModel } from "pocketbase";
 
 import useFormManager from "../utils/useFormManager";
-import { MetadataFieldsType } from "../types";
+import { MetadataFieldsType, RecordType } from "../types";
+import { IndividualLinkButton, VideoLinkButton } from "./smart-components/LinkButtons";
 import "./RecordMetadataForm.scss";
 
 type RecordMetadataFormProps<T extends RecordModel> = {
@@ -12,6 +14,7 @@ type RecordMetadataFormProps<T extends RecordModel> = {
   uniqueValuesPerField: Record<string, string[]>;
   updateFunction: (id: string, data: Partial<T>) => Promise<void>;
   showIconInSelectionFields?: boolean;
+  openModal?: (type: RecordType, id: string) => void;
 }
 
 const RecordMetadataForm = <T extends RecordModel>({
@@ -20,6 +23,7 @@ const RecordMetadataForm = <T extends RecordModel>({
   uniqueValuesPerField,
   updateFunction,
   showIconInSelectionFields,
+  openModal,
 }: RecordMetadataFormProps<T>) => {
   const {
     formData,
@@ -51,19 +55,26 @@ const RecordMetadataForm = <T extends RecordModel>({
           } else if (value.inputType === 'text') {
             inputElement = <Input disabled={disabled} />;
           } else if (value.valueEditorType === 'select') {
+            let size: 'small' | 'middle' | 'large' | undefined;
+            let labelRender = (option: LabelInValueType) => (
+              <Tag icon={showIconInSelectionFields ? value.icon : undefined}>
+                {option.label}
+              </Tag>
+            );
+            if (value.renderType === 'video_link') {
+              size = 'large';
+              labelRender = (option) => <VideoLinkButton id={option.value as string} openModal={openModal} />;
+            } else if (value.renderType === 'individual_link') {
+              size = 'large';
+              labelRender = (option) => <IndividualLinkButton id={option.value as string} openModal={openModal} />;
+            }
+
             inputElement = (
               <Select
                 options={uniqueValuesPerField[fieldValue].map(val => ({ value: val, label: val }))}
                 disabled={disabled}
-                size={value.size}
-                labelRender={
-                  value.labelRender ?
-                  value.labelRender : 
-                  (option) => (
-                  <Tag icon={showIconInSelectionFields ? value.icon : undefined}>
-                    {option.label}
-                  </Tag>
-                )}
+                size={size}
+                labelRender={labelRender}
               />
             );
           } else if (value.valueEditorType === 'multiselect') {

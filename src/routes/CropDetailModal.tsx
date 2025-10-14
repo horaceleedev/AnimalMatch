@@ -71,6 +71,7 @@ const CropDetailModal: React.FC<RecordDetailModalProps> = ({
         crop={crop}
         uniqueValuesPerField={uniqueValuesPerField}
         updateCrop={updateCrop}
+        openModal={(type, id) => setInnerModalProps({ type, id })}
       />
       <InnerModal {...innerModalProps} exitModal={() => setInnerModalProps({ type: undefined, id: undefined })} />
     </Modal>
