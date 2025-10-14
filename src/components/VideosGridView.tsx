@@ -4,7 +4,7 @@ import { Card, Collapse, Flex, Tag, Tooltip, Typography } from "antd";
 import { groupBy, orderBy } from "es-toolkit";
 
 
-import type { Video } from "../types.ts";
+import type { RecordType, Video } from "../types.ts";
 import type { MetadataFieldsType } from "../types.tsx";
 import "./VideosGridView.scss"
 
@@ -13,11 +13,12 @@ interface BasicVideosGridViewProps {
   videoMetadataFields: MetadataFieldsType;
   isListView: boolean;
   linkTemplate?: string;
+  openModal?: (type: RecordType , id: string) => void;
 };
 
 // Basic video grid view (without grouping and sorting)
 const BasicVideosGridView: React.FC<BasicVideosGridViewProps> = ({
-  videos, videoMetadataFields, isListView, linkTemplate = "/videos/:videoId"
+  videos, videoMetadataFields, isListView, linkTemplate = "/videos/:videoId", openModal,
 }: BasicVideosGridViewProps) => {
   return (
     <div className={isListView ? "videos-list " : "videos-grid"}>
@@ -50,7 +51,15 @@ const BasicVideosGridView: React.FC<BasicVideosGridViewProps> = ({
           // </Link>
 
           // New version:
-          <Link key={video.id} to={generatePath(linkTemplate, { videoId: video.id })}>
+          <Link
+            key={video.id}
+            to={generatePath(linkTemplate, { videoId: video.id })}
+            onClick={(e) => {
+              if (!openModal) return;
+              e.preventDefault();
+              openModal("video", video.id);
+            }}
+          >
             <Card
               hoverable
               style={{ overflow: 'hidden' }}
@@ -91,7 +100,7 @@ interface VideosGridViewProps extends BasicVideosGridViewProps {
 };
 
 const VideosGridView: React.FC<VideosGridViewProps> = ({
-  videos, videoMetadataFields, isListView, linkTemplate, sortFields, sortOrders, groupFields, groupOrders
+  videos, videoMetadataFields, isListView, linkTemplate, sortFields, sortOrders, groupFields, groupOrders, openModal
 }: VideosGridViewProps) => {
   const videosSorted = orderBy(videos, sortFields, sortOrders);
   
@@ -110,6 +119,7 @@ const VideosGridView: React.FC<VideosGridViewProps> = ({
       videoMetadataFields={videoMetadataFields}
       isListView={isListView}
       linkTemplate={linkTemplate}
+      openModal={openModal}
     />
   );
 
@@ -131,6 +141,7 @@ const VideosGridView: React.FC<VideosGridViewProps> = ({
               videoMetadataFields={videoMetadataFields}
               isListView={isListView}
               linkTemplate={linkTemplate}
+              openModal={openModal}
             />
           ),
         },

@@ -1,5 +1,10 @@
 import { type RecordModel } from 'pocketbase';
-import type { LabelInValueType } from "rc-select/lib/Select";
+
+export type RecordType = "video" | "individual" | "crop";
+export interface RecordDetailModalProps {
+  id?: string;
+  exitModal?: () => void;
+}
 
 export interface VideoRecord extends RecordModel {
   collectionId: string;

@@ -8,11 +8,17 @@ import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght40
 
 import { useIndividualsStoreWithCrops, useVideoStore } from "../DataStores.tsx";
 import VideoDetailView from '../components/VideoDetailView.tsx';
+import { RecordDetailModalProps, RecordType } from '../types.ts';
+import InnerModal from './InnerModal.tsx';
 import "./VideoDetailModal.scss";
 
-const VideoDetailModal: React.FC = () => {
+const VideoDetailModal: React.FC<RecordDetailModalProps> = ({
+  id: videoIdFromProps, // if not provided, will get from useParams
+  exitModal, // if not provided, will navigate back to /videos
+}) => {
   const navigate = useNavigate();
-  const { videoId } = useParams<"videoId">();
+  const { videoId: videoIdFromParams } = useParams<"videoId">();
+  const videoId = videoIdFromProps ?? videoIdFromParams;
   console.log(videoId)
 
   const [isModalOpen, setIsModalOpen] = useState(true);
@@ -20,9 +26,18 @@ const VideoDetailModal: React.FC = () => {
     setIsModalOpen(false);
   };
   const handleOpenChange = (open: boolean) => {
-    // Navigate back to the /videos page when the modal is closed
-    if (open === false) navigate('/videos');
+    if (open === false) {
+      // Once the modal is closed, exit using exitModal if provided,
+      // otherwise navigate back to the /videos page
+      if (exitModal) exitModal();
+      else navigate('/videos');
+    }
   };
+
+  const [innerModalProps, setInnerModalProps] = useState<{ type?: RecordType; id?: string; }>({
+    type: undefined,
+    id: undefined,
+  });
 
   const [videos, updateVideo, uniqueValuesPerField, uniqueLocations] = useVideoStore(
     useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField, state.extra.uniqueLocations])
@@ -61,8 +76,10 @@ const VideoDetailModal: React.FC = () => {
         individualsInVideo={individualsInVideo}
         uniqueValuesPerField={uniqueValuesPerField}
         uniqueLocations={uniqueLocations}
+        openModal={(type, id) => setInnerModalProps({ type, id })}
         updateVideo={updateVideo}
       />
+      <InnerModal {...innerModalProps} exitModal={() => setInnerModalProps({ type: undefined, id: undefined })} />
     </Modal>
   );
 };

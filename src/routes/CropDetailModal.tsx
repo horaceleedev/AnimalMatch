@@ -8,10 +8,16 @@ import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght40
 
 import { useCropsStore } from "../DataStores.tsx";
 import CropDetailView from '../components/CropDetailView.tsx';
+import InnerModal from './InnerModal.tsx';
+import { RecordDetailModalProps, RecordType } from '../types.ts';
 
-const CropDetailModal: React.FC = () => {
+const CropDetailModal: React.FC<RecordDetailModalProps> = ({
+  id: cropIdFromProps, // if not provided, will get from useParams
+  exitModal, // if not provided, will navigate back to /crops
+}) => {
   const navigate = useNavigate();
-  const { cropId } = useParams<"cropId">();
+  const { cropId: cropIdFromParams } = useParams<"cropId">();
+  const cropId = cropIdFromProps ?? cropIdFromParams;
   console.log(cropId)
 
   const [isModalOpen, setIsModalOpen] = useState(true);
@@ -19,9 +25,18 @@ const CropDetailModal: React.FC = () => {
     setIsModalOpen(false);
   };
   const handleOpenChange = (open: boolean) => {
-    // Navigate back to the /crops page when the modal is closed
-    if (open === false) navigate('/crops');
+    if (open === false) {
+      // Once the modal is closed, exit using exitModal if provided,
+      // otherwise navigate back to the /crops page
+      if (exitModal) exitModal();
+      else navigate('/crops');
+    }
   };
+
+  const [innerModalProps, setInnerModalProps] = useState<{ type?: RecordType; id?: string; }>({
+    type: undefined,
+    id: undefined,
+  });
 
   const [crops, updateCrop, uniqueValuesPerField] = useCropsStore(
     useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField])
@@ -57,6 +72,7 @@ const CropDetailModal: React.FC = () => {
         uniqueValuesPerField={uniqueValuesPerField}
         updateCrop={updateCrop}
       />
+      <InnerModal {...innerModalProps} exitModal={() => setInnerModalProps({ type: undefined, id: undefined })} />
     </Modal>
   );
 };
