@@ -6,16 +6,23 @@ const { Header } = Layout;
 
 const headerMenuItems = [
   {
-    key: 'videos',
-    label: <Link to={`videos`}>Videos</Link>,
+    key: 'media',
+    label: <Link to={`videos`} style={{ textDecoration: 'none', color: 'inherit' }}>Media</Link>,
+    children: [
+      {
+        key: 'videos',
+        label: <Link to={`videos`}>Source videos</Link>,
+      },
+      {
+        key: 'crops',
+        label: <Link to={`crops`}>Crops</Link>,
+      },
+    ],
+    popupOffset: [-14, 0],
   },
   {
     key: 'individuals',
     label: <Link to={`individuals`}>Individuals</Link>,
-  },
-  {
-    key: 'crops',
-    label: <Link to={`crops`}>Crops</Link>,
   },
   {
     key: 'project-settings',
@@ -44,7 +51,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({currentMenuPage}: AppHeaderProps) 
         items={headerMenuItems}
         style={{
           flex: "0 0 auto",
-          minWidth: "calc(386px + 104px/2)" // 386px = width of 4 menu items, 104px = width of AnimalMatch text
+          minWidth: "calc(307px + 104px/2)" // 307px = width of 4 menu items, 104px = width of AnimalMatch text
         }}
       />
 
