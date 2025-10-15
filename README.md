@@ -1,4 +1,21 @@
-# React + TypeScript + Vite
+# AnimalMatch
+
+## React Components
+
+Here is a diagram showing the key React components in this codebase:
+
+<img src="docs/react-components-diagram.svg">
+
+Note:
+- An arrow from A->B indicates that component B is used in component A. "Through Outlet" means that one component is displayed within another component via a React Router `<Outlet>`.
+- Rounded rectangles represent 'dumb' components (i.e. presentational components) that don't have direct access to the global state
+- Some minor components were not included in the diagram:
+  - QueryOperationsButtons
+  - VideoLinkButton, IndividualLinkButton
+  - BasicMapView
+  - InnerModal
+
+# Original README created by Vite (TODO remove this later):
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
