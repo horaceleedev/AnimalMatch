@@ -4,7 +4,7 @@ import { Layout, App as AntApp } from 'antd';
 const { Content } = Layout;
 import { useShallow } from 'zustand/react/shallow'
 
-import { useCropsStore, useIndividualsStore, useVideoStore } from "./DataStores.tsx";
+import { useCropsStore, useIndividualsStore, useDisconnectedMessage, useVideoStore } from "./DataStores.tsx";
 import AppHeader from "./components/AppHeader.tsx";
 import "./App.scss"
 
@@ -20,6 +20,7 @@ const App: React.FC = () => {
   const [fetchCrops, subscribeToCrops, unsubscribeFromCrops] = useCropsStore(
     useShallow((state) => [state.fetch, state.subscribe, state.unsubscribe])
   );
+  useDisconnectedMessage();
 
   // App initialization
   useEffect(() => {

@@ -1,16 +1,49 @@
 // This file contains the 'stores' which store the global state and data of the app
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import proj4 from "proj4";
 import PocketBase, { ClientResponseError, RecordModel } from 'pocketbase';
 import dayjs from 'dayjs';
+import { App } from 'antd';
 
 import type { Video, VideoRecord, LocationInfo, Individual, IndividualRecord, CropRecord, Crop } from "./types.ts";
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from "./metadata.tsx";
 import { getUniqueLocationsFromVideos, getUniqueValuesPerField } from './utils/utils.ts';
 
 const pb = new PocketBase('http://127.0.0.1:8090');
+
+// Show a message when the realtime client disconnects / reconnects
+let isConnected: boolean | undefined = undefined;
+export const useDisconnectedMessage = () => {
+  const { message } = App.useApp();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const prevIsConnected = isConnected;
+      isConnected = pb.realtime.isConnected;
+
+      if (prevIsConnected === true && isConnected === false) {
+        // show message when `isConnected` transitions from true to false
+        message.open({
+          key: 'realtime-connection',
+          type: 'loading',
+          content: 'Disconnected from the server. Attempting to reconnect...',
+          duration: 0
+        });
+      } else if (prevIsConnected === false && isConnected === true) {
+        // show message when `isConnected` transitions from false to true
+        message.open({
+          key: 'realtime-connection',
+          type: 'success',
+          content: 'Reconnected to the server',
+          duration: 2,
+        });
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+};
 
 // Create a Zustand store for a PocketBase collection with real-time updates
 interface CollectionStore<TRecord, TProcessed, TExtra> {
