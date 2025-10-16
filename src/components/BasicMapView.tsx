@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import "leaflet/dist/leaflet.css";
 // import "npm:leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 // import "npm:leaflet-defaulticon-compatibility";
-import { Icon as LeafletIcon } from "leaflet";
+import { type LatLngTuple, Icon as LeafletIcon } from "leaflet";
 import { MapContainer, Marker, ScaleControl, TileLayer, Tooltip } from 'react-leaflet';
 import { mean } from 'es-toolkit';
 
@@ -15,12 +15,12 @@ type BasicMapViewProps = {
 };
 
 const BasicMapView = ({uniqueLocations, highlightLocationIds, style}: BasicMapViewProps) => {
-  const mapCenter = useMemo(() => [
+  const mapCenter: LatLngTuple = useMemo(() => [
     mean(uniqueLocations.map(location => location.lat)),
     mean(uniqueLocations.map(location => location.long)),
   ], [uniqueLocations]);
 
-  const mapBounds = useMemo(() => {
+  const mapBounds: LatLngTuple[] | undefined = useMemo(() => {
     if (uniqueLocations.length === 0) return undefined;
 
     const meanLat = mean(uniqueLocations.map(location => location.lat));
