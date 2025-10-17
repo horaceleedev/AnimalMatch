@@ -50,7 +50,7 @@ const IndividualDetailModal: React.FC = () => {
       title={
         <Space>
           {individual.name}
-          <Link to="compare">
+          <Link to={"/individuals/compare/i/" + individualId}>
             <Button icon={<Icon component={Compare} />}>Open comparison view</Button>
           </Link>
         </Space>

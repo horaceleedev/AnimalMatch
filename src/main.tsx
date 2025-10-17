@@ -55,29 +55,36 @@ const router = createBrowserRouter([
             element: <VideoAnnotatorModal />,
           },
           {
-            path: ":videoId/compare",
+            path: "compare/v/:videoId",
             element: <CompareModal />,
             children: [
               {
-                // Redirect from '.../compare/' to '.../compare/individuals'
+                // Redirect from '/videos/compare/v/:videoId' to '/videos/compare/v/:videoId/v'
                 index: true,
-                loader: () => redirect("individuals"),
+                loader: () => redirect("v"),
               },
               {
-                path: "videos",
-                // element: <div>videos</div>,
+                path: "v/:compareId?",
               },
               {
-                path: "videos/:compareId",
-                // element: <div>video detail</div>,
+                path: "i/:compareId?",
+              },
+            ],
+          },
+          {
+            path: "compare/i/:individualId",
+            element: <CompareModal />,
+            children: [
+              {
+                // Redirect from '/videos/compare/i/:individualId' to '/videos/compare/i/:individualId/i'
+                index: true,
+                loader: () => redirect("i"),
               },
               {
-                path: "individuals",
-                // element: <div>individuals</div>,
+                path: "v/:compareId?",
               },
               {
-                path: "individuals/:compareId",
-                // element: <div>individual detail</div>,
+                path: "i/:compareId?",
               },
             ],
           },
@@ -93,29 +100,36 @@ const router = createBrowserRouter([
             element: <CompareModal />,
           },
           {
-            path: ":individualId/compare",
+            path: "compare/i/:individualId",
             element: <CompareModal />,
             children: [
               {
-                // Redirect from '.../compare/' to '.../compare/individuals'
+                // Redirect from '/individuals/compare/i/:individualId' to '/individuals/compare/i/:individualId/i'
                 index: true,
-                loader: () => redirect("individuals"),
+                loader: () => redirect("i"),
               },
               {
-                path: "videos",
-                // element: <div>videos</div>,
+                path: "v/:compareId?",
               },
               {
-                path: "videos/:compareId",
-                // element: <div>video detail</div>,
+                path: "i/:compareId?",
+              },
+            ],
+          },
+          {
+            path: "compare/v/:videoId",
+            element: <CompareModal />,
+            children: [
+              {
+                // Redirect from '/individuals/compare/v/:videoId' to '/individuals/compare/v/:videoId/v'
+                index: true,
+                loader: () => redirect("v"),
               },
               {
-                path: "individuals",
-                // element: <div>individuals</div>,
+                path: "v/:compareId?",
               },
               {
-                path: "individuals/:compareId",
-                // element: <div>individual detail</div>,
+                path: "i/:compareId?",
               },
             ],
           },

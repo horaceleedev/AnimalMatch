@@ -20,12 +20,22 @@ import { Individual } from '../types.ts';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import "./CompareModal.scss";
 
+const recordTypeShortNameToLongName: Record<string, string> = {
+  "i": "individuals",
+  "v": "videos",
+};
+const recordTypeLongNameToShortName: Record<string, string> = {
+  "individuals": "i",
+  "videos": "v",
+};
+
 const CompareModal: React.FC = () => {
   const navigate = useNavigate();
   const { videoId, individualId, compareId } = useParams();
   const routerLocation = useLocation();
-  const isCompareView = routerLocation.pathname.split('/')[3] === "compare";
-  const compareType = routerLocation.pathname.split('/')[4];
+  const routeSplits = routerLocation.pathname.split('/');
+  const isCompareView = routeSplits[2] === "compare";
+  const compareType = recordTypeShortNameToLongName[routeSplits[5]];
   console.log(videoId, individualId, compareId, routerLocation, isCompareView, compareType)
 
   const [isModalOpen, setIsModalOpen] = useState(true);
@@ -34,7 +44,7 @@ const CompareModal: React.FC = () => {
   };
   const handleOpenChange = (open: boolean) => {
     // Navigate back to the /videos or /individuals page when the modal is closed
-    if (open === false) navigate(routerLocation.pathname.split('/').slice(0,2).join('/'));
+    if (open === false) navigate(routeSplits.slice(0,2).join('/'));
   };
 
   const [videos, updateVideo, videoUniqueValuesPerField, uniqueVideoLocations] = useVideoStore(
@@ -230,11 +240,11 @@ const CompareModal: React.FC = () => {
     const items: TabsProps['items'] = [
       {
         key: 'videos',
-        label: <Link to="./videos" style={{color: 'inherit'}}>Videos</Link>,
+        label: <Link to="./v" style={{color: 'inherit'}}>Videos</Link>,
       },
       {
         key: 'individuals',
-        label: <Link to="./individuals" style={{color: 'inherit'}}>Individuals</Link>,
+        label: <Link to="./i" style={{color: 'inherit'}}>Individuals</Link>,
       }
     ];
     rightPanel = (
@@ -310,7 +320,7 @@ const CompareModal: React.FC = () => {
         isCompareView ?
         <Link to={
           // Back to the /videos/:videoId or /individuals/:individualId page
-          routerLocation.pathname.split('/').slice(0,3).join('/')
+          routeSplits.slice(0,2).join('/') + "/" + routeSplits[4]
         }>
           <Tooltip title={"Back to " + (
             (videoDetailProps && "video " + videoDetailProps.video.filename) ||
@@ -322,9 +332,9 @@ const CompareModal: React.FC = () => {
         :
         <Link to={
           // Back to the /videos or /individuals page
-          routerLocation.pathname.split('/').slice(0,2).join('/')
+          routeSplits.slice(0,2).join('/')
         }>
-          <Tooltip title={"Back to all " + routerLocation.pathname.split('/')[1]}>
+          <Tooltip title={"Back to all " + routeSplits[1]}>
             <Button icon={<ArrowLeftOutlined />} type="text"></Button>
           </Tooltip>
         </Link>
@@ -332,7 +342,7 @@ const CompareModal: React.FC = () => {
       {modalTitleText}
       {
         !isCompareView &&
-        <Link to="compare">
+        <Link to={`${routeSplits.slice(0,2).join('/')}/compare/${recordTypeLongNameToShortName[routeSplits[1]]}/${routeSplits[2]}`}>
           <Button icon={<Icon component={Compare} />}>Open comparison view</Button>
         </Link>
       }
@@ -373,7 +383,7 @@ const CompareModal: React.FC = () => {
                   {
                     (compareVideoDetailProps && 
                       <Space>
-                        <Link to={routerLocation.pathname.split('/').slice(0,5).join('/')}>
+                        <Link to={routeSplits.slice(0,6).join('/')}>
                           <Tooltip title="Back to videos">
                             <Button icon={<ArrowLeftOutlined />} type="text"></Button>
                           </Tooltip>
@@ -384,7 +394,7 @@ const CompareModal: React.FC = () => {
                     (
                       compareIndividualDetailProps && 
                       <Space>
-                        <Link to={routerLocation.pathname.split('/').slice(0,5).join('/')}>
+                        <Link to={routeSplits.slice(0,6).join('/')}>
                           <Tooltip title="Back to individuals">
                             <Button icon={<ArrowLeftOutlined />} type="text"></Button>
                           </Tooltip>
@@ -430,7 +440,7 @@ const CompareModal: React.FC = () => {
                       <IndividualsGridView
                         individuals={individuals.filter(x => shortlistedIndividualIds.includes(x.id))}
                         individualsMetadataFields={individualsMetadataFields} 
-                        linkBase={routerLocation.pathname.split('/').slice(0,5).join('/')}
+                        linkBase={routeSplits.slice(0,6).join('/')}
                         buttons={shortlistButton}
                         sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]}
                       />

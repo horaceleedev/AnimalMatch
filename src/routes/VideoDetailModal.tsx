@@ -45,7 +45,7 @@ const VideoDetailModal: React.FC = () => {
       title={
         <Space>
           {video.filename}
-          <Link to="compare">
+          <Link to={"/videos/compare/v/" + videoId}>
             <Button icon={<Icon component={Compare} />}>Open comparison view</Button>
           </Link>
         </Space>
