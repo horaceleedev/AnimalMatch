@@ -480,7 +480,7 @@ const CompareModal: React.FC = () => {
               padding: '8px 8px 8px 12px',
               borderRadius: 10,
               background: 'white',
-              zIndex: 1,
+              zIndex: 1000,
             }}>
               <span>Are these two individuals the same?</span>
               <Button onClick={showSameIndividualConfirm} icon={<CheckOutlined />} type="primary">Same individual</Button>
