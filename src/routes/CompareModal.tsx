@@ -45,61 +45,61 @@ const CompareModal: React.FC = () => {
   const uniqueIndividualLocations = useMemo(() => {
     return getUniqueLocationsFromIndividuals(individuals, videos);
   }, [individuals, videos]);
-  
+
   const videoDetailProps = useMemo(() => {
-    if (videoId) {
-      const video = videos.find(x => x.id === videoId);
-      if (video) {
-        const individualsInVideo = individuals.filter(x => x.videos.includes(video.id)) || [];
-        return {
-          video,
-          individualsInVideo,
-        };
-      }
-    }
+    if (!videoId) return;
+
+    const video = videos.find(x => x.id === videoId);
+    if (!video) return;
+
+    const individualsInVideo = individuals.filter(x => x.videos.includes(video.id)) || [];
+    return {
+      video,
+      individualsInVideo,
+    };
   }, [videoId, videos, individuals]);
 
   const individualDetailProps = useMemo(() => {
-    if (individualId) {
-      const individual = individuals.find(x => x.id === individualId);
-      if (individual) {
-        const videosWithIndividual = videos.filter(v => individual.videos.includes(v.id));
-        const seenTogetherIndividuals = individuals.filter(indiv => (indiv.id !== individual.id) && intersection(indiv.videos, videosWithIndividual.map(x => x.id)).length > 0);
-        return {
-          individual,
-          videosWithIndividual,
-          seenTogetherIndividuals,
-        };
-      }
-    }
+    if (!individualId) return;
+
+    const individual = individuals.find(x => x.id === individualId);
+    if (!individual) return;
+
+    const videosWithIndividual = videos.filter(v => individual.videos.includes(v.id));
+    const seenTogetherIndividuals = individuals.filter(indiv => (indiv.id !== individual.id) && intersection(indiv.videos, videosWithIndividual.map(x => x.id)).length > 0);
+    return {
+      individual,
+      videosWithIndividual,
+      seenTogetherIndividuals,
+    };
   }, [individualId, videos, individuals]);
 
 
   // Video/individual on right panel
   const compareVideoDetailProps = useMemo(() => {
-    if (compareType === "videos") {
-      const compareVideo = videos.find(x => x.id === compareId);
-      if (compareVideo) {
-        const individualsInCompareVideo = individuals.filter(x => x.videos.includes(compareVideo.id));
-        return {
-          video: compareVideo,
-          individualsInVideo: individualsInCompareVideo,
-        }
-      }
+    if (compareType !== "videos") return;
+
+    const compareVideo = videos.find(x => x.id === compareId);
+    if (!compareVideo) return;
+
+    const individualsInCompareVideo = individuals.filter(x => x.videos.includes(compareVideo.id));
+    return {
+      video: compareVideo,
+      individualsInVideo: individualsInCompareVideo,
     }
   }, [compareId, compareType, videos, individuals]);
   const compareIndividualDetailProps = useMemo(() => {
-    if (compareType === "individuals") {
-      const compareIndividual = individuals.find(x => x.id === compareId);
-      if (compareIndividual) {
-        const videosWithCompareIndividual = videos.filter(v => compareIndividual.videos.includes(v.id));
-        const individualsSeenTogetherWithCompareIndividual = individuals.filter(indiv => (indiv.id !== compareIndividual.id) && intersection(indiv.videos, videosWithCompareIndividual.map(x => x.id)).length > 0);
-        return {
-          individual: compareIndividual,
-          seenTogetherIndividuals: individualsSeenTogetherWithCompareIndividual,
-          videosWithIndividual: videosWithCompareIndividual,
-        }
-      }
+    if (compareType !== "individuals") return;
+
+    const compareIndividual = individuals.find(x => x.id === compareId);
+    if (!compareIndividual) return;
+
+    const videosWithCompareIndividual = videos.filter(v => compareIndividual.videos.includes(v.id));
+    const individualsSeenTogetherWithCompareIndividual = individuals.filter(indiv => (indiv.id !== compareIndividual.id) && intersection(indiv.videos, videosWithCompareIndividual.map(x => x.id)).length > 0);
+    return {
+      individual: compareIndividual,
+      seenTogetherIndividuals: individualsSeenTogetherWithCompareIndividual,
+      videosWithIndividual: videosWithCompareIndividual,
     }
   }, [compareId, compareType, individuals, videos]);
   const [shortlistedIndividualIds, setShortlistedIndividualIds] = useState<string[]>([]);
@@ -147,41 +147,29 @@ const CompareModal: React.FC = () => {
   };
 
   const shortlistButton = (individual: Individual) => {
-    if (shortlistedIndividualIds.includes(individual.id)) {
-      return (
-        <Tooltip title="Remove from shortlist">
-          <Button
-            icon={<StarFilled />} shape="circle" style={{
-              position: 'absolute',
-              top: 5,
-              right: 5,
-              boxShadow: "0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05)",
-            }}
-            onClick={(e) => {
-              e.preventDefault();
+    const isShortlisted = shortlistedIndividualIds.includes(individual.id);
+    return (
+      <Tooltip title={isShortlisted ? "Remove from shortlist" : "Add to shortlist"}>
+        <Button
+          icon={isShortlisted ? <StarFilled /> : <StarOutlined />}
+          shape="circle"
+          style={{
+            position: 'absolute',
+            top: 5,
+            right: 5,
+            boxShadow: "0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05)",
+          }}
+          onClick={(e) => {
+            e.preventDefault();
+            if (isShortlisted) {
               setShortlistedIndividualIds([...shortlistedIndividualIds.filter(x => x !== individual.id)]);
-            }}
-          />
-        </Tooltip>
-      );
-    } else {
-      return (
-        <Tooltip title="Add to shortlist">
-          <Button
-            icon={<StarOutlined />} shape="circle" style={{
-              position: 'absolute',
-              top: 5,
-              right: 5,
-              boxShadow: "0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05)",
-            }}
-            onClick={(e) => {
-              e.preventDefault();
+            } else {
               setShortlistedIndividualIds([...shortlistedIndividualIds, individual.id]);
-            }}
-          />
-        </Tooltip>
-      );
-    }
+            }
+          }}
+        />
+      </Tooltip>
+    );
   };
 
   let leftPanel;
