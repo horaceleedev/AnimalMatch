@@ -1,23 +1,20 @@
 import { Card, Flex, Typography } from "antd";
-import { Link } from "react-router-dom";
+import { generatePath, Link } from "react-router-dom";
 import { useIndividualsStoreWithCrops, useVideoStore } from "../../DataStores";
 
 
 interface LinkButtonProps {
   id: string;
-  linkBase?: string;
+  linkTemplate?: string;
 };
 
-export const IndividualLinkButton: React.FC<LinkButtonProps> = ({ id, linkBase }: LinkButtonProps) => {
-  if (!linkBase) linkBase = "/individuals/";
-  if (!linkBase.endsWith("/")) linkBase = linkBase + "/";
-
+export const IndividualLinkButton: React.FC<LinkButtonProps> = ({ id, linkTemplate = "/individuals/:individualId" }: LinkButtonProps) => {
   // TODO see if there is an efficient implementation without loading all individuals
   const { individuals } = useIndividualsStoreWithCrops();
   const individual = individuals.find(i => i.id === id);
 
   return (
-    <Link key={id} to={linkBase + id}>
+    <Link key={id} to={generatePath(linkTemplate, { individualId: id })}>
       <Card
         hoverable
         size="small"
@@ -33,14 +30,11 @@ export const IndividualLinkButton: React.FC<LinkButtonProps> = ({ id, linkBase }
   );
 };
 
-export const VideoLinkButton: React.FC<LinkButtonProps> = ({ id, linkBase }: LinkButtonProps) => {
-  if (!linkBase) linkBase = "/videos/";
-  if (!linkBase.endsWith("/")) linkBase = linkBase + "/";
-
+export const VideoLinkButton: React.FC<LinkButtonProps> = ({ id, linkTemplate = "/videos/:videoId" }: LinkButtonProps) => {
   const video = useVideoStore((state) => state.processedRecords.find(v => v.id === id));
 
   return (
-    <Link key={id} to={linkBase + id}>
+    <Link key={id} to={generatePath(linkTemplate, { videoId: id })}>
       <Card
         hoverable
         size="small"

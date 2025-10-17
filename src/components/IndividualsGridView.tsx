@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { generatePath, Link } from 'react-router-dom';
 import { Button, Card, Collapse, Flex, Select, Space, Tag, Tooltip } from 'antd';
 import { groupBy, orderBy } from 'es-toolkit';
 
@@ -17,17 +17,14 @@ interface BasicIndividualsGridViewProps {
   individuals: Individual[];
   individualsMetadataFields: MetadataFieldsType;
   isListView?: boolean;
-  linkBase?: string;
+  linkTemplate?: string;
   buttons?: (individual: Individual) => JSX.Element;
   allowEditingAgeAndSex?: boolean;
 };
 
 const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
-  individuals, individualsMetadataFields, isListView, linkBase, buttons, allowEditingAgeAndSex
+  individuals, individualsMetadataFields, isListView, linkTemplate = "/individuals/:individualId", buttons, allowEditingAgeAndSex
 }: BasicIndividualsGridViewProps) => {
-  if (!linkBase) linkBase = "/individuals/";
-  if (!linkBase.endsWith("/")) linkBase = linkBase + "/";
-
   return (
     <div className={isListView ? "individuals-list" : "individuals-grid"}>
       {
@@ -56,7 +53,7 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
               </Flex>
             </Flex>
           </Card> */
-          <Link key={individual.id} to={linkBase + individual.id} className="individual-card-wrapper">
+          <Link key={individual.id} to={generatePath(linkTemplate, { individualId: individual.id })} className="individual-card-wrapper">
             <Card hoverable bordered={true} size="small" cover={
               <div style={{display: 'flex', overflow: 'scroll', height: 150, columnGap: 5, borderRadius: 5}}>
                 {
@@ -132,7 +129,7 @@ interface IndividualsGridViewProps extends BasicIndividualsGridViewProps {
 };
 
 const IndividualsGridView: React.FC<IndividualsGridViewProps> = ({
-  individuals, individualsMetadataFields, isListView, linkBase, buttons, allowEditingAgeAndSex,
+  individuals, individualsMetadataFields, isListView, linkTemplate, buttons, allowEditingAgeAndSex,
   sortFields, sortOrders, groupFields, groupOrders
 }: IndividualsGridViewProps) => {
   const individualsSorted = orderBy(individuals, sortFields, sortOrders);
@@ -146,7 +143,16 @@ const IndividualsGridView: React.FC<IndividualsGridViewProps> = ({
     )
   ), [individualsSorted]);
   
-  if (groupFields.length === 0) return <BasicIndividualsGridView individuals={individualsSorted} individualsMetadataFields={individualsMetadataFields} isListView={isListView} linkBase={linkBase} buttons={buttons} allowEditingAgeAndSex={allowEditingAgeAndSex} />;
+  if (groupFields.length === 0) return (
+    <BasicIndividualsGridView
+      individuals={individualsSorted}
+      individualsMetadataFields={individualsMetadataFields}
+      isListView={isListView}
+      linkTemplate={linkTemplate}
+      buttons={buttons}
+      allowEditingAgeAndSex={allowEditingAgeAndSex}
+    />
+  );
   return groupedIndividuals.map(([groupValue, groupIndividuals]) => (
     <Collapse
       key={groupValue}
@@ -165,7 +171,16 @@ const IndividualsGridView: React.FC<IndividualsGridViewProps> = ({
             :
             <span>{individualsMetadataFields[groupFields[0]].displayName}: {groupValue}</span>
           ),
-          children:  <BasicIndividualsGridView individuals={groupIndividuals} individualsMetadataFields={individualsMetadataFields} isListView={isListView} linkBase={linkBase} buttons={buttons} allowEditingAgeAndSex={allowEditingAgeAndSex} />,
+          children: (
+            <BasicIndividualsGridView
+              individuals={groupIndividuals}
+              individualsMetadataFields={individualsMetadataFields}
+              isListView={isListView}
+              linkTemplate={linkTemplate}
+              buttons={buttons}
+              allowEditingAgeAndSex={allowEditingAgeAndSex}
+            />
+          ),
         },
       ]}
       // expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}

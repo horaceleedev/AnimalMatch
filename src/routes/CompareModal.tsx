@@ -252,7 +252,7 @@ const CompareModal: React.FC = () => {
         <Tabs activeKey={compareType} items={items} />
         {
           (compareType === 'videos') ?
-          <VideosGridView videos={videos} videoMetadataFields={videoMetadataFields} isListView={true} linkBase={routerLocation.pathname} sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]} />
+          <VideosGridView videos={videos} videoMetadataFields={videoMetadataFields} isListView={true} linkTemplate={routerLocation.pathname + "/:videoId"} sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]} />
           :
           <>
             {
@@ -285,7 +285,7 @@ const CompareModal: React.FC = () => {
               uniqueValuesPerField={individualsUniqueValuesPerField}
               individualsMetadataFields={individualsMetadataFields}
               onlyShowListView={true}
-              linkBase={routerLocation.pathname}
+              linkTemplate={routerLocation.pathname + "/:individualId"}
               listViewButtons={individualDetailProps ? shortlistButton : undefined}
               defaultGroupFields={[]}
               defaultGroupOrders={[]}
@@ -440,7 +440,7 @@ const CompareModal: React.FC = () => {
                       <IndividualsGridView
                         individuals={individuals.filter(x => shortlistedIndividualIds.includes(x.id))}
                         individualsMetadataFields={individualsMetadataFields} 
-                        linkBase={routeSplits.slice(0,6).join('/')}
+                        linkTemplate={routeSplits.slice(0,6).join('/') + "/:individualId"}
                         buttons={shortlistButton}
                         sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]}
                       />

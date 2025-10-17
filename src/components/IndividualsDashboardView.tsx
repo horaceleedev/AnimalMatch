@@ -38,14 +38,14 @@ interface IndividualsDashboardViewProps {
   uniqueValuesPerField: Record<string, string[]>;
   individualsMetadataFields: MetadataFieldsType;
   onlyShowListView?: boolean;
-  linkBase?: string;
+  linkTemplate?: string;
   listViewButtons?: (individual: Individual) => JSX.Element;
   defaultGroupFields?: string[];
   defaultGroupOrders?: ("asc" | "desc")[];
 }
 const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
   individuals, videos, uniqueValuesPerField, individualsMetadataFields,
-  onlyShowListView, linkBase, listViewButtons,
+  onlyShowListView, linkTemplate, listViewButtons,
   defaultGroupFields, defaultGroupOrders,
 }: IndividualsDashboardViewProps) => {
   const [view, setView] = useState(viewsTabsItems[0].key);
@@ -99,7 +99,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
         <IndividualsGridView
           individuals={filteredIndividuals}
           individualsMetadataFields={individualsMetadataFields}
-          linkBase={linkBase}
+          linkTemplate={linkTemplate}
           buttons={listViewButtons}
           sortFields={sortFields}
           sortOrders={sortOrders}
@@ -117,7 +117,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
               <IndividualsGridView
                 individuals={filteredIndividuals}
                 individualsMetadataFields={individualsMetadataFields}
-                linkBase={linkBase}
+                linkTemplate={linkTemplate}
                 buttons={listViewButtons}
                 sortFields={sortFields}
                 sortOrders={sortOrders}
