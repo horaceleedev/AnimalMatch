@@ -183,6 +183,18 @@ const CompareModal: React.FC = () => {
   };
 
   let leftPanel;
+  let leftPanelVideosLinkTemplate, leftPanelIndividualsLinkTemplate;
+  if (isCompareView) {
+    let routeSplitsCopy = [...routeSplits];
+    routeSplitsCopy[3] = "v";
+    routeSplitsCopy[4] = ":videoId";
+    leftPanelVideosLinkTemplate = routeSplitsCopy.join("/");
+
+    routeSplitsCopy = [...routeSplits];
+    routeSplitsCopy[3] = "i";
+    routeSplitsCopy[4] = ":individualId";
+    leftPanelIndividualsLinkTemplate = routeSplitsCopy.join("/");
+  }
   if (videoDetailProps) {
     leftPanel = (
       <VideoDetailView
@@ -191,6 +203,7 @@ const CompareModal: React.FC = () => {
         uniqueValuesPerField={videoUniqueValuesPerField}
         uniqueLocations={uniqueVideoLocations}
         updateVideo={updateVideo}
+        individualsLinkTemplate={leftPanelIndividualsLinkTemplate}
       />
     );
   } else if (individualDetailProps) {
@@ -203,6 +216,8 @@ const CompareModal: React.FC = () => {
         cropsUniqueValuesPerField={cropsUniqueValuesPerField}
         uniqueLocations={uniqueIndividualLocations}
         updateIndividual={updateIndividual}
+        videosLinkTemplate={leftPanelVideosLinkTemplate}
+        individualsLinkTemplate={leftPanelIndividualsLinkTemplate}
       />
     );
   } else {
@@ -211,6 +226,9 @@ const CompareModal: React.FC = () => {
 
   let rightPanel;
   if (compareId) {
+    let rightPanelVideosLinkTemplate = routeSplits.slice(0,5).join('/') + "/v/:videoId";
+    let rightPanelIndividualsLinkTemplate = routeSplits.slice(0,5).join('/') + "/i/:individualId";
+
     if (compareVideoDetailProps) {
       rightPanel = (
         <VideoDetailView key={compareVideoDetailProps.video.id}
@@ -219,6 +237,7 @@ const CompareModal: React.FC = () => {
           uniqueValuesPerField={videoUniqueValuesPerField}
           uniqueLocations={uniqueVideoLocations}
           updateVideo={updateVideo}
+          individualsLinkTemplate={rightPanelIndividualsLinkTemplate}
         />
       );
     } else if (compareIndividualDetailProps) {
@@ -231,6 +250,8 @@ const CompareModal: React.FC = () => {
           cropsUniqueValuesPerField={cropsUniqueValuesPerField}
           uniqueLocations={uniqueIndividualLocations}
           updateIndividual={updateIndividual}
+          videosLinkTemplate={rightPanelVideosLinkTemplate}
+          individualsLinkTemplate={rightPanelIndividualsLinkTemplate}
         />
       );
     } else {

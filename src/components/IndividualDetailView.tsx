@@ -23,6 +23,8 @@ type IndividualDetailViewProps = {
   cropsUniqueValuesPerField: Record<string, string[]>;
   uniqueLocations: LocationInfo[];
   updateIndividual: (id: string, data: Partial<Individual>) => Promise<void>;
+  videosLinkTemplate?: string;
+  individualsLinkTemplate?: string;
 }
 
 const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
@@ -33,6 +35,8 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
   cropsUniqueValuesPerField,
   uniqueLocations,
   updateIndividual,
+  videosLinkTemplate,
+  individualsLinkTemplate,
 }: IndividualDetailViewProps) => {
   // Temporary hack needed because map wasn't showing up properly
   const [showMap, setShowMap] = useState(false);
@@ -157,6 +161,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                     videos={videosWithIndividual}
                     videoMetadataFields={videoMetadataFields}
                     isListView={false}
+                    linkTemplate={videosLinkTemplate}
                     sortFields={[]}
                     sortOrders={[]}
                     groupFields={[]}
@@ -179,6 +184,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                   <IndividualsGridView
                     individuals={seenTogetherIndividuals}
                     individualsMetadataFields={individualsMetadataFields}
+                    linkTemplate={individualsLinkTemplate}
                     sortFields={[]}
                     sortOrders={[]}
                     groupFields={[]}
