@@ -7,6 +7,7 @@ import { MapContainer, Marker, ScaleControl, TileLayer, Tooltip } from 'react-le
 import { mean } from 'es-toolkit';
 
 import { LocationInfo } from '../types';
+import "./BasicMapView.scss";
 
 type BasicMapViewProps = {
   uniqueLocations: LocationInfo[];
@@ -39,6 +40,13 @@ const BasicMapView = ({uniqueLocations, highlightLocationIds, style}: BasicMapVi
       [ meanLat + height, meanLong + width ],
     ];
   }, [uniqueLocations]);
+
+  const highlightedLocations = useMemo(() => {
+    return uniqueLocations.filter(location => !highlightLocationIds || highlightLocationIds.includes(location.id));
+  }, [uniqueLocations, highlightLocationIds]);
+  const nonHighlightedLocations = useMemo(() => {
+    return uniqueLocations.filter(location => highlightLocationIds && !highlightLocationIds.includes(location.id));
+  }, [uniqueLocations, highlightLocationIds]);
   
   return (
     <MapContainer style={style} center={mapCenter} bounds={mapBounds}>
@@ -47,7 +55,10 @@ const BasicMapView = ({uniqueLocations, highlightLocationIds, style}: BasicMapVi
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       {
-        uniqueLocations.map(locationInfo => (
+        [
+          ...nonHighlightedLocations,
+          ...highlightedLocations, // this ensures the highlighted markers are always visible above the non-highlighted ones
+        ].map(locationInfo => (
           <Marker
             key={locationInfo.id}
             position={[locationInfo.lat, locationInfo.long]}
@@ -68,7 +79,8 @@ const BasicMapView = ({uniqueLocations, highlightLocationIds, style}: BasicMapVi
                 iconSize: [25, 41],
                 iconAnchor: [12, 41],
                 popupAnchor: [1, -34],
-                shadowSize: [41, 41]
+                shadowSize: [41, 41],
+                className: (highlightLocationIds && !highlightLocationIds.includes(locationInfo.id)) ? 'non-highlighted-marker' : undefined,
               })
             }
           >
