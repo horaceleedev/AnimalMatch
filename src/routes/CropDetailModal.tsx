@@ -1,11 +1,10 @@
 import React, { useState } from 'react'
 import { useNavigate, useParams } from "react-router-dom";
 import { useShallow } from 'zustand/react/shallow';
-import { Flex, Image, Modal } from "antd";
+import { Modal } from "antd";
 
 import { useCropsStore } from "../DataStores.tsx";
-import RecordMetadataForm from '../components/RecordMetadataForm.tsx';
-import { cropsMetadataFields } from '../metadata.tsx';
+import CropDetailView from '../components/CropDetailView.tsx';
 
 const CropDetailModal: React.FC = () => {
   const navigate = useNavigate();
@@ -43,15 +42,10 @@ const CropDetailModal: React.FC = () => {
       afterOpenChange={handleOpenChange}
       centered={true}
     >
-      <Flex justify="center" style={{marginBottom: 10}}>
-        <Image src={crop.imageUrl} style={{height: 300, objectFit: 'contain'}} />
-      </Flex>
-      <RecordMetadataForm
-        processedRecord={crop}
-        metadataFields={cropsMetadataFields}
+      <CropDetailView
+        crop={crop}
         uniqueValuesPerField={uniqueValuesPerField}
-        updateFunction={updateCrop}
-        showIconInSelectionFields={false}
+        updateCrop={updateCrop}
       />
     </Modal>
   );
