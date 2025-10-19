@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { Link } from "react-router-dom";
+import { generatePath, Link } from "react-router-dom";
 import { Card, Collapse, Flex, Tag, Tooltip, Typography } from "antd";
 import { groupBy, orderBy } from "es-toolkit";
 
@@ -12,14 +12,13 @@ interface BasicVideosGridViewProps {
   videos: Video[];
   videoMetadataFields: MetadataFieldsType;
   isListView: boolean;
-  linkBase?: string;
+  linkTemplate?: string;
 };
 
 // Basic video grid view (without grouping and sorting)
-const BasicVideosGridView: React.FC<BasicVideosGridViewProps> = ({ videos, videoMetadataFields, isListView, linkBase }: BasicVideosGridViewProps) => {
-  if (!linkBase) linkBase = "/videos/";
-  if (!linkBase.endsWith("/")) linkBase = linkBase + "/";
-
+const BasicVideosGridView: React.FC<BasicVideosGridViewProps> = ({
+  videos, videoMetadataFields, isListView, linkTemplate = "/videos/:videoId"
+}: BasicVideosGridViewProps) => {
   return (
     <div className={isListView ? "videos-list " : "videos-grid"}>
       {
@@ -51,7 +50,7 @@ const BasicVideosGridView: React.FC<BasicVideosGridViewProps> = ({ videos, video
           // </Link>
 
           // New version:
-          <Link key={video.id} to={linkBase + video.id}>
+          <Link key={video.id} to={generatePath(linkTemplate, { videoId: video.id })}>
             <Card
               hoverable
               style={{ overflow: 'hidden' }}
@@ -91,7 +90,9 @@ interface VideosGridViewProps extends BasicVideosGridViewProps {
   groupOrders: ("asc" | "desc")[];
 };
 
-const VideosGridView: React.FC<VideosGridViewProps> = ({ videos, videoMetadataFields, isListView, linkBase, sortFields, sortOrders, groupFields, groupOrders }: VideosGridViewProps) => {
+const VideosGridView: React.FC<VideosGridViewProps> = ({
+  videos, videoMetadataFields, isListView, linkTemplate, sortFields, sortOrders, groupFields, groupOrders
+}: VideosGridViewProps) => {
   const videosSorted = orderBy(videos, sortFields, sortOrders);
   
   // TODO check if the below works when groupFields.length === 0
@@ -103,7 +104,14 @@ const VideosGridView: React.FC<VideosGridViewProps> = ({ videos, videoMetadataFi
     )
   ), [videosSorted]);
 
-  if (groupFields.length === 0) return <BasicVideosGridView videos={videosSorted} videoMetadataFields={videoMetadataFields} isListView={isListView} linkBase={linkBase} />;
+  if (groupFields.length === 0) return (
+    <BasicVideosGridView
+      videos={videosSorted}
+      videoMetadataFields={videoMetadataFields}
+      isListView={isListView}
+      linkTemplate={linkTemplate}
+    />
+  );
 
   return groupedVideos.map(([groupValue, groupVideos]) => (
     <Collapse
@@ -117,7 +125,14 @@ const VideosGridView: React.FC<VideosGridViewProps> = ({ videos, videoMetadataFi
         {
           key: '1',
           label: <span>{videoMetadataFields[groupFields[0]].displayName}: {groupValue}</span>,
-          children: <BasicVideosGridView videos={groupVideos} videoMetadataFields={videoMetadataFields} isListView={isListView} linkBase={linkBase} />,
+          children: (
+            <BasicVideosGridView
+              videos={groupVideos}
+              videoMetadataFields={videoMetadataFields}
+              isListView={isListView}
+              linkTemplate={linkTemplate}
+            />
+          ),
         },
       ]}
       // expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}

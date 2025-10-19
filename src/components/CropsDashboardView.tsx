@@ -33,14 +33,14 @@ interface CropsDashboardViewProps {
   uniqueValuesPerField: Record<string, string[]>;
   cropsMetadataFields: MetadataFieldsType;
   onlyShowGridView?: boolean;
-  linkBase?: string;
+  linkTemplate?: string;
   // gridViewButtons?: (crop: Crop) => JSX.Element;
   defaultGroupFields?: string[];
   defaultGroupOrders?: ("asc" | "desc")[];
 }
 const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
   crops, uniqueValuesPerField, cropsMetadataFields,
-  onlyShowGridView, linkBase, // gridViewButtons,
+  onlyShowGridView, linkTemplate, // gridViewButtons,
   defaultGroupFields, defaultGroupOrders,
 }: CropsDashboardViewProps) => {
   const [view, setView] = useState(viewsTabsItems[0].key);
@@ -80,7 +80,7 @@ const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
         <CropsGridView
           crops={filteredCrops}
           cropsMetadataFields={cropsMetadataFields}
-          linkBase={linkBase}
+          linkTemplate={linkTemplate}
           // buttons={gridViewButtons}
           sortFields={sortFields}
           sortOrders={sortOrders}

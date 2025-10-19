@@ -9,32 +9,46 @@ import { useShallow } from 'zustand/react/shallow';
 
 import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
-import { useIndividualsStoreWithCrops, useVideoStore } from "../DataStores.tsx";
-import { individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
+import { useIndividualsStoreWithCrops, useVideoStore, useCropsStore } from "../DataStores.tsx";
+import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
 import VideoDetailView from '../components/VideoDetailView.tsx';
 import IndividualDetailView from '../components/IndividualDetailView.tsx';
+import CropDetailView from '../components/CropDetailView.tsx';
 import VideosGridView from '../components/VideosGridView.tsx';
 import IndividualsGridView from '../components/IndividualsGridView.tsx';
 import IndividualsDashboardView from '../components/IndividualsDashboardView.tsx';
+import CropsDashboardView from '../components/CropsDashboardView.tsx';
 import { Individual } from '../types.ts';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import "./CompareModal.scss";
 
+const recordTypeShortNameToLongName: Record<string, string> = {
+  "i": "individuals",
+  "v": "videos",
+  "c": "crops",
+};
+const recordTypeLongNameToShortName: Record<string, string> = {
+  "individuals": "i",
+  "videos": "v",
+  "crops": "c",
+};
+
 const CompareModal: React.FC = () => {
   const navigate = useNavigate();
-  const { videoId, individualId, compareId } = useParams();
+  const { videoId, individualId, cropId, compareId } = useParams();
   const routerLocation = useLocation();
-  const isCompareView = routerLocation.pathname.split('/')[3] === "compare";
-  const compareType = routerLocation.pathname.split('/')[4];
-  console.log(videoId, individualId, compareId, routerLocation, isCompareView, compareType)
+  const routeSplits = routerLocation.pathname.split('/');
+  const isCompareView = routeSplits[2] === "compare";
+  const compareType = recordTypeShortNameToLongName[routeSplits[5]];
+  console.log(videoId, individualId, cropId, compareId, routerLocation, isCompareView, compareType)
 
   const [isModalOpen, setIsModalOpen] = useState(true);
   const handleDismiss = () => {
     setIsModalOpen(false);
   };
   const handleOpenChange = (open: boolean) => {
-    // Navigate back to the /videos or /individuals page when the modal is closed
-    if (open === false) navigate(routerLocation.pathname.split('/').slice(0,2).join('/'));
+    // Navigate back to the /videos, /individuals, or /crops page when the modal is closed
+    if (open === false) navigate(routeSplits.slice(0,2).join('/'));
   };
 
   const [videos, updateVideo, videoUniqueValuesPerField, uniqueVideoLocations] = useVideoStore(
@@ -45,6 +59,9 @@ const CompareModal: React.FC = () => {
   const uniqueIndividualLocations = useMemo(() => {
     return getUniqueLocationsFromIndividuals(individuals, videos);
   }, [individuals, videos]);
+  const [crops, updateCrop] = useCropsStore(
+    useShallow((state) => [state.processedRecords, state.update])
+  );
 
   const videoDetailProps = useMemo(() => {
     if (!videoId) return;
@@ -74,6 +91,17 @@ const CompareModal: React.FC = () => {
     };
   }, [individualId, videos, individuals]);
 
+  const cropDetailProps = useMemo(() => {
+    if (!cropId) return;
+
+    const crop = crops.find(x => x.id === cropId);
+    if (!crop) return;
+
+    return {
+      crop
+    };
+  }, [cropId, crops]);
+
 
   // Video/individual on right panel
   const compareVideoDetailProps = useMemo(() => {
@@ -102,6 +130,16 @@ const CompareModal: React.FC = () => {
       videosWithIndividual: videosWithCompareIndividual,
     }
   }, [compareId, compareType, individuals, videos]);
+  const compareCropDetailProps = useMemo(() => {
+    if (compareType !== "crops") return;
+
+    const compareCrop = crops.find(x => x.id === compareId);
+    if (!compareCrop) return;
+
+    return {
+      crop: compareCrop,
+    };
+  }, [compareId, compareType, crops]);
   const [shortlistedIndividualIds, setShortlistedIndividualIds] = useState<string[]>([]);
 
   const rightPanelWrapperRef = useRef<HTMLDivElement>(null);
@@ -173,6 +211,14 @@ const CompareModal: React.FC = () => {
   };
 
   let leftPanel;
+  let leftPanelVideosLinkTemplate, leftPanelIndividualsLinkTemplate, leftPanelCropsLinkTemplate;
+  if (isCompareView) {
+    // replace routeSplits[3] and routeSplits[4] with "v" and ":videoId" respectively
+    // (or the equivalent for individuals/crops)
+    leftPanelVideosLinkTemplate = [...routeSplits.slice(0,3), "v", ":videoId", ...routeSplits.slice(5)].join("/");
+    leftPanelIndividualsLinkTemplate = [...routeSplits.slice(0,3), "i", ":individualId", ...routeSplits.slice(5)].join("/");
+    leftPanelCropsLinkTemplate = [...routeSplits.slice(0,3), "c", ":cropId", ...routeSplits.slice(5)].join("/");
+  }
   if (videoDetailProps) {
     leftPanel = (
       <VideoDetailView
@@ -181,6 +227,7 @@ const CompareModal: React.FC = () => {
         uniqueValuesPerField={videoUniqueValuesPerField}
         uniqueLocations={uniqueVideoLocations}
         updateVideo={updateVideo}
+        individualsLinkTemplate={leftPanelIndividualsLinkTemplate}
       />
     );
   } else if (individualDetailProps) {
@@ -193,14 +240,29 @@ const CompareModal: React.FC = () => {
         cropsUniqueValuesPerField={cropsUniqueValuesPerField}
         uniqueLocations={uniqueIndividualLocations}
         updateIndividual={updateIndividual}
+        videosLinkTemplate={leftPanelVideosLinkTemplate}
+        individualsLinkTemplate={leftPanelIndividualsLinkTemplate}
+        cropsLinkTemplate={leftPanelCropsLinkTemplate}
       />
     );
+  } else if (cropDetailProps) {
+    leftPanel = (
+      <CropDetailView
+        crop={cropDetailProps.crop}
+        uniqueValuesPerField={cropsUniqueValuesPerField}
+        updateCrop={updateCrop}
+      />
+    )
   } else {
     leftPanel = <>Error: unknown video or individual</>
   }
 
   let rightPanel;
   if (compareId) {
+    let rightPanelVideosLinkTemplate = routeSplits.slice(0,5).join('/') + "/v/:videoId";
+    let rightPanelIndividualsLinkTemplate = routeSplits.slice(0,5).join('/') + "/i/:individualId";
+    let rightPanelCropsLinkTemplate = routeSplits.slice(0,5).join('/') + "/c/:cropId";
+
     if (compareVideoDetailProps) {
       rightPanel = (
         <VideoDetailView key={compareVideoDetailProps.video.id}
@@ -209,6 +271,7 @@ const CompareModal: React.FC = () => {
           uniqueValuesPerField={videoUniqueValuesPerField}
           uniqueLocations={uniqueVideoLocations}
           updateVideo={updateVideo}
+          individualsLinkTemplate={rightPanelIndividualsLinkTemplate}
         />
       );
     } else if (compareIndividualDetailProps) {
@@ -221,6 +284,17 @@ const CompareModal: React.FC = () => {
           cropsUniqueValuesPerField={cropsUniqueValuesPerField}
           uniqueLocations={uniqueIndividualLocations}
           updateIndividual={updateIndividual}
+          videosLinkTemplate={rightPanelVideosLinkTemplate}
+          individualsLinkTemplate={rightPanelIndividualsLinkTemplate}
+          cropsLinkTemplate={rightPanelCropsLinkTemplate}
+        />
+      );
+    } else if (compareCropDetailProps) {
+      rightPanel = (
+        <CropDetailView key={compareCropDetailProps.crop.id}
+          crop={compareCropDetailProps.crop}
+          uniqueValuesPerField={cropsUniqueValuesPerField}
+          updateCrop={updateCrop}
         />
       );
     } else {
@@ -230,20 +304,25 @@ const CompareModal: React.FC = () => {
     const items: TabsProps['items'] = [
       {
         key: 'videos',
-        label: <Link to="./videos" style={{color: 'inherit'}}>Videos</Link>,
+        label: <Link to="./v" style={{color: 'inherit'}}>Videos</Link>,
       },
       {
         key: 'individuals',
-        label: <Link to="./individuals" style={{color: 'inherit'}}>Individuals</Link>,
-      }
+        label: <Link to="./i" style={{color: 'inherit'}}>Individuals</Link>,
+      },
+      {
+        key: 'crops',
+        label: <Link to="./c" style={{color: 'inherit'}}>Crops</Link>,
+      },
     ];
     rightPanel = (
       <>
         <Tabs activeKey={compareType} items={items} />
         {
           (compareType === 'videos') ?
-          <VideosGridView videos={videos} videoMetadataFields={videoMetadataFields} isListView={true} linkBase={routerLocation.pathname} sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]} />
+          <VideosGridView videos={videos} videoMetadataFields={videoMetadataFields} isListView={true} linkTemplate={routerLocation.pathname + "/:videoId"} sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]} />
           :
+          (compareType === 'individuals') ?
           <>
             {
               // (shortlistedIndividualIds.length > 0) && 
@@ -275,12 +354,22 @@ const CompareModal: React.FC = () => {
               uniqueValuesPerField={individualsUniqueValuesPerField}
               individualsMetadataFields={individualsMetadataFields}
               onlyShowListView={true}
-              linkBase={routerLocation.pathname}
+              linkTemplate={routerLocation.pathname + "/:individualId"}
               listViewButtons={individualDetailProps ? shortlistButton : undefined}
               defaultGroupFields={[]}
               defaultGroupOrders={[]}
             />
           </>
+          :
+          (compareType === 'crops') ?
+          <CropsDashboardView
+            crops={crops}
+            uniqueValuesPerField={cropsUniqueValuesPerField}
+            cropsMetadataFields={cropsMetadataFields}
+            linkTemplate={routerLocation.pathname + "/:cropId"}
+          />
+          :
+          <>Invalid URL</>
         }
       </>
     );
@@ -301,6 +390,8 @@ const CompareModal: React.FC = () => {
       modalTitleText = videoDetailProps.video.filename;
     } else if (individualDetailProps) {
       modalTitleText = individualDetailProps.individual.name;
+    } else if (cropDetailProps) {
+      modalTitleText = "Crop";
     }
   }
   const modalTitle = (
@@ -309,22 +400,23 @@ const CompareModal: React.FC = () => {
       {
         isCompareView ?
         <Link to={
-          // Back to the /videos/:videoId or /individuals/:individualId page
-          routerLocation.pathname.split('/').slice(0,3).join('/')
+          // Back to the /videos/:videoId, /individuals/:individualId, or /crops/:cropId page
+          routeSplits.slice(0,2).join('/') + "/" + routeSplits[4]
         }>
           <Tooltip title={"Back to " + (
             (videoDetailProps && "video " + videoDetailProps.video.filename) ||
-            (individualDetailProps && "individual " + individualDetailProps.individual.name)
+            (individualDetailProps && "individual " + individualDetailProps.individual.name) ||
+            (cropDetailProps && "crop")
           )}>
             <Button icon={<ArrowLeftOutlined />} type="text"></Button>
           </Tooltip>
         </Link>
         :
         <Link to={
-          // Back to the /videos or /individuals page
-          routerLocation.pathname.split('/').slice(0,2).join('/')
+          // Back to the /videos, /individuals, or /crops page
+          routeSplits.slice(0,2).join('/')
         }>
-          <Tooltip title={"Back to all " + routerLocation.pathname.split('/')[1]}>
+          <Tooltip title={"Back to all " + routeSplits[1]}>
             <Button icon={<ArrowLeftOutlined />} type="text"></Button>
           </Tooltip>
         </Link>
@@ -332,7 +424,7 @@ const CompareModal: React.FC = () => {
       {modalTitleText}
       {
         !isCompareView &&
-        <Link to="compare">
+        <Link to={`${routeSplits.slice(0,2).join('/')}/compare/${recordTypeLongNameToShortName[routeSplits[1]]}/${routeSplits[2]}`}>
           <Button icon={<Icon component={Compare} />}>Open comparison view</Button>
         </Link>
       }
@@ -359,7 +451,8 @@ const CompareModal: React.FC = () => {
               <h3 style={{marginTop: 5}}>
                 {
                   (videoDetailProps && videoDetailProps.video.filename) ||
-                  (individualDetailProps && individualDetailProps.individual.name)
+                  (individualDetailProps && individualDetailProps.individual.name) ||
+                  (cropDetailProps && "Crop")
                 }
               </h3>
               {leftPanel}
@@ -371,48 +464,45 @@ const CompareModal: React.FC = () => {
               >
                 <h3 style={{marginTop: 5}}>
                   {
-                    (compareVideoDetailProps && 
-                      <Space>
-                        <Link to={routerLocation.pathname.split('/').slice(0,5).join('/')}>
-                          <Tooltip title="Back to videos">
-                            <Button icon={<ArrowLeftOutlined />} type="text"></Button>
-                          </Tooltip>
-                        </Link>
-                        {compareVideoDetailProps.video.filename}
-                      </Space>
-                    ) ||
-                    (
-                      compareIndividualDetailProps && 
-                      <Space>
-                        <Link to={routerLocation.pathname.split('/').slice(0,5).join('/')}>
-                          <Tooltip title="Back to individuals">
-                            <Button icon={<ArrowLeftOutlined />} type="text"></Button>
-                          </Tooltip>
-                        </Link>
-                        {compareIndividualDetailProps.individual.name}
-                        {
-                          // Only show 'Shortlist' button if the left panel has an individual
-                          individualDetailProps && 
-                          (
-                            shortlistedIndividualIds.includes(compareIndividualDetailProps.individual.id) ?
-                            <Button
-                              icon={<StarFilled />}
-                              onClick={() => setShortlistedIndividualIds([...shortlistedIndividualIds.filter(x => x !== compareIndividualDetailProps.individual.id)])}
-                            >
-                              Remove from shortlist
-                            </Button>
-                            :
-                            <Button
-                              icon={<StarOutlined />}
-                              onClick={() => setShortlistedIndividualIds([...shortlistedIndividualIds, compareIndividualDetailProps.individual.id])}
-                            >
-                              Shortlist
-                            </Button>
-                          )
-                        }
-                      </Space>
-                    ) ||
-                    "Select a video or individual for comparison"
+                    (compareVideoDetailProps || compareIndividualDetailProps || compareCropDetailProps) ?
+                    <Space>
+                      <Link to={routeSplits.slice(0,6).join('/')}>
+                        <Tooltip title={`Back to ${compareType}`}>
+                          <Button icon={<ArrowLeftOutlined />} type="text"></Button>
+                        </Tooltip>
+                      </Link>
+                      {
+                        compareVideoDetailProps && compareVideoDetailProps.video.filename ||
+                        compareIndividualDetailProps && (
+                          <>
+                            {compareIndividualDetailProps.individual.name}
+                            {
+                              // Only show 'Shortlist' button if the left panel has an individual
+                              individualDetailProps && 
+                              (
+                                shortlistedIndividualIds.includes(compareIndividualDetailProps.individual.id) ?
+                                <Button
+                                  icon={<StarFilled />}
+                                  onClick={() => setShortlistedIndividualIds([...shortlistedIndividualIds.filter(x => x !== compareIndividualDetailProps.individual.id)])}
+                                >
+                                  Remove from shortlist
+                                </Button>
+                                :
+                                <Button
+                                  icon={<StarOutlined />}
+                                  onClick={() => setShortlistedIndividualIds([...shortlistedIndividualIds, compareIndividualDetailProps.individual.id])}
+                                >
+                                  Shortlist
+                                </Button>
+                              )
+                            }
+                          </>
+                        ) ||
+                        compareCropDetailProps && "Crop"
+                      }
+                    </Space>
+                    :
+                    "Select a video, individual, or crop for comparison"
                   }
                 </h3>
                 {
@@ -430,7 +520,7 @@ const CompareModal: React.FC = () => {
                       <IndividualsGridView
                         individuals={individuals.filter(x => shortlistedIndividualIds.includes(x.id))}
                         individualsMetadataFields={individualsMetadataFields} 
-                        linkBase={routerLocation.pathname.split('/').slice(0,5).join('/')}
+                        linkTemplate={routeSplits.slice(0,6).join('/') + "/:individualId"}
                         buttons={shortlistButton}
                         sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]}
                       />

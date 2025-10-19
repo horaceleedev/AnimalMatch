@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Button, Flex, Image, Select, Space, Tabs, theme, type TabsProps } from "antd";
 import StickyBox from 'react-sticky-box';
-import { Link } from 'react-router-dom';
+import { generatePath, Link } from 'react-router-dom';
 
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
 import VideosGridView from '../components/VideosGridView.tsx';
@@ -23,6 +23,9 @@ type IndividualDetailViewProps = {
   cropsUniqueValuesPerField: Record<string, string[]>;
   uniqueLocations: LocationInfo[];
   updateIndividual: (id: string, data: Partial<Individual>) => Promise<void>;
+  videosLinkTemplate?: string;
+  individualsLinkTemplate?: string;
+  cropsLinkTemplate?: string;
 }
 
 const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
@@ -33,6 +36,9 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
   cropsUniqueValuesPerField,
   uniqueLocations,
   updateIndividual,
+  videosLinkTemplate,
+  individualsLinkTemplate,
+  cropsLinkTemplate,
 }: IndividualDetailViewProps) => {
   // Temporary hack needed because map wasn't showing up properly
   const [showMap, setShowMap] = useState(false);
@@ -80,7 +86,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
             .filter(crop => (selectedBodyPart === ANY_BODY_PART || crop.body_part === selectedBodyPart))
             .slice(0, numCropsToShow)
             .map(crop => (
-              <Link key={crop.id} to={"/crops/" + crop.id}>
+              <Link key={crop.id} to={generatePath(cropsLinkTemplate || "/crops/:cropId", {cropId: crop.id})}>
                 <img src={crop.imageUrl} height={150} className="individual-preview-image" />
               </Link>
             ))
@@ -137,7 +143,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                     uniqueValuesPerField={cropsUniqueValuesPerField}
                     cropsMetadataFields={cropsMetadataFields}
                     onlyShowGridView={true}
-                    // linkBase={undefined}
+                    linkTemplate={cropsLinkTemplate}
                   />
                   :
                   <p>No crops available for this individual</p>
@@ -157,6 +163,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                     videos={videosWithIndividual}
                     videoMetadataFields={videoMetadataFields}
                     isListView={false}
+                    linkTemplate={videosLinkTemplate}
                     sortFields={[]}
                     sortOrders={[]}
                     groupFields={[]}
@@ -179,6 +186,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                   <IndividualsGridView
                     individuals={seenTogetherIndividuals}
                     individualsMetadataFields={individualsMetadataFields}
+                    linkTemplate={individualsLinkTemplate}
                     sortFields={[]}
                     sortOrders={[]}
                     groupFields={[]}

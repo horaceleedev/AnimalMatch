@@ -16,6 +16,7 @@ type VideoDetailViewProps = {
   uniqueValuesPerField: Record<string, string[]>,
   uniqueLocations: LocationInfo[],
   updateVideo: (id: string, data: Partial<Video>) => Promise<void>;
+  individualsLinkTemplate?: string;
 };
 
 const VideoDetailView: React.FC<VideoDetailViewProps> = ({
@@ -24,6 +25,7 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
   uniqueValuesPerField,
   uniqueLocations,
   updateVideo,
+  individualsLinkTemplate,
 }: VideoDetailViewProps) => {
   // Temporary hack needed because map wasn't showing up properly
   const [showMap, setShowMap] = useState(false);
@@ -42,6 +44,7 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
       <IndividualsGridView 
         individuals={individualsInVideo} individualsMetadataFields={individualsMetadataFields}
         // isListView={true}
+        linkTemplate={individualsLinkTemplate}
         allowEditingAgeAndSex={true}
         sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]}
       />

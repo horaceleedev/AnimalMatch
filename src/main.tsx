@@ -19,6 +19,69 @@ import CompareModal from './routes/CompareModal.tsx';
 import VideoAnnotatorModal from './routes/VideoAnnotatorModal.tsx';
 import './index.css'
 
+const comparisonSubroutes = [
+  {
+    path: "compare/v/:videoId",
+    element: <CompareModal />,
+    children: [
+      {
+        // Redirect from '/(videos|individuals|crops)/compare/v/:videoId' to '/(videos|individuals|crops)/compare/v/:videoId/v'
+        index: true,
+        loader: () => redirect("v"),
+      },
+      {
+        path: "v/:compareId?",
+      },
+      {
+        path: "i/:compareId?",
+      },
+      {
+        path: "c/:compareId?",
+      },
+    ],
+  },
+  {
+    path: "compare/i/:individualId",
+    element: <CompareModal />,
+    children: [
+      {
+        // Redirect from '/(videos|individuals|crops)/compare/i/:individualId' to '/(videos|individuals|crops)/compare/i/:individualId/i'
+        index: true,
+        loader: () => redirect("i"),
+      },
+      {
+        path: "v/:compareId?",
+      },
+      {
+        path: "i/:compareId?",
+      },
+      {
+        path: "c/:compareId?",
+      },
+    ],
+  },
+  {
+    path: "compare/c/:cropId",
+    element: <CompareModal />,
+    children: [
+      {
+        // Redirect from '/(videos|individuals|crops)/compare/c/:individualId' to '/(videos|individuals|crops)/compare/c/:individualId/c'
+        index: true,
+        loader: () => redirect("c"),
+      },
+      {
+        path: "v/:compareId?",
+      },
+      {
+        path: "i/:compareId?",
+      },
+      {
+        path: "c/:compareId?",
+      },
+    ],
+  }
+];
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -37,8 +100,9 @@ const router = createBrowserRouter([
         children: [
           {
             path: ":cropId",
-            element: <CropDetailModal />,
+            element: <CompareModal />,
           },
+          ...comparisonSubroutes,
         ]
       },
       {
@@ -54,33 +118,7 @@ const router = createBrowserRouter([
             path: ":videoId/annotate",
             element: <VideoAnnotatorModal />,
           },
-          {
-            path: ":videoId/compare",
-            element: <CompareModal />,
-            children: [
-              {
-                // Redirect from '.../compare/' to '.../compare/individuals'
-                index: true,
-                loader: () => redirect("individuals"),
-              },
-              {
-                path: "videos",
-                // element: <div>videos</div>,
-              },
-              {
-                path: "videos/:compareId",
-                // element: <div>video detail</div>,
-              },
-              {
-                path: "individuals",
-                // element: <div>individuals</div>,
-              },
-              {
-                path: "individuals/:compareId",
-                // element: <div>individual detail</div>,
-              },
-            ],
-          },
+          ...comparisonSubroutes,
         ],
       },
       {
@@ -92,33 +130,7 @@ const router = createBrowserRouter([
             // element: <IndividualDetailModal />,
             element: <CompareModal />,
           },
-          {
-            path: ":individualId/compare",
-            element: <CompareModal />,
-            children: [
-              {
-                // Redirect from '.../compare/' to '.../compare/individuals'
-                index: true,
-                loader: () => redirect("individuals"),
-              },
-              {
-                path: "videos",
-                // element: <div>videos</div>,
-              },
-              {
-                path: "videos/:compareId",
-                // element: <div>video detail</div>,
-              },
-              {
-                path: "individuals",
-                // element: <div>individuals</div>,
-              },
-              {
-                path: "individuals/:compareId",
-                // element: <div>individual detail</div>,
-              },
-            ],
-          },
+          ...comparisonSubroutes,
         ],
       },
     ],
