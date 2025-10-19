@@ -19,6 +19,43 @@ import CompareModal from './routes/CompareModal.tsx';
 import VideoAnnotatorModal from './routes/VideoAnnotatorModal.tsx';
 import './index.css'
 
+const comparisonSubroutes = [
+  {
+    path: "compare/v/:videoId",
+    element: <CompareModal />,
+    children: [
+      {
+        // Redirect from '/(videos|individuals|crops)/compare/v/:videoId' to '/(videos|individuals|crops)/compare/v/:videoId/v'
+        index: true,
+        loader: () => redirect("v"),
+      },
+      {
+        path: "v/:compareId?",
+      },
+      {
+        path: "i/:compareId?",
+      },
+    ],
+  },
+  {
+    path: "compare/i/:individualId",
+    element: <CompareModal />,
+    children: [
+      {
+        // Redirect from '/(videos|individuals|crops)/compare/i/:individualId' to '/(videos|individuals|crops)/compare/i/:individualId/i'
+        index: true,
+        loader: () => redirect("i"),
+      },
+      {
+        path: "v/:compareId?",
+      },
+      {
+        path: "i/:compareId?",
+      },
+    ],
+  },
+];
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -54,40 +91,7 @@ const router = createBrowserRouter([
             path: ":videoId/annotate",
             element: <VideoAnnotatorModal />,
           },
-          {
-            path: "compare/v/:videoId",
-            element: <CompareModal />,
-            children: [
-              {
-                // Redirect from '/videos/compare/v/:videoId' to '/videos/compare/v/:videoId/v'
-                index: true,
-                loader: () => redirect("v"),
-              },
-              {
-                path: "v/:compareId?",
-              },
-              {
-                path: "i/:compareId?",
-              },
-            ],
-          },
-          {
-            path: "compare/i/:individualId",
-            element: <CompareModal />,
-            children: [
-              {
-                // Redirect from '/videos/compare/i/:individualId' to '/videos/compare/i/:individualId/i'
-                index: true,
-                loader: () => redirect("i"),
-              },
-              {
-                path: "v/:compareId?",
-              },
-              {
-                path: "i/:compareId?",
-              },
-            ],
-          },
+          ...comparisonSubroutes,
         ],
       },
       {
@@ -99,40 +103,7 @@ const router = createBrowserRouter([
             // element: <IndividualDetailModal />,
             element: <CompareModal />,
           },
-          {
-            path: "compare/i/:individualId",
-            element: <CompareModal />,
-            children: [
-              {
-                // Redirect from '/individuals/compare/i/:individualId' to '/individuals/compare/i/:individualId/i'
-                index: true,
-                loader: () => redirect("i"),
-              },
-              {
-                path: "v/:compareId?",
-              },
-              {
-                path: "i/:compareId?",
-              },
-            ],
-          },
-          {
-            path: "compare/v/:videoId",
-            element: <CompareModal />,
-            children: [
-              {
-                // Redirect from '/individuals/compare/v/:videoId' to '/individuals/compare/v/:videoId/v'
-                index: true,
-                loader: () => redirect("v"),
-              },
-              {
-                path: "v/:compareId?",
-              },
-              {
-                path: "i/:compareId?",
-              },
-            ],
-          },
+          ...comparisonSubroutes,
         ],
       },
     ],
