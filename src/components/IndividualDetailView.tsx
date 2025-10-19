@@ -6,7 +6,7 @@ import { generatePath, Link } from 'react-router-dom';
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
 import VideosGridView from '../components/VideosGridView.tsx';
 import IndividualsGridView from '../components/IndividualsGridView.tsx';
-import { Individual, LocationInfo, Video } from '../types.ts';
+import { Individual, LocationInfo, RecordType, Video } from '../types.ts';
 import BasicMapView from './BasicMapView.tsx';
 import RecordMetadataForm from './RecordMetadataForm.tsx';
 import CropsDashboardView from './CropsDashboardView.tsx';
@@ -22,6 +22,7 @@ type IndividualDetailViewProps = {
   uniqueValuesPerField: Record<string, string[]>;
   cropsUniqueValuesPerField: Record<string, string[]>;
   uniqueLocations: LocationInfo[];
+  openModal?: (type: RecordType , id: string) => void;
   updateIndividual: (id: string, data: Partial<Individual>) => Promise<void>;
   videosLinkTemplate?: string;
   individualsLinkTemplate?: string;
@@ -35,6 +36,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
   uniqueValuesPerField,
   cropsUniqueValuesPerField,
   uniqueLocations,
+  openModal,
   updateIndividual,
   videosLinkTemplate,
   individualsLinkTemplate,
@@ -86,7 +88,15 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
             .filter(crop => (selectedBodyPart === ANY_BODY_PART || crop.body_part === selectedBodyPart))
             .slice(0, numCropsToShow)
             .map(crop => (
-              <Link key={crop.id} to={generatePath(cropsLinkTemplate || "/crops/:cropId", {cropId: crop.id})}>
+              <Link
+                key={crop.id}
+                to={generatePath(cropsLinkTemplate || "/crops/:cropId", {cropId: crop.id})}
+                onClick={(e) => {
+                  if (!openModal) return;
+                  e.preventDefault();
+                  openModal("crop", crop.id);
+                }}
+              >
                 <img src={crop.imageUrl} height={150} className="individual-preview-image" />
               </Link>
             ))
@@ -144,6 +154,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                     cropsMetadataFields={cropsMetadataFields}
                     onlyShowGridView={true}
                     linkTemplate={cropsLinkTemplate}
+                    openModal={openModal}
                   />
                   :
                   <p>No crops available for this individual</p>
@@ -168,6 +179,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                     sortOrders={[]}
                     groupFields={[]}
                     groupOrders={[]}
+                    openModal={openModal}
                   />
                   :
                   <p>No videos with this individual</p>
@@ -191,6 +203,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                     sortOrders={[]}
                     groupFields={[]}
                     groupOrders={[]}
+                    openModal={openModal}
                   />
                   :
                   <p>No other individuals seen together</p>

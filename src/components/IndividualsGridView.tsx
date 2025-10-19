@@ -5,7 +5,7 @@ import { groupBy, orderBy } from 'es-toolkit';
 
 import { StarOutlined } from '@ant-design/icons';
 
-import { Individual, MetadataFieldsType } from '../types.ts';
+import { Individual, MetadataFieldsType, RecordType } from '../types.ts';
 import "./IndividualsGridView.scss";
 
 const imgStyle: React.CSSProperties = {
@@ -20,10 +20,11 @@ interface BasicIndividualsGridViewProps {
   linkTemplate?: string;
   buttons?: (individual: Individual) => JSX.Element;
   allowEditingAgeAndSex?: boolean;
+  openModal?: (type: RecordType, id: string) => void;
 };
 
 const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
-  individuals, individualsMetadataFields, isListView, linkTemplate = "/individuals/:individualId", buttons, allowEditingAgeAndSex
+  individuals, individualsMetadataFields, isListView, linkTemplate = "/individuals/:individualId", buttons, allowEditingAgeAndSex, openModal,
 }: BasicIndividualsGridViewProps) => {
   return (
     <div className={isListView ? "individuals-list" : "individuals-grid"}>
@@ -53,7 +54,16 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
               </Flex>
             </Flex>
           </Card> */
-          <Link key={individual.id} to={generatePath(linkTemplate, { individualId: individual.id })} className="individual-card-wrapper">
+          <Link
+            key={individual.id}
+            to={generatePath(linkTemplate, { individualId: individual.id })}
+            onClick={(e) => {
+              if (!openModal) return;
+              e.preventDefault();
+              openModal("individual", individual.id);
+            }}
+            className="individual-card-wrapper"
+          >
             <Card hoverable bordered={true} size="small" cover={
               <div style={{display: 'flex', overflow: 'scroll', height: 150, columnGap: 5, borderRadius: 5}}>
                 {
@@ -130,7 +140,8 @@ interface IndividualsGridViewProps extends BasicIndividualsGridViewProps {
 
 const IndividualsGridView: React.FC<IndividualsGridViewProps> = ({
   individuals, individualsMetadataFields, isListView, linkTemplate, buttons, allowEditingAgeAndSex,
-  sortFields, sortOrders, groupFields, groupOrders
+  sortFields, sortOrders, groupFields, groupOrders,
+  openModal,
 }: IndividualsGridViewProps) => {
   const individualsSorted = orderBy(individuals, sortFields, sortOrders);
   
@@ -151,6 +162,7 @@ const IndividualsGridView: React.FC<IndividualsGridViewProps> = ({
       linkTemplate={linkTemplate}
       buttons={buttons}
       allowEditingAgeAndSex={allowEditingAgeAndSex}
+      openModal={openModal}
     />
   );
   return groupedIndividuals.map(([groupValue, groupIndividuals]) => (
@@ -179,6 +191,7 @@ const IndividualsGridView: React.FC<IndividualsGridViewProps> = ({
               linkTemplate={linkTemplate}
               buttons={buttons}
               allowEditingAgeAndSex={allowEditingAgeAndSex}
+              openModal={openModal}
             />
           ),
         },

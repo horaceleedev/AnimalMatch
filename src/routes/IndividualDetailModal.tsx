@@ -9,10 +9,18 @@ import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght40
 import { useIndividualsStoreWithCrops, useVideoStore } from "../DataStores.tsx";
 import IndividualDetailView from '../components/IndividualDetailView.tsx';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
+import { RecordDetailModalProps, RecordType } from '../types.ts';
+import InnerModal from './InnerModal.tsx';
+import "./IndividualDetailModal.scss";
 
-const IndividualDetailModal: React.FC = () => {
+
+const IndividualDetailModal: React.FC<RecordDetailModalProps> = ({
+  id: individualIdFromProps, // if not provided, will get from useParams
+  exitModal, // if not provided, will navigate back to /individuals
+}) => {
   const navigate = useNavigate();
-  const { individualId } = useParams<"individualId">();
+  const { individualId: individualIdFromParams } = useParams<"individualId">();
+  const individualId = individualIdFromProps ?? individualIdFromParams;
   console.log(individualId)
 
   const [isModalOpen, setIsModalOpen] = useState(true);
@@ -20,9 +28,18 @@ const IndividualDetailModal: React.FC = () => {
     setIsModalOpen(false);
   };
   const handleOpenChange = (open: boolean) => {
-    // Navigate back to the /individuals page when the modal is closed
-    if (open === false) navigate('/individuals');
+    if (open === false) {
+      // Once the modal is closed, exit using exitModal if provided,
+      // otherwise navigate back to the /individuals page
+      if (exitModal) exitModal();
+      else navigate('/individuals');
+    }
   };
+
+  const [innerModalProps, setInnerModalProps] = useState<{ type?: RecordType; id?: string; }>({
+    type: undefined,
+    id: undefined,
+  });
 
   const { individuals, updateIndividual, individualsUniqueValuesPerField, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
   const individual = individuals.find(x => x.id === individualId);
@@ -60,6 +77,7 @@ const IndividualDetailModal: React.FC = () => {
       onCancel={handleDismiss}
       afterOpenChange={handleOpenChange}
       centered={true}
+      className="individual-detail-modal"
     >
       <IndividualDetailView
         individual={individual} 
@@ -68,8 +86,10 @@ const IndividualDetailModal: React.FC = () => {
         uniqueValuesPerField={individualsUniqueValuesPerField}
         cropsUniqueValuesPerField={cropsUniqueValuesPerField}
         uniqueLocations={uniqueIndividualLocations}
+        openModal={(type, id) => setInnerModalProps({ type, id })}
         updateIndividual={updateIndividual}
       />
+      <InnerModal {...innerModalProps} exitModal={() => setInnerModalProps({ type: undefined, id: undefined })} />
     </Modal>
   );
 };

@@ -3,18 +3,20 @@ import { Flex, Image } from 'antd';
 
 import RecordMetadataForm from '../components/RecordMetadataForm.tsx';
 import { cropsMetadataFields } from '../metadata.tsx';
-import { Crop } from '../types.ts';
+import { Crop, RecordType } from '../types.ts';
 
 type CropDetailViewProps = {
   crop: Crop;
   uniqueValuesPerField: Record<string, string[]>;
+  openModal?: (type: RecordType , id: string) => void;
   updateCrop: (id: string, data: Partial<Crop>) => Promise<void>;
 }
 
 const CropDetailView: React.FC<CropDetailViewProps> = ({
   crop,
   uniqueValuesPerField,
-  updateCrop
+  openModal,
+  updateCrop,
 }: CropDetailViewProps) => {
   return (
     <>
@@ -25,6 +27,7 @@ const CropDetailView: React.FC<CropDetailViewProps> = ({
         processedRecord={crop}
         metadataFields={cropsMetadataFields}
         uniqueValuesPerField={uniqueValuesPerField}
+        openModal={openModal}
         updateFunction={updateCrop}
         showIconInSelectionFields={false}
       />

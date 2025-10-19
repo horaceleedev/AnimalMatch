@@ -1,20 +1,30 @@
 import { Card, Flex, Typography } from "antd";
 import { generatePath, Link } from "react-router-dom";
 import { useIndividualsStoreWithCrops, useVideoStore } from "../../DataStores";
+import { RecordType } from "../../types";
 
 
 interface LinkButtonProps {
   id: string;
   linkTemplate?: string;
+  openModal?: (type: RecordType, id: string) => void;
 };
 
-export const IndividualLinkButton: React.FC<LinkButtonProps> = ({ id, linkTemplate = "/individuals/:individualId" }: LinkButtonProps) => {
+export const IndividualLinkButton: React.FC<LinkButtonProps> = ({ id, linkTemplate = "/individuals/:individualId", openModal }: LinkButtonProps) => {
   // TODO see if there is an efficient implementation without loading all individuals
   const { individuals } = useIndividualsStoreWithCrops();
   const individual = individuals.find(i => i.id === id);
 
   return (
-    <Link key={id} to={generatePath(linkTemplate, { individualId: id })}>
+    <Link
+      key={id}
+      to={generatePath(linkTemplate, { individualId: id })}
+      onClick={(e) => {
+        if (!openModal) return;
+        e.preventDefault();
+        openModal("individual", id);
+      }}
+    >
       <Card
         hoverable
         size="small"
@@ -30,11 +40,19 @@ export const IndividualLinkButton: React.FC<LinkButtonProps> = ({ id, linkTempla
   );
 };
 
-export const VideoLinkButton: React.FC<LinkButtonProps> = ({ id, linkTemplate = "/videos/:videoId" }: LinkButtonProps) => {
+export const VideoLinkButton: React.FC<LinkButtonProps> = ({ id, linkTemplate = "/videos/:videoId", openModal }: LinkButtonProps) => {
   const video = useVideoStore((state) => state.processedRecords.find(v => v.id === id));
 
   return (
-    <Link key={id} to={generatePath(linkTemplate, { videoId: id })}>
+    <Link
+      key={id}
+      to={generatePath(linkTemplate, { videoId: id })}
+      onClick={(e) => {
+        if (!openModal) return;
+        e.preventDefault();
+        openModal("video", id);
+      }}
+    >
       <Card
         hoverable
         size="small"

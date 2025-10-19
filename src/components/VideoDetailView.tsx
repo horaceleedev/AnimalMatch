@@ -4,7 +4,7 @@ import { Button, Divider } from "antd";
 import dayjs from "dayjs";
 
 import BasicMapView from '../components/BasicMapView.tsx';
-import { Individual, LocationInfo, MetadataFieldsType, Video } from '../types.ts';
+import { Individual, LocationInfo, MetadataFieldsType, RecordType, Video } from '../types.ts';
 import { individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
 import IndividualsGridView from "./IndividualsGridView.tsx";
 import RecordMetadataForm from "./RecordMetadataForm.tsx";
@@ -15,6 +15,7 @@ type VideoDetailViewProps = {
   individualsInVideo: Individual[],
   uniqueValuesPerField: Record<string, string[]>,
   uniqueLocations: LocationInfo[],
+  openModal?: (type: RecordType , id: string) => void;
   updateVideo: (id: string, data: Partial<Video>) => Promise<void>;
   individualsLinkTemplate?: string;
 };
@@ -24,6 +25,7 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
   individualsInVideo,
   uniqueValuesPerField,
   uniqueLocations,
+  openModal,
   updateVideo,
   individualsLinkTemplate,
 }: VideoDetailViewProps) => {
@@ -47,6 +49,7 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
         linkTemplate={individualsLinkTemplate}
         allowEditingAgeAndSex={true}
         sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]}
+        openModal={openModal}
       />
       <Divider />
       <h3>Video metadata</h3>

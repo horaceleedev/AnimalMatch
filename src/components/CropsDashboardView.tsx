@@ -7,7 +7,7 @@ import Table from '../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GR
 
 import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import CropsGridView from '../components/CropsGridView.tsx';
-import { Crop, MetadataFieldsType } from '../types.ts';
+import { Crop, MetadataFieldsType, RecordType } from '../types.ts';
 
 const viewsTabsItems: TabsProps['items'] = [
   {
@@ -37,11 +37,13 @@ interface CropsDashboardViewProps {
   // gridViewButtons?: (crop: Crop) => JSX.Element;
   defaultGroupFields?: string[];
   defaultGroupOrders?: ("asc" | "desc")[];
+  openModal?: (type: RecordType , id: string) => void;
 }
 const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
   crops, uniqueValuesPerField, cropsMetadataFields,
   onlyShowGridView, linkTemplate, // gridViewButtons,
   defaultGroupFields, defaultGroupOrders,
+  openModal,
 }: CropsDashboardViewProps) => {
   const [view, setView] = useState(viewsTabsItems[0].key);
 
@@ -86,6 +88,7 @@ const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
           sortOrders={sortOrders}
           groupFields={groupFields}
           groupOrders={groupOrders}
+          openModal={openModal}
         />
         :
         (
