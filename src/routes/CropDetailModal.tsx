@@ -1,7 +1,10 @@
 import React, { useState } from 'react'
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useShallow } from 'zustand/react/shallow';
-import { Modal } from "antd";
+import { Button, Modal, Space } from "antd";
+import Icon from '@ant-design/icons';
+
+import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
 import { useCropsStore } from "../DataStores.tsx";
 import CropDetailView from '../components/CropDetailView.tsx';
@@ -35,7 +38,14 @@ const CropDetailModal: React.FC = () => {
   // disable closing by escape key
   return (
     <Modal
-      title="Crop"
+      title={
+        <Space>
+          Crop
+          <Link to={"/crops/compare/c/" + cropId}>
+            <Button icon={<Icon component={Compare} />}>Open comparison view</Button>
+          </Link>
+        </Space>
+      }
       open={isModalOpen}
       footer={null}
       onCancel={handleDismiss}

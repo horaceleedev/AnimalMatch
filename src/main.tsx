@@ -35,6 +35,9 @@ const comparisonSubroutes = [
       {
         path: "i/:compareId?",
       },
+      {
+        path: "c/:compareId?",
+      },
     ],
   },
   {
@@ -52,8 +55,31 @@ const comparisonSubroutes = [
       {
         path: "i/:compareId?",
       },
+      {
+        path: "c/:compareId?",
+      },
     ],
   },
+  {
+    path: "compare/c/:cropId",
+    element: <CompareModal />,
+    children: [
+      {
+        // Redirect from '/(videos|individuals|crops)/compare/c/:individualId' to '/(videos|individuals|crops)/compare/c/:individualId/c'
+        index: true,
+        loader: () => redirect("c"),
+      },
+      {
+        path: "v/:compareId?",
+      },
+      {
+        path: "i/:compareId?",
+      },
+      {
+        path: "c/:compareId?",
+      },
+    ],
+  }
 ];
 
 const router = createBrowserRouter([
@@ -74,8 +100,9 @@ const router = createBrowserRouter([
         children: [
           {
             path: ":cropId",
-            element: <CropDetailModal />,
+            element: <CompareModal />,
           },
+          ...comparisonSubroutes,
         ]
       },
       {
