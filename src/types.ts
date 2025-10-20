@@ -12,8 +12,9 @@ export interface VideoRecord extends RecordModel {
   created: string;
   updated: string;
   id: string;
-  file: string;
   filename: string;
+  file: string;
+  thumbnail: string;
   habitat: string;
   location_name: string;
   month_of_SD_retrieval: string;
@@ -25,6 +26,7 @@ export interface VideoRecord extends RecordModel {
 };
 export interface Video extends VideoRecord {
   url: string;
+  thumbnailUrl: string;
   lat: number;
   long: number;
 };

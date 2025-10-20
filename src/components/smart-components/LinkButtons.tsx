@@ -60,8 +60,7 @@ export const VideoLinkButton: React.FC<LinkButtonProps> = ({ id, linkTemplate = 
         styles={{ body: { padding: 0 } }}
       >
         <Flex gap="small" align="center">
-          {/* TODO replace <video> with thumbnail later */}
-          <video src={video?.url} height={26} style={{margin: 3, borderRadius: 5}} />
+          <img src={video?.thumbnailUrl} height={26} style={{margin: 3, borderRadius: 5}} />
           <Typography.Title level={5} style={{margin: 0, fontSize: 12}}>{video?.filename}</Typography.Title>
         </Flex>
       </Card>

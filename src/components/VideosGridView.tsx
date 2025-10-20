@@ -64,10 +64,17 @@ const BasicVideosGridView: React.FC<BasicVideosGridViewProps> = ({
               hoverable
               style={{ overflow: 'hidden' }}
               styles={{ body: { padding: 0 } }}
+              // video hover preview
+              onMouseEnter={(e) => e.currentTarget.querySelector('video')?.play()}
+              onMouseLeave={(e) => e.currentTarget.querySelector('video')?.load()}
             >
               <Flex vertical={!isListView} justify={isListView ? "flex-start" : "space-between"}>
-                <video src={video.url}
-                        controls
+                <video
+                  src={video.url}
+                  poster={video.thumbnailUrl}
+                  playsInline
+                  muted
+                  preload="none"
                 />
                 <Flex vertical align="flex-start" justify="space-between" style={{ padding: 12 }}>
                   <Typography.Title level={5} style={{marginTop: 0, fontSize: 14}}>{video.filename}</Typography.Title>

@@ -141,6 +141,7 @@ export const useVideoStore = createRealtimeCollectionStore<VideoRecord, Video, {
         ...record,
         recording_date: dayjs(record.recording_date).format("YYYY-MM-DD HH:mm:ss"),
         url: `http://127.0.0.1:8090/api/files/${record.collectionId}/${record.id}/${record.file}`,
+        thumbnailUrl: `http://127.0.0.1:8090/api/files/${record.collectionId}/${record.id}/${record.thumbnail}`,
         lat,
         long,
       };
