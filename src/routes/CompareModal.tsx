@@ -554,44 +554,41 @@ const CompareModal: React.FC = () => {
               }
 
               {rightPanel}
-              
-              {
-                // Shortlist
-                (shortlistedIndividualIds.length > 0) &&
-                <Popover placement="topRight" title="Shortlist" content={
-                  <div style={{maxHeight: 'calc(88vh - 180px)', width: 450, overflow: 'scroll'}}>
-                    <IndividualsGridView
-                      individuals={individuals.filter(x => shortlistedIndividualIds.includes(x.id))}
-                      individualsMetadataFields={individualsMetadataFields} 
-                      linkTemplate={routeSplits.slice(0,6).join('/') + "/:individualId"}
-                      buttons={shortlistButton}
-                      sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]}
-                    />
-                  </div>
-                } arrow={false}>
-                  {/* <Badge count={shortlistedIndividualIds.length} color="blue"> */}
-                    <Button
-                      icon={<StarFilled />}
-                      // variant="solid" color="primary"
-                      type="primary"
-                      style={{
-                        position: 'absolute',
-                        right: 15,
-                        bottom: 25,
-                        zIndex: 1,
-                        // boxShadow: "0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05)",
-                        boxShadow: "0px 1px 2px -2px rgba(0,0,0,0.16), 0px 3px 6px 0px rgba(0,0,0,0.12), 0px 5px 12px 4px rgba(0,0,0,0.09)",
-                        background: "#1677ff" // this is needed because when the popover is open, the button background turns transparent for some reason
-                      }}
-                    >
-                      View shortlist ({shortlistedIndividualIds.length})
-                    </Button>
-                  {/* </Badge> */}
-                </Popover>
-              }
             </>
           }
         </Sider>
+        {
+          // Shortlist
+          (shortlistedIndividualIds.length > 0) &&
+          <Popover placement="topRight" title="Shortlist" content={
+            <IndividualsGridView
+              individuals={individuals.filter(x => shortlistedIndividualIds.includes(x.id))}
+              individualsMetadataFields={individualsMetadataFields} 
+              linkTemplate={routeSplits.slice(0,6).join('/') + "/:individualId"}
+              buttons={shortlistButton}
+              sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]}
+            />
+          } arrow={false} overlayInnerStyle={{maxHeight: 'calc(88vh - 180px)', width: 450, overflow: 'scroll'}}>
+            {/* <Badge count={shortlistedIndividualIds.length} color="blue"> */}
+              <Button
+                icon={<StarFilled />}
+                // variant="solid" color="primary"
+                type="primary"
+                style={{
+                  position: 'absolute',
+                  right: 15,
+                  bottom: 25,
+                  zIndex: 1000, // ensures this button is visible above the Leaflet map
+                  // boxShadow: "0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05)",
+                  boxShadow: "0px 1px 2px -2px rgba(0,0,0,0.16), 0px 3px 6px 0px rgba(0,0,0,0.12), 0px 5px 12px 4px rgba(0,0,0,0.09)",
+                  background: "#1677ff" // this is needed because when the popover is open, the button background turns transparent for some reason
+                }}
+              >
+                View shortlist ({shortlistedIndividualIds.length})
+              </Button>
+            {/* </Badge> */}
+          </Popover>
+        }
       </Layout>
       {
         // Only show these buttons if the user is comparing two individuals
