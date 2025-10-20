@@ -1,14 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { differenceBy, intersection } from 'es-toolkit';
-import { Button, Input, Modal, Popover, Space, Splitter, Tabs, Tooltip } from "antd";
+import { Button, Flex, Input, Layout, Modal, Popover, Space, Tabs, Tooltip } from "antd";
 import type { TabsProps } from "antd";
 const { TextArea } = Input;
+const { Content, Sider } = Layout;
 import Icon, { ArrowLeftOutlined, CheckOutlined, CloseOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
 import { useShallow } from 'zustand/react/shallow';
 import classnames from 'classnames';
 
-import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
+import RightPanelOpen from '../assets/material_symbols/right_panel_open_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
+import RightPanelClose from '../assets/material_symbols/right_panel_close_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
 import { useIndividualsStoreWithCrops, useVideoStore, useCropsStore } from "../DataStores.tsx";
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
@@ -143,11 +145,11 @@ const CompareModal: React.FC = () => {
   }, [compareId, compareType, crops]);
   const [shortlistedIndividualIds, setShortlistedIndividualIds] = useState<string[]>([]);
 
-  const rightPanelWrapperRef = useRef<HTMLDivElement>(null);
+  const rightPanelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     // Reset scroll (i.e. scroll up to the top) on the right panel
     // when entering a VideoDetailView or IndividualDetailView (on the right panel)
-    if (rightPanelWrapperRef.current) rightPanelWrapperRef.current.scrollTop = 0;
+    if (rightPanelRef.current) rightPanelRef.current.scrollTop = 0;
   }, [compareId]);
 
   const showSameIndividualConfirm = () => {
@@ -414,8 +416,7 @@ const CompareModal: React.FC = () => {
     }
   }
   const modalTitle = (
-    // <Flex gap="small" align="center" style={{position: 'relative'}}>
-    <Space>
+    <Flex gap="small" align="center" style={{position: 'relative'}}>
       {
         isCompareView ?
         <Link to={
@@ -442,12 +443,27 @@ const CompareModal: React.FC = () => {
       }
       {modalTitleText}
       {
-        !isCompareView &&
-        <Link to={`${routeSplits.slice(0,2).join('/')}/compare/${recordTypeLongNameToShortName[routeSplits[1]]}/${routeSplits[2]}`}>
-          <Button icon={<Icon component={Compare} />}>Open comparison view</Button>
+        isCompareView ?
+        <Link
+          style={{marginLeft: "auto", marginRight: "32px"}}
+          // Back to the /videos/:videoId, /individuals/:individualId, or /crops/:cropId page
+          to={routeSplits.slice(0,2).join('/') + "/" + routeSplits[4]}
+        >
+          <Tooltip title="Close comparison view">
+            <Button type="text" icon={<Icon component={RightPanelClose} />} />
+          </Tooltip>
+        </Link>
+        :
+        <Link
+          style={{marginLeft: "auto", marginRight: "32px"}}
+          to={`${routeSplits.slice(0,2).join('/')}/compare/${recordTypeLongNameToShortName[routeSplits[1]]}/${routeSplits[2]}`}
+        >
+          <Tooltip title="Open comparison view">
+            <Button type="text" icon={<Icon component={RightPanelOpen} />} />
+          </Tooltip>
         </Link>
       }
-    </Space>
+    </Flex>
   );
   
   // TODO
@@ -462,136 +478,140 @@ const CompareModal: React.FC = () => {
       afterOpenChange={handleOpenChange}
       centered={true}
     >
-      {
-        isCompareView ?
-        <>
-          <Splitter style={{ height: '100%' }}>
-            <Splitter.Panel defaultSize="50%" min="30%" max="70%" style={{padding: "0 10px 10px 10px"}}>
+      <Layout>
+        <Content>
+          {
+            isCompareView &&
+            <h3 style={{marginTop: 5}}>
+              {
+                (videoDetailProps && videoDetailProps.video.filename) ||
+                (individualDetailProps && individualDetailProps.individual.name) ||
+                (cropDetailProps && "Crop")
+              }
+            </h3>
+          }
+          {leftPanel}
+        </Content>
+        <Sider
+          trigger={null}
+          collapsible
+          collapsed={!isCompareView}
+          collapsedWidth={0}
+          ref={rightPanelRef}
+          width={compareId ? "50%" : "min(50%, 550px)"}
+          theme="light"
+        >
+          {
+            isCompareView &&
+            <>
               <h3 style={{marginTop: 5}}>
                 {
-                  (videoDetailProps && videoDetailProps.video.filename) ||
-                  (individualDetailProps && individualDetailProps.individual.name) ||
-                  (cropDetailProps && "Crop")
+                  (compareVideoDetailProps || compareIndividualDetailProps || compareCropDetailProps) ?
+                  <Space>
+                    <Link to={routeSplits.slice(0,6).join('/')}>
+                      <Tooltip title={`Back to ${compareType}`}>
+                        <Button icon={<ArrowLeftOutlined />} type="text"></Button>
+                      </Tooltip>
+                    </Link>
+                    {
+                      compareVideoDetailProps && compareVideoDetailProps.video.filename ||
+                      compareIndividualDetailProps && (
+                        <>
+                          {compareIndividualDetailProps.individual.name}
+                          {
+                            // Only show 'Shortlist' button if the left panel has an individual
+                            individualDetailProps && 
+                            (
+                              shortlistedIndividualIds.includes(compareIndividualDetailProps.individual.id) ?
+                              <Button
+                                icon={<StarFilled />}
+                                onClick={() => setShortlistedIndividualIds([...shortlistedIndividualIds.filter(x => x !== compareIndividualDetailProps.individual.id)])}
+                              >
+                                Remove from shortlist
+                              </Button>
+                              :
+                              <Button
+                                icon={<StarOutlined />}
+                                onClick={() => setShortlistedIndividualIds([...shortlistedIndividualIds, compareIndividualDetailProps.individual.id])}
+                              >
+                                Shortlist
+                              </Button>
+                            )
+                          }
+                        </>
+                      ) ||
+                      compareCropDetailProps && "Crop"
+                    }
+                  </Space>
+                  :
+                  "Select a video, individual, or crop for comparison"
                 }
               </h3>
-              {leftPanel}
-            </Splitter.Panel>
-            <Splitter.Panel style={{height: "100%"}}>
-              <div
-                ref={rightPanelWrapperRef}
-                style={{height: "100%", overflow: "scroll", padding: "0 10px 10px 20px"}}
-              >
-                <h3 style={{marginTop: 5}}>
-                  {
-                    (compareVideoDetailProps || compareIndividualDetailProps || compareCropDetailProps) ?
-                    <Space>
-                      <Link to={routeSplits.slice(0,6).join('/')}>
-                        <Tooltip title={`Back to ${compareType}`}>
-                          <Button icon={<ArrowLeftOutlined />} type="text"></Button>
-                        </Tooltip>
-                      </Link>
-                      {
-                        compareVideoDetailProps && compareVideoDetailProps.video.filename ||
-                        compareIndividualDetailProps && (
-                          <>
-                            {compareIndividualDetailProps.individual.name}
-                            {
-                              // Only show 'Shortlist' button if the left panel has an individual
-                              individualDetailProps && 
-                              (
-                                shortlistedIndividualIds.includes(compareIndividualDetailProps.individual.id) ?
-                                <Button
-                                  icon={<StarFilled />}
-                                  onClick={() => setShortlistedIndividualIds([...shortlistedIndividualIds.filter(x => x !== compareIndividualDetailProps.individual.id)])}
-                                >
-                                  Remove from shortlist
-                                </Button>
-                                :
-                                <Button
-                                  icon={<StarOutlined />}
-                                  onClick={() => setShortlistedIndividualIds([...shortlistedIndividualIds, compareIndividualDetailProps.individual.id])}
-                                >
-                                  Shortlist
-                                </Button>
-                              )
-                            }
-                          </>
-                        ) ||
-                        compareCropDetailProps && "Crop"
-                      }
-                    </Space>
-                    :
-                    "Select a video, individual, or crop for comparison"
-                  }
-                </h3>
-                {
-                  (individualDetailProps && !compareId && compareType === "individuals") && 
-                  <span>Note: the individual on the left and its co-occurrences have been omitted from the list below.</span>
-                }
+              {
+                (individualDetailProps && !compareId && compareType === "individuals") && 
+                <span>Note: the individual on the left and its co-occurrences have been omitted from the list below.</span>
+              }
 
-                {rightPanel}
-                
-                {
-                  // Shortlist
-                  (shortlistedIndividualIds.length > 0) &&
-                  <Popover placement="topRight" title="Shortlist" content={
-                    <div style={{maxHeight: 'calc(88vh - 180px)', width: 450, overflow: 'scroll'}}>
-                      <IndividualsGridView
-                        processedRecords={individuals.filter(x => shortlistedIndividualIds.includes(x.id))}
-                        metadataFields={individualsMetadataFields}
-                        processedRecordsPropName="individuals"
-                        basicGridViewProps={{
-                          individuals: individuals.filter(x => shortlistedIndividualIds.includes(x.id)),
-                          individualsMetadataFields: individualsMetadataFields,
-                          linkTemplate: routeSplits.slice(0,6).join('/') + "/:individualId",
-                          buttons: shortlistButton,
-                        }}
-                        sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]}
-                      />
-                    </div>
-                  } arrow={false}>
-                    {/* <Badge count={shortlistedIndividualIds.length} color="blue"> */}
-                      <Button
-                        icon={<StarFilled />}
-                        // variant="solid" color="primary"
-                        type="primary"
-                        style={{
-                          position: 'absolute',
-                          right: 15,
-                          bottom: 25,
-                          zIndex: 1,
-                          // boxShadow: "0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05)",
-                          boxShadow: "0px 1px 2px -2px rgba(0,0,0,0.16), 0px 3px 6px 0px rgba(0,0,0,0.12), 0px 5px 12px 4px rgba(0,0,0,0.09)",
-                          background: "#1677ff" // this is needed because when the popover is open, the button background turns transparent for some reason
-                        }}
-                      >
-                        View shortlist ({shortlistedIndividualIds.length})
-                      </Button>
-                    {/* </Badge> */}
-                  </Popover>
-                }
-              </div>
-            </Splitter.Panel>
-          </Splitter>
-          {
-            // Only show these buttons if the user is comparing two individuals
-            (individualDetailProps && compareIndividualDetailProps) &&
-            <Space style={{
-              position: 'absolute', bottom: -20, left: '50%', transform: 'translateX(-50%)',
-              boxShadow: "0px 1px 2px -2px rgba(0,0,0,0.16), 0px 3px 6px 0px rgba(0,0,0,0.12), 0px 5px 12px 4px rgba(0,0,0,0.09)",
-              padding: '8px 8px 8px 12px',
-              borderRadius: 10,
-              background: 'white',
-              zIndex: 1000,
-            }}>
-              <span>Are these two individuals the same?</span>
-              <Button onClick={showSameIndividualConfirm} icon={<CheckOutlined />} type="primary">Same individual</Button>
-              <Button onClick={showDifferentIndividualConfirm} icon={<CloseOutlined />} type="primary" danger>Different individual</Button>
-            </Space>
+              {rightPanel}
+              
+              {
+                // Shortlist
+                (shortlistedIndividualIds.length > 0) &&
+                <Popover placement="topRight" title="Shortlist" content={
+                  <div style={{maxHeight: 'calc(88vh - 180px)', width: 450, overflow: 'scroll'}}>
+                    <IndividualsGridView
+                      processedRecords={individuals.filter(x => shortlistedIndividualIds.includes(x.id))}
+                      metadataFields={individualsMetadataFields}
+                      processedRecordsPropName="individuals"
+                      basicGridViewProps={{
+                        individuals: individuals.filter(x => shortlistedIndividualIds.includes(x.id)),
+                        individualsMetadataFields: individualsMetadataFields,
+                        linkTemplate: routeSplits.slice(0,6).join('/') + "/:individualId",
+                        buttons: shortlistButton,
+                      }}
+                      sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]}
+                    />
+                  </div>
+                } arrow={false}>
+                  {/* <Badge count={shortlistedIndividualIds.length} color="blue"> */}
+                    <Button
+                      icon={<StarFilled />}
+                      // variant="solid" color="primary"
+                      type="primary"
+                      style={{
+                        position: 'absolute',
+                        right: 15,
+                        bottom: 25,
+                        zIndex: 1,
+                        // boxShadow: "0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05)",
+                        boxShadow: "0px 1px 2px -2px rgba(0,0,0,0.16), 0px 3px 6px 0px rgba(0,0,0,0.12), 0px 5px 12px 4px rgba(0,0,0,0.09)",
+                        background: "#1677ff" // this is needed because when the popover is open, the button background turns transparent for some reason
+                      }}
+                    >
+                      View shortlist ({shortlistedIndividualIds.length})
+                    </Button>
+                  {/* </Badge> */}
+                </Popover>
+              }
+            </>
           }
-        </>
-        :
-        leftPanel
+        </Sider>
+      </Layout>
+      {
+        // Only show these buttons if the user is comparing two individuals
+        (individualDetailProps && compareIndividualDetailProps) &&
+        <Space style={{
+          position: 'absolute', bottom: -20, left: '50%', transform: 'translateX(-50%)',
+          boxShadow: "0px 1px 2px -2px rgba(0,0,0,0.16), 0px 3px 6px 0px rgba(0,0,0,0.12), 0px 5px 12px 4px rgba(0,0,0,0.09)",
+          padding: '8px 8px 8px 12px',
+          borderRadius: 10,
+          background: 'white',
+          zIndex: 1000,
+        }}>
+          <span>Are these two individuals the same?</span>
+          <Button onClick={showSameIndividualConfirm} icon={<CheckOutlined />} type="primary">Same individual</Button>
+          <Button onClick={showDifferentIndividualConfirm} icon={<CloseOutlined />} type="primary" danger>Different individual</Button>
+        </Space>
       }
     </Modal>
   );

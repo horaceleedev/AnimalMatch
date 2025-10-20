@@ -6,8 +6,43 @@
     width: 520px !important;
   }
 
-  .ant-modal-body {
-    height: calc(88vh - 52px);
-    overflow: scroll;
+  .ant-modal-content {
+    padding: 0;
+
+    .ant-modal-header {
+      padding: 12px 20px 10px 20px;
+      margin-bottom: 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .ant-modal-body {
+      height: calc(88vh - 52px);
+      overflow: scroll;
+  
+      .ant-layout {
+        height: 100%;
+  
+        // left panel
+        .ant-layout-content {
+          padding: 10px 20px 20px 30px;
+          overflow: scroll;
+        }
+        // right panel
+        .ant-layout-sider {
+          height: 100%;
+          padding: 10px 30px 20px 20px;
+          overflow: scroll;
+          border-left: 1px solid #eee;
+
+          &.ant-layout-sider-zero-width {
+            padding: 0; // set the padding to 0 when the sider is collapsed so that it has a width of 0
+          }
+
+          .ant-layout-sider-children {
+            height: unset;
+          }
+        }
+      }
+    }
   }
 }

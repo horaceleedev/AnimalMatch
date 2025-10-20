@@ -59,7 +59,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
     token: { colorBgContainer },
   } = theme.useToken();
   const renderStickyTabBar: TabsProps['renderTabBar'] = (props, DefaultTabBar) => (
-    <StickyBox style={{ zIndex: 1 }}>
+    <StickyBox offsetTop={-10 /* based on the padding-top of the left/right panels of CompareModal */} style={{ zIndex: 1 }}>
       <DefaultTabBar {...props} style={{ background: colorBgContainer }} />
     </StickyBox>
   );

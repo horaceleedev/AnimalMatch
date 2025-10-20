@@ -107,8 +107,8 @@ const router = createBrowserRouter([
         children: [
           {
             path: ":cropId",
-            element: <CropDetailModal />,
-            // element: <CompareModal />,
+            // element: <CropDetailModal />,
+            element: <CompareModal />,
           },
           ...comparisonSubroutes,
         ]
@@ -119,8 +119,8 @@ const router = createBrowserRouter([
         children: [
           {
             path: ":videoId",
-            element: <VideoDetailModal />,
-            // element: <CompareModal />,
+            // element: <VideoDetailModal />,
+            element: <CompareModal />,
           },
           {
             path: ":videoId/annotate",
@@ -135,8 +135,8 @@ const router = createBrowserRouter([
         children: [
           {
             path: ":individualId",
-            element: <IndividualDetailModal />,
-            // element: <CompareModal />,
+            // element: <IndividualDetailModal />,
+            element: <CompareModal />,
           },
           ...comparisonSubroutes,
         ],
