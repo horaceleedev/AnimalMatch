@@ -256,7 +256,7 @@ const CompareModal: React.FC = () => {
       />
     )
   } else {
-    leftPanel = <>Error: unknown video or individual</>
+    leftPanel = <>Error: unknown {routeSplits[1].slice(0, -1)}</>
   }
 
   let rightPanel;
@@ -302,7 +302,7 @@ const CompareModal: React.FC = () => {
         />
       );
     } else {
-      rightPanel = <>Error: unknown video or individual</>
+      rightPanel = <>Error: unknown {routeSplits[1].slice(0, -1)}</>
     }
   } else {
     const items: TabsProps['items'] = [
