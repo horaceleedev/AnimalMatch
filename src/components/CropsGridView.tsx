@@ -80,7 +80,11 @@ interface CropsGridViewProps extends BasicCropsGridViewProps {
   groupOrders: ("asc" | "desc")[];
 };
 
-const CropsGridView: React.FC<CropsGridViewProps> = ({ crops, cropsMetadataFields, linkTemplate, sortFields, sortOrders, groupFields, groupOrders, openModal }: CropsGridViewProps) => {
+const CropsGridView: React.FC<CropsGridViewProps> = ({
+  crops, cropsMetadataFields, linkTemplate,
+  sortFields, sortOrders, groupFields, groupOrders,
+  openModal,
+}: CropsGridViewProps) => {
   const cropsSorted = orderBy(crops, sortFields, sortOrders);
   
   // TODO check if the below works when groupFields.length === 0
@@ -92,7 +96,14 @@ const CropsGridView: React.FC<CropsGridViewProps> = ({ crops, cropsMetadataField
     )
   ), [cropsSorted]);
 
-  if (groupFields.length === 0) return <BasicCropsGridView crops={cropsSorted} cropsMetadataFields={cropsMetadataFields} linkTemplate={linkTemplate} openModal={openModal} />;
+  if (groupFields.length === 0) return (
+    <BasicCropsGridView
+      crops={cropsSorted}
+      cropsMetadataFields={cropsMetadataFields}
+      linkTemplate={linkTemplate}
+      openModal={openModal}
+    />
+  );
 
   return groupedCrops.map(([groupValue, groupCrops]) => (
     <Collapse
@@ -106,7 +117,14 @@ const CropsGridView: React.FC<CropsGridViewProps> = ({ crops, cropsMetadataField
         {
           key: '1',
           label: <span>{cropsMetadataFields[groupFields[0]].displayName}: {groupValue}</span>,
-          children: <BasicCropsGridView crops={groupCrops} cropsMetadataFields={cropsMetadataFields} linkTemplate={linkTemplate} openModal={openModal} />,
+          children: (
+            <BasicCropsGridView
+              crops={groupCrops}
+              cropsMetadataFields={cropsMetadataFields}
+              linkTemplate={linkTemplate}
+              openModal={openModal}
+            />
+          ),
         },
       ]}
       // expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}

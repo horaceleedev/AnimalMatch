@@ -226,8 +226,8 @@ const CompareModal: React.FC = () => {
         individualsInVideo={videoDetailProps.individualsInVideo}
         uniqueValuesPerField={videoUniqueValuesPerField}
         uniqueLocations={uniqueVideoLocations}
-        updateVideo={updateVideo}
         individualsLinkTemplate={leftPanelIndividualsLinkTemplate}
+        updateVideo={updateVideo}
       />
     );
   } else if (individualDetailProps) {
@@ -239,10 +239,10 @@ const CompareModal: React.FC = () => {
         uniqueValuesPerField={individualsUniqueValuesPerField}
         cropsUniqueValuesPerField={cropsUniqueValuesPerField}
         uniqueLocations={uniqueIndividualLocations}
-        updateIndividual={updateIndividual}
         videosLinkTemplate={leftPanelVideosLinkTemplate}
         individualsLinkTemplate={leftPanelIndividualsLinkTemplate}
         cropsLinkTemplate={leftPanelCropsLinkTemplate}
+        updateIndividual={updateIndividual}
       />
     );
   } else if (cropDetailProps) {
@@ -270,8 +270,8 @@ const CompareModal: React.FC = () => {
           individualsInVideo={compareVideoDetailProps.individualsInVideo}
           uniqueValuesPerField={videoUniqueValuesPerField}
           uniqueLocations={uniqueVideoLocations}
-          updateVideo={updateVideo}
           individualsLinkTemplate={rightPanelIndividualsLinkTemplate}
+          updateVideo={updateVideo}
         />
       );
     } else if (compareIndividualDetailProps) {
@@ -283,10 +283,10 @@ const CompareModal: React.FC = () => {
           uniqueValuesPerField={individualsUniqueValuesPerField}
           cropsUniqueValuesPerField={cropsUniqueValuesPerField}
           uniqueLocations={uniqueIndividualLocations}
-          updateIndividual={updateIndividual}
           videosLinkTemplate={rightPanelVideosLinkTemplate}
           individualsLinkTemplate={rightPanelIndividualsLinkTemplate}
           cropsLinkTemplate={rightPanelCropsLinkTemplate}
+          updateIndividual={updateIndividual}
         />
       );
     } else if (compareCropDetailProps) {
@@ -320,7 +320,16 @@ const CompareModal: React.FC = () => {
         <Tabs activeKey={compareType} items={items} />
         {
           (compareType === 'videos') ?
-          <VideosGridView videos={videos} videoMetadataFields={videoMetadataFields} isListView={true} linkTemplate={routerLocation.pathname + "/:videoId"} sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]} />
+          <VideosGridView
+            videos={videos}
+            videoMetadataFields={videoMetadataFields}
+            isListView={true}
+            linkTemplate={routerLocation.pathname + "/:videoId"}
+            sortFields={[]}
+            sortOrders={[]}
+            groupFields={[]}
+            groupOrders={[]}
+          />
           :
           (compareType === 'individuals') ?
           <>

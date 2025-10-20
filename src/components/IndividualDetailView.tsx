@@ -22,11 +22,11 @@ type IndividualDetailViewProps = {
   uniqueValuesPerField: Record<string, string[]>;
   cropsUniqueValuesPerField: Record<string, string[]>;
   uniqueLocations: LocationInfo[];
-  openModal?: (type: RecordType , id: string) => void;
-  updateIndividual: (id: string, data: Partial<Individual>) => Promise<void>;
   videosLinkTemplate?: string;
   individualsLinkTemplate?: string;
   cropsLinkTemplate?: string;
+  openModal?: (type: RecordType , id: string) => void;
+  updateIndividual: (id: string, data: Partial<Individual>) => Promise<void>;
 }
 
 const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
@@ -36,11 +36,11 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
   uniqueValuesPerField,
   cropsUniqueValuesPerField,
   uniqueLocations,
-  openModal,
-  updateIndividual,
   videosLinkTemplate,
   individualsLinkTemplate,
   cropsLinkTemplate,
+  openModal,
+  updateIndividual,
 }: IndividualDetailViewProps) => {
   // Temporary hack needed because map wasn't showing up properly
   const [showMap, setShowMap] = useState(false);

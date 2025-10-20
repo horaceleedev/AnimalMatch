@@ -62,7 +62,10 @@ const VideosDashboardPage: React.FC = () => {
 
       {
         (view === 'grid') ? 
-          <VideosGridView videos={videos} videoMetadataFields={videoMetadataFields} isListView={false} sortFields={sortFields} sortOrders={sortOrders} groupFields={groupFields} groupOrders={groupOrders} />
+          <VideosGridView
+            videos={videos} videoMetadataFields={videoMetadataFields} isListView={false}
+            sortFields={sortFields} sortOrders={sortOrders} groupFields={groupFields} groupOrders={groupOrders}
+          />
         :
         (
           (view === 'table') ?
@@ -71,7 +74,10 @@ const VideosDashboardPage: React.FC = () => {
           (uniqueLocations.length > 0) &&
           <Splitter>
             <Splitter.Panel defaultSize="40%" min="20%" max="70%" style={{height: 600, overflow: 'scroll', paddingRight: 12}}>
-              <VideosGridView videos={videos} videoMetadataFields={videoMetadataFields} isListView={true} sortFields={sortFields} sortOrders={sortOrders} groupFields={groupFields} groupOrders={groupOrders} />
+              <VideosGridView
+                videos={videos} videoMetadataFields={videoMetadataFields} isListView={true}
+                sortFields={sortFields} sortOrders={sortOrders} groupFields={groupFields} groupOrders={groupOrders}
+              />
             </Splitter.Panel>
             <Splitter.Panel style={{paddingLeft: 12}}>
               <BasicMapView style={{height: 600, width: 800}} uniqueLocations={uniqueLocations} />

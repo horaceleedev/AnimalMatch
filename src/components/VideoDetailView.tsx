@@ -15,9 +15,9 @@ type VideoDetailViewProps = {
   individualsInVideo: Individual[],
   uniqueValuesPerField: Record<string, string[]>,
   uniqueLocations: LocationInfo[],
+  individualsLinkTemplate?: string;
   openModal?: (type: RecordType , id: string) => void;
   updateVideo: (id: string, data: Partial<Video>) => Promise<void>;
-  individualsLinkTemplate?: string;
 };
 
 const VideoDetailView: React.FC<VideoDetailViewProps> = ({
@@ -25,9 +25,9 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
   individualsInVideo,
   uniqueValuesPerField,
   uniqueLocations,
+  individualsLinkTemplate,
   openModal,
   updateVideo,
-  individualsLinkTemplate,
 }: VideoDetailViewProps) => {
   // Temporary hack needed because map wasn't showing up properly
   const [showMap, setShowMap] = useState(false);

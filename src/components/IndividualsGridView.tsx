@@ -139,7 +139,8 @@ interface IndividualsGridViewProps extends BasicIndividualsGridViewProps {
 };
 
 const IndividualsGridView: React.FC<IndividualsGridViewProps> = ({
-  individuals, individualsMetadataFields, isListView, linkTemplate, buttons, allowEditingAgeAndSex,
+  individuals, individualsMetadataFields, isListView, linkTemplate,
+  buttons, allowEditingAgeAndSex,
   sortFields, sortOrders, groupFields, groupOrders,
   openModal,
 }: IndividualsGridViewProps) => {
