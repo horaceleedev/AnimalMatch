@@ -145,6 +145,12 @@ const CompareModal: React.FC = () => {
   }, [compareId, compareType, crops]);
   const [shortlistedIndividualIds, setShortlistedIndividualIds] = useState<string[]>([]);
 
+  const leftPanelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    // Reset scroll (i.e. scroll up to the top) on the left panel
+    // when switching to another video/individual/crop (on the left panel)
+    if (leftPanelRef.current) leftPanelRef.current.scrollTop = 0;
+  }, [videoId, individualId, cropId]);
   const rightPanelRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     // Reset scroll (i.e. scroll up to the top) on the right panel
@@ -479,7 +485,7 @@ const CompareModal: React.FC = () => {
       centered={true}
     >
       <Layout>
-        <Content>
+        <Content ref={leftPanelRef}>
           {
             isCompareView &&
             <h3 style={{marginTop: 5}}>
