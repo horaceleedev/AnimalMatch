@@ -1,5 +1,10 @@
 .compare-modal {
   width: 92vw !important;
+  transition: width 0.3s ease;
+
+  &.crop-modal {
+    width: 520px !important;
+  }
 
   .ant-modal-body {
     height: calc(88vh - 52px);

@@ -6,6 +6,7 @@ import type { TabsProps } from "antd";
 const { TextArea } = Input;
 import Icon, { ArrowLeftOutlined, CheckOutlined, CloseOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
 import { useShallow } from 'zustand/react/shallow';
+import classnames from 'classnames';
 
 import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
@@ -448,7 +449,7 @@ const CompareModal: React.FC = () => {
   // disable closing by escape key
   return (
     <Modal
-      className="compare-modal"
+      className={classnames("compare-modal", {"crop-modal": cropDetailProps && !isCompareView})}
       title={modalTitle}
       open={isModalOpen}
       footer={null}
