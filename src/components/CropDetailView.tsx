@@ -8,6 +8,8 @@ import { Crop, RecordType } from '../types.ts';
 type CropDetailViewProps = {
   crop: Crop;
   uniqueValuesPerField: Record<string, string[]>;
+  videoLinkTemplate?: string;
+  individualLinkTemplate?: string;
   openModal?: (type: RecordType , id: string) => void;
   updateCrop: (id: string, data: Partial<Crop>) => Promise<void>;
 }
@@ -15,6 +17,8 @@ type CropDetailViewProps = {
 const CropDetailView: React.FC<CropDetailViewProps> = ({
   crop,
   uniqueValuesPerField,
+  videoLinkTemplate,
+  individualLinkTemplate,
   openModal,
   updateCrop,
 }: CropDetailViewProps) => {
@@ -27,6 +31,8 @@ const CropDetailView: React.FC<CropDetailViewProps> = ({
         processedRecord={crop}
         metadataFields={cropsMetadataFields}
         uniqueValuesPerField={uniqueValuesPerField}
+        videoLinkTemplate={videoLinkTemplate}
+        individualLinkTemplate={individualLinkTemplate}
         openModal={openModal}
         updateFunction={updateCrop}
         showIconInSelectionFields={false}

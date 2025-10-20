@@ -14,6 +14,8 @@ type RecordMetadataFormProps<T extends RecordModel> = {
   uniqueValuesPerField: Record<string, string[]>;
   updateFunction: (id: string, data: Partial<T>) => Promise<void>;
   showIconInSelectionFields?: boolean;
+  videoLinkTemplate?: string;
+  individualLinkTemplate?: string;
   openModal?: (type: RecordType, id: string) => void;
 }
 
@@ -23,6 +25,8 @@ const RecordMetadataForm = <T extends RecordModel>({
   uniqueValuesPerField,
   updateFunction,
   showIconInSelectionFields,
+  videoLinkTemplate,
+  individualLinkTemplate,
   openModal,
 }: RecordMetadataFormProps<T>) => {
   const {
@@ -63,10 +67,10 @@ const RecordMetadataForm = <T extends RecordModel>({
             );
             if (value.renderType === 'video_link') {
               size = 'large';
-              labelRender = (option) => <VideoLinkButton id={option.value as string} openModal={openModal} />;
+              labelRender = (option) => <VideoLinkButton id={option.value as string} linkTemplate={videoLinkTemplate} openModal={openModal} />;
             } else if (value.renderType === 'individual_link') {
               size = 'large';
-              labelRender = (option) => <IndividualLinkButton id={option.value as string} openModal={openModal} />;
+              labelRender = (option) => <IndividualLinkButton id={option.value as string} linkTemplate={individualLinkTemplate} openModal={openModal} />;
             }
 
             inputElement = (

@@ -250,6 +250,8 @@ const CompareModal: React.FC = () => {
       <CropDetailView
         crop={cropDetailProps.crop}
         uniqueValuesPerField={cropsUniqueValuesPerField}
+        videoLinkTemplate={leftPanelVideosLinkTemplate}
+        individualLinkTemplate={leftPanelIndividualsLinkTemplate}
         updateCrop={updateCrop}
       />
     )
@@ -294,6 +296,8 @@ const CompareModal: React.FC = () => {
         <CropDetailView key={compareCropDetailProps.crop.id}
           crop={compareCropDetailProps.crop}
           uniqueValuesPerField={cropsUniqueValuesPerField}
+          videoLinkTemplate={rightPanelVideosLinkTemplate}
+          individualLinkTemplate={rightPanelIndividualsLinkTemplate}
           updateCrop={updateCrop}
         />
       );
