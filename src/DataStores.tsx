@@ -156,7 +156,7 @@ export const useVideoStore = createRealtimeCollectionStore<VideoRecord, Video, {
   },
   // For now ignore the recording_date/url/lat/long key
   // TODO later maybe convert back from URLs to filenames (and verify what happens in the backend)
-  ignoredUpdateKeys: ['recording_date', 'url', 'lat', 'long'],
+  ignoredUpdateKeys: ['recording_date', 'url', 'thumbnailUrl', 'lat', 'long'],
 });
 
 
