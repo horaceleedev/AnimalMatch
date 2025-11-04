@@ -279,8 +279,8 @@ export const useCropsStore = createRealtimeCollectionStore<CropRecord, Crop>({
 
 // --- Individuals store with crops included ---
 export const useIndividualsStoreWithCrops = () => {
-  const [individuals, updateIndividual, individualsUniqueValuesPerField] = useIndividualsStore(
-    useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField])
+  const [individuals, createIndividual, updateIndividual, individualsUniqueValuesPerField] = useIndividualsStore(
+    useShallow((state) => [state.processedRecords, state.create, state.update, state.uniqueValuesPerField])
   );
   const [crops, createCrop, cropsUniqueValuesPerField] = useCropsStore(
     useShallow((state) => [state.processedRecords, state.create, state.uniqueValuesPerField])
@@ -296,6 +296,7 @@ export const useIndividualsStoreWithCrops = () => {
 
   return {
     individuals: individualsWithCrops,
+    createIndividual,
     updateIndividual,
     individualsUniqueValuesPerField,
     createCrop,
