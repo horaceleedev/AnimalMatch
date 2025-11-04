@@ -96,6 +96,7 @@ interface CollectionStore<TRecord, TProcessed, TExtra> {
   fetch: () => Promise<void>;
   subscribe: () => void;
   unsubscribe: () => void;
+  create: (data: Partial<TProcessed>) => Promise<void>;
   update: (id: string, data: Partial<TProcessed>) => Promise<void>;
 };
 const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed extends RecordModel, TExtra extends Record<string, any> = {}>(opts: {
@@ -157,6 +158,14 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
     unsubscribe: () => {
       console.log(`Unsubscribing from ${collectionName}`);
       pb.collection(collectionName).unsubscribe('*');
+    },
+    create: async (data: Partial<TProcessed>) => {
+      // remove some keys before sending to backend
+      const payload = { ...data };
+      for (const k of ignoredUpdateKeys) {
+        if (k in payload) delete payload[k];
+      }
+      await pb.collection(collectionName).create(payload);
     },
     update: async (id: string, data: Partial<TProcessed>) => {
       // remove some keys before sending to backend
@@ -259,9 +268,8 @@ export const useCropsStore = createRealtimeCollectionStore<CropRecord, Crop>({
     const uniqueValuesPerField = getUniqueValuesPerField(cropsMetadataFields, processedCrops);
     return { processedRecords: processedCrops, uniqueValuesPerField };
   },
-  // For now ignore the image/imageUrl key
-  // TODO later maybe convert back from URLs to filenames (and verify what happens in the backend)
-  ignoredUpdateKeys: ['image', 'imageUrl'],
+  // For now ignore the imageUrl key
+  ignoredUpdateKeys: ['imageUrl'],
 });
 
 
@@ -270,8 +278,8 @@ export const useIndividualsStoreWithCrops = () => {
   const [individuals, updateIndividual, individualsUniqueValuesPerField] = useIndividualsStore(
     useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField])
   );
-  const [crops, cropsUniqueValuesPerField] = useCropsStore(
-    useShallow((state) => [state.processedRecords, state.uniqueValuesPerField])
+  const [crops, createCrop, cropsUniqueValuesPerField] = useCropsStore(
+    useShallow((state) => [state.processedRecords, state.create, state.uniqueValuesPerField])
   );
 
   // Add a `crops` field to each individual
@@ -286,6 +294,7 @@ export const useIndividualsStoreWithCrops = () => {
     individuals: individualsWithCrops,
     updateIndividual,
     individualsUniqueValuesPerField,
+    createCrop,
     cropsUniqueValuesPerField,
   };
 };
