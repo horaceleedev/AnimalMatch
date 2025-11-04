@@ -82,7 +82,7 @@ export interface CropRecord extends RecordModel {
   description: string;
   frame_number: number;
   timestamp: number;
-  bounding_box: object; // TODO define more specifically
+  bounding_box: [number, number, number, number]; // l, t, w, h normalized
 };
 export interface Crop extends CropRecord {
   imageUrl: string;
