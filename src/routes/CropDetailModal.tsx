@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useShallow } from 'zustand/react/shallow';
 import { Button, Modal, Space } from "antd";
-import Icon from '@ant-design/icons';
+import Icon, { DeleteOutlined } from '@ant-design/icons';
 
 import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
@@ -38,10 +38,22 @@ const CropDetailModal: React.FC<RecordDetailModalProps> = ({
     id: undefined,
   });
 
-  const [crops, updateCrop, uniqueValuesPerField] = useCropsStore(
-    useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField])
+  const [crops, updateCrop, deleteCrop, uniqueValuesPerField] = useCropsStore(
+    useShallow((state) => [state.processedRecords, state.update, state.delete, state.uniqueValuesPerField])
   );
   const crop = crops.find(x => x.id === cropId);
+
+  const [isDeleting, setIsDeleting] = useState(false);
+  const handleDelete = async () => {
+    if (!cropId) return;
+    setIsDeleting(true);
+    try {
+      await deleteCrop(cropId);
+    } catch (e) {
+      alert('Unable to delete crop'); // TODO use antd message instead
+    }
+    setIsDeleting(false);
+  }
 
   // TODO
   // add back button (to the left of the title)
@@ -57,7 +69,12 @@ const CropDetailModal: React.FC<RecordDetailModalProps> = ({
         </Space>
       }
       open={isModalOpen}
-      footer={null}
+      footer={
+        // TODO figure out something better instead of using float
+        <Button style={{float: 'left', bottom: 50}} icon={<DeleteOutlined />} danger onClick={handleDelete} loading={isDeleting}>
+          Delete
+        </Button>
+      }
       onCancel={handleDismiss}
       afterOpenChange={handleOpenChange}
       centered={true}

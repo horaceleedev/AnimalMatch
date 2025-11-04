@@ -98,6 +98,7 @@ interface CollectionStore<TRecord, TProcessed, TExtra> {
   unsubscribe: () => void;
   create: (data: Partial<TProcessed>) => Promise<void>;
   update: (id: string, data: Partial<TProcessed>) => Promise<void>;
+  delete: (id: string) => Promise<void>;
 };
 const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed extends RecordModel, TExtra extends Record<string, any> = {}>(opts: {
   collectionName: string;
@@ -174,6 +175,9 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
         if (k in payload) delete payload[k];
       }
       await pb.collection(collectionName).update(id, payload);
+    },
+    delete: async (id: string) => {
+      await pb.collection(collectionName).delete(id);
     },
   }));
 };
