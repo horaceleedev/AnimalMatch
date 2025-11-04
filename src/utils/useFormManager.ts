@@ -21,7 +21,7 @@ const useFormManager = <T extends RecordModel>(
     // Initialize formData from the IndividualsStore/VideoStore, or reset it to the
     // IndividualsStore/VideoStore if there is an update received from the server
     const _formData = pick(processedRecord, Object.keys(metadataFields)) as Partial<T>;
-    if (hasUnsavedChanges && !isEqual(formData, _formData)) {
+    if (hasUnsavedChanges && formData.id === _formData.id && !isEqual(formData, _formData)) {
       message.warning('Your changes have been overwritten by new data from the server');
     }
     setHasUnsavedChanges(false);
