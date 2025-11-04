@@ -60,9 +60,9 @@ const VideoDetailModal: React.FC<RecordDetailModalProps> = ({
       title={
         <Space>
           {video.filename}
-          <Link to={"/videos/compare/v/" + videoId}>
+          {/* <Link to={"/videos/compare/v/" + videoId}>
             <Button icon={<Icon component={Compare} />}>Open comparison view</Button>
-          </Link>
+          </Link> */}
         </Space>
       }
       open={isModalOpen}
