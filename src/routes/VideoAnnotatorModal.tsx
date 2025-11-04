@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Button, Modal, Space } from "antd";
-import Icon from '@ant-design/icons';
 import { intersection } from 'es-toolkit';
 
 import { useVideoStore, useIndividualsStoreWithCrops } from "../DataStores.tsx";
@@ -26,7 +25,7 @@ const VideoAnnotatorModal: React.FC = () => {
   const videos = useVideoStore((state) => state.processedRecords);
   const video = videos.find(x => x.id === videoId);
 
-  const { individuals: individuals, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
+  const { individuals: individuals, createCrop, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
   const individualsInVideo = useMemo(() => {
     if (!video?.id) return [];
     return individuals.filter(indiv => indiv.videos.includes(video.id))
@@ -57,6 +56,7 @@ const VideoAnnotatorModal: React.FC = () => {
         video={video}
         individualsInVideo={individualsInVideo}
         cropsUniqueValuesPerField={cropsUniqueValuesPerField}
+        createCrop={createCrop}
         openModal={(type, id) => setInnerModalProps({ type, id })}
       />
       <InnerModal {...innerModalProps} exitModal={() => setInnerModalProps({ type: undefined, id: undefined })} />

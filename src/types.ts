@@ -73,7 +73,7 @@ export interface CropRecord extends RecordModel {
   created: string;
   updated: string;
   id: string;
-  image: string;
+  image: string | Blob | File;
   created_by: string;
   source_video: string;
   individual: string;
