@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useShallow } from 'zustand/react/shallow';
-import { Button, Modal, Space } from "antd";
+import { ClientResponseError } from 'pocketbase';
+import { App, Button, Modal, Space } from "antd";
 import Icon, { DeleteOutlined } from '@ant-design/icons';
 
 import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -44,13 +45,18 @@ const CropDetailModal: React.FC<RecordDetailModalProps> = ({
   const crop = crops.find(x => x.id === cropId);
 
   const [isDeleting, setIsDeleting] = useState(false);
+  const { message } = App.useApp();
   const handleDelete = async () => {
     if (!cropId) return;
     setIsDeleting(true);
     try {
       await deleteCrop(cropId);
     } catch (e) {
-      alert('Unable to delete crop'); // TODO use antd message instead
+      let errorMessage = "Unable to delete crop.";
+      if (e instanceof ClientResponseError) {
+        errorMessage = e.message;
+      }
+      message.error(errorMessage);
     }
     setIsDeleting(false);
   }
