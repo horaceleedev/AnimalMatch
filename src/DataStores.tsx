@@ -140,8 +140,8 @@ export const useVideoStore = createRealtimeCollectionStore<VideoRecord, Video, {
       return {
         ...record,
         recording_date: dayjs(record.recording_date).format("YYYY-MM-DD HH:mm:ss"),
-        url: `http://127.0.0.1:8090/api/files/${record.collectionId}/${record.id}/${record.file}`,
-        thumbnailUrl: `http://127.0.0.1:8090/api/files/${record.collectionId}/${record.id}/${record.thumbnail}`,
+        url: pb.files.getURL(record, record.file),
+        thumbnailUrl: pb.files.getURL(record, record.thumbnail),
         lat,
         long,
       };
@@ -189,7 +189,7 @@ export const useCropsStore = createRealtimeCollectionStore<CropRecord, Crop>({
     const processedCrops: Crop[] = records.map((record: CropRecord) => {
       return {
         ...record,
-        imageUrl: `http://127.0.0.1:8090/api/files/${record.collectionId}/${record.id}/${record.image}`,
+        imageUrl: pb.files.getURL(record, record.image as string),
       };
     });
     console.log('Processed crops', processedCrops);
