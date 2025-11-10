@@ -25,7 +25,7 @@ const VideoAnnotatorModal: React.FC = () => {
   const videos = useVideoStore((state) => state.processedRecords);
   const video = videos.find(x => x.id === videoId);
 
-  const { individuals: individuals, createIndividual, createCrop, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
+  const { individuals: individuals, createIndividual, deleteIndividual, createCrop, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
   const individualsInVideo = useMemo(() => {
     if (!video?.id) return [];
     return individuals.filter(indiv => indiv.videos.includes(video.id))
@@ -57,6 +57,7 @@ const VideoAnnotatorModal: React.FC = () => {
         individualsInVideo={individualsInVideo}
         cropsUniqueValuesPerField={cropsUniqueValuesPerField}
         createIndividual={createIndividual}
+        deleteIndividual={deleteIndividual}
         createCrop={createCrop}
         openModal={(type, id) => setInnerModalProps({ type, id })}
       />
