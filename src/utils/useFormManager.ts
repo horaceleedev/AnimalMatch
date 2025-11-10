@@ -1,7 +1,7 @@
 import { App } from "antd";
 import { isEqual, pick, pickBy } from "es-toolkit";
 import { useEffect, useState } from "react";
-import { RecordModel } from "pocketbase";
+import { ClientResponseError, RecordModel } from "pocketbase";
 
 import { MetadataFieldsType } from "../types";
 
@@ -47,7 +47,11 @@ const useFormManager = <T extends RecordModel>(
     try {
       await updateFunction(processedRecord.id, updatedData);
     } catch (e) {
-      message.error('Your changes could not be saved. Please try again later.', 10);
+      let errorMessage = "Your changes could not be saved. Please try again later.";
+      if (e instanceof ClientResponseError) {
+        errorMessage = e.message;
+      }
+      message.error(errorMessage, 10);
       setIsSavingChanges(false);
       return;
     }
