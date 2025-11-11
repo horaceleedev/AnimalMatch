@@ -83,6 +83,8 @@ export interface CropRecord extends RecordModel {
   frame_number: number;
   timestamp: number;
   bounding_box: [number, number, number, number]; // l, t, w, h normalized
+  width: number; // width of crop image in px
+  height: number; // height of crop image in px
 };
 export interface Crop extends CropRecord {
   imageUrl: string;
