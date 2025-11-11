@@ -279,17 +279,17 @@ export const cropsMetadataFields: MetadataFieldsType = {
     valueEditorType: 'select',
     presetOptions: ['full body', 'face', 'butt', 'ear'],
   },
-  'custom_tags': {
-    displayName: 'Custom tags',
-    icon: <TagsOutlined />,
-    type: 'multiselect',
-    valueEditorType: 'multiselect',
-  },
   'description': {
     displayName: 'Description',
     icon: <FileTextOutlined />,
     type: 'rich_text',
     inputType: 'text',
+  },
+  'custom_tags': {
+    displayName: 'Custom tags',
+    icon: <TagsOutlined />,
+    type: 'multiselect',
+    valueEditorType: 'multiselect',
   },
   'frame_number': {
     displayName: 'Frame number',
