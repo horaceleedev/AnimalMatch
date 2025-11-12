@@ -305,8 +305,8 @@ export const cropsMetadataFields: MetadataFieldsType = {
     inputType: 'number',
     isUneditable: true,
   },
-  'bounding_box': {
-    displayName: 'Bounding box',
+  'crop_coordinates': {
+    displayName: 'Crop coordinates',
     icon: <Icon component={BoundingBoxIcon} />,
     type: 'text',
     inputType: 'text',
