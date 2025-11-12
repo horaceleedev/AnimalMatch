@@ -1,6 +1,16 @@
 .ant-modal.video-detail-modal {
   width: 92vw !important;
 
+  .ant-modal-close {
+    top: 14px;
+    right: 16px;
+  }
+
+  .ant-modal-header {
+    margin-top: -2px;
+    margin-bottom: 12px;
+  }
+
   .ant-modal-body {
     height: calc(88vh - 52px);
     overflow: scroll;

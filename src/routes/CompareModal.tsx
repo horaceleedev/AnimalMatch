@@ -21,6 +21,7 @@ import VideosGridView from '../components/VideosGridView.tsx';
 import IndividualsGridView from '../components/IndividualsGridView.tsx';
 import IndividualsDashboardView from '../components/IndividualsDashboardView.tsx';
 import CropsDashboardView from '../components/CropsDashboardView.tsx';
+import RecordActionsButton from '../components/RecordActionsButton.tsx';
 import { Individual } from '../types.ts';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import "./CompareModal.scss";
@@ -57,13 +58,13 @@ const CompareModal: React.FC = () => {
   const [videos, updateVideo, videoUniqueValuesPerField, uniqueVideoLocations] = useVideoStore(
     useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField, state.extra.uniqueLocations])
   );
-  const { individuals, updateIndividual, individualsUniqueValuesPerField, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
+  const { individuals, updateIndividual, deleteIndividual, individualsUniqueValuesPerField, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
   // TODO figure out if I should compute this (uniqueIndividualLocations) here or inside DataStores.tsx
   const uniqueIndividualLocations = useMemo(() => {
     return getUniqueLocationsFromIndividuals(individuals, videos);
   }, [individuals, videos]);
-  const [crops, updateCrop] = useCropsStore(
-    useShallow((state) => [state.processedRecords, state.update])
+  const [crops, updateCrop, deleteCrop] = useCropsStore(
+    useShallow((state) => [state.processedRecords, state.update, state.delete])
   );
 
   const videoDetailProps = useMemo(() => {
@@ -448,10 +449,43 @@ const CompareModal: React.FC = () => {
         </Link>
       }
       {modalTitleText}
+      <div style={{flex: 1}}></div> {/* Spacer */}
+      {
+        !isCompareView &&
+        (
+          (
+            videoDetailProps &&
+            <RecordActionsButton
+              recordType="video"
+              recordId={videoId!}
+              deleteFunction={async (_: string) => {}}
+              onDelete={handleDismiss}
+            />
+          ) ||
+          (
+            individualDetailProps &&
+            <RecordActionsButton
+              recordType="individual"
+              recordId={individualId!}
+              deleteFunction={deleteIndividual}
+              onDelete={handleDismiss}
+            />
+          ) ||
+          (
+            cropDetailProps &&
+            <RecordActionsButton
+              recordType="crop"
+              recordId={cropId!}
+              deleteFunction={deleteCrop}
+              onDelete={handleDismiss}
+            />
+          )
+        )
+      }
       {
         isCompareView ?
         <Link
-          style={{marginLeft: "auto", marginRight: "32px"}}
+          style={{marginRight: "32px"}}
           // Back to the /videos/:videoId, /individuals/:individualId, or /crops/:cropId page
           to={routeSplits.slice(0,2).join('/') + "/" + routeSplits[4]}
         >
@@ -461,7 +495,7 @@ const CompareModal: React.FC = () => {
         </Link>
         :
         <Link
-          style={{marginLeft: "auto", marginRight: "32px"}}
+          style={{marginRight: "32px"}}
           to={`${routeSplits.slice(0,2).join('/')}/compare/${recordTypeLongNameToShortName[routeSplits[1]]}/${routeSplits[2]}`}
         >
           <Tooltip title="Open comparison view">
