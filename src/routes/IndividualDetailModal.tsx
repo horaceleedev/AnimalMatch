@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Button, Modal, Space } from "antd";
+import { Button, Flex, Modal } from "antd";
 import Icon from '@ant-design/icons';
 import { intersection } from 'es-toolkit';
 
@@ -11,6 +11,7 @@ import IndividualDetailView from '../components/IndividualDetailView.tsx';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import { RecordDetailModalProps, RecordType } from '../types.ts';
 import InnerModal from './InnerModal.tsx';
+import RecordActionsButton from '../components/RecordActionsButton.tsx';
 import "./IndividualDetailModal.scss";
 
 
@@ -41,7 +42,7 @@ const IndividualDetailModal: React.FC<RecordDetailModalProps> = ({
     id: undefined,
   });
 
-  const { individuals, updateIndividual, individualsUniqueValuesPerField, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
+  const { individuals, updateIndividual, deleteIndividual, individualsUniqueValuesPerField, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
   const individual = individuals.find(x => x.id === individualId);
 
   const allVideos = useVideoStore((state) => state.processedRecords);
@@ -65,12 +66,18 @@ const IndividualDetailModal: React.FC<RecordDetailModalProps> = ({
   return (
     <Modal
       title={
-        <Space>
+        <Flex gap="small" align="center" justify="space-between" style={{height: 24, marginRight: "32px"}}>
           {individual.name}
           {/* <Link to={"/individuals/compare/i/" + individualId}>
             <Button icon={<Icon component={Compare} />}>Open comparison view</Button>
           </Link> */}
-        </Space>
+          <RecordActionsButton
+            recordType="individual"
+            recordId={individualId!}
+            deleteFunction={deleteIndividual}
+            onDelete={handleDismiss}
+          />
+        </Flex>
       }
       open={isModalOpen}
       footer={null}

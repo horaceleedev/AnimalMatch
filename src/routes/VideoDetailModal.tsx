@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Button, Modal, Space } from "antd";
+import { Button, Flex, Modal } from "antd";
 import Icon from '@ant-design/icons';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -10,6 +10,7 @@ import { useIndividualsStoreWithCrops, useVideoStore } from "../DataStores.tsx";
 import VideoDetailView from '../components/VideoDetailView.tsx';
 import { RecordDetailModalProps, RecordType } from '../types.ts';
 import InnerModal from './InnerModal.tsx';
+import RecordActionsButton from '../components/RecordActionsButton.tsx';
 import "./VideoDetailModal.scss";
 
 const VideoDetailModal: React.FC<RecordDetailModalProps> = ({
@@ -39,8 +40,8 @@ const VideoDetailModal: React.FC<RecordDetailModalProps> = ({
     id: undefined,
   });
 
-  const [videos, updateVideo, uniqueValuesPerField, uniqueLocations] = useVideoStore(
-    useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField, state.extra.uniqueLocations])
+  const [videos, updateVideo, deleteVideo, uniqueValuesPerField, uniqueLocations] = useVideoStore(
+    useShallow((state) => [state.processedRecords, state.update, state.delete, state.uniqueValuesPerField, state.extra.uniqueLocations])
   );
   const video = videos.find(x => x.id === videoId);
 
@@ -58,12 +59,18 @@ const VideoDetailModal: React.FC<RecordDetailModalProps> = ({
   return (
     <Modal
       title={
-        <Space>
+        <Flex gap="small" align="center" justify="space-between" style={{height: 24, marginRight: "32px"}}>
           {video.filename}
           {/* <Link to={"/videos/compare/v/" + videoId}>
             <Button icon={<Icon component={Compare} />}>Open comparison view</Button>
           </Link> */}
-        </Space>
+          <RecordActionsButton
+            recordType="video"
+            recordId={videoId!}
+            deleteFunction={deleteVideo}
+            onDelete={handleDismiss}
+          />
+        </Flex>
       }
       open={isModalOpen}
       footer={null}
