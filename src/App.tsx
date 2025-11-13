@@ -24,8 +24,18 @@ const App: React.FC = () => {
 
   // App initialization
   useEffect(() => {
-    Promise.all([fetchVideos(), fetchIndividuals(), fetchCrops()]).catch((e) => {
-      message.error('Unable to load data');
+    message.loading({
+      key: 'fetching-data',
+      content: 'Loading...',
+      duration: 0,
+    });
+    Promise.all([fetchVideos(), fetchIndividuals(), fetchCrops()]).then(() => {
+      message.destroy('fetching-data');
+    }).catch((e) => {
+      message.error({
+        key: 'fetching-data',
+        content: 'Unable to load data from the server. Try reloading the page.'
+      });
       console.error(e);
     });
     subscribeToVideos();
