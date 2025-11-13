@@ -203,14 +203,14 @@ export const individualsMetadataFields: MetadataFieldsType = {
     renderType: 'user_label',
     isUneditable: true,
   },
-  'is_identified': {
-    displayName: 'Is identified',
-    icon: <QuestionOutlined />,
-    type: 'boolean',
-    inputType: 'text', // TODO change this later
-    displayBooleanValuesAs: ["Unidentified", "Identified"],
-    isUneditable: true,
-  },
+  // 'is_identified': {
+  //   displayName: 'Is identified',
+  //   icon: <QuestionOutlined />,
+  //   type: 'boolean',
+  //   inputType: 'text', // TODO change this later
+  //   displayBooleanValuesAs: ["Unidentified", "Identified"],
+  //   isUneditable: true,
+  // },
   'age': {
     displayName: 'Age',
     icon: <Icon component={Cake} />,
