@@ -10,6 +10,7 @@ import WC from './assets/material_symbols/wc_24dp_5F6368_FILL0_wght400_GRAD0_ops
 import Altitude from './assets/material_symbols/altitude_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import BoundingBoxIcon from "./assets/material_symbols/activity_zone_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 import FaceZone from "./assets/material_symbols/familiar_face_and_zone_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
+import PendingActions from "./assets/material_symbols/pending_actions_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 
 import { MetadataFieldsType } from './types';
 
@@ -91,7 +92,21 @@ export const videoMetadataFields: MetadataFieldsType = {
     icon: <TagsOutlined />,
     type: 'multiselect',
     valueEditorType: 'multiselect',
-  }
+  },
+  'assignees': {
+    displayName: 'Assignees',
+    icon: <UserOutlined />,
+    type: 'multiselect',
+    valueEditorType: 'multiselect',
+    renderType: 'user_label',
+  },
+  'annotation_status': {
+    displayName: 'Annotation status',
+    icon: <Icon component={PendingActions} />,
+    type: 'select',
+    valueEditorType: 'select',
+    presetOptions: ['to annotate', 'annotated', 'reviewed'],
+  },
 };
 
 const CustomEditor = ({ close } : EditorType) => {

@@ -1,5 +1,5 @@
 import { Button, DatePicker, Form, Input, InputNumber, Select, Tag } from "antd";
-import type { LabelInValueType } from "rc-select/lib/Select";
+import type { DefaultOptionType, LabelInValueType } from "rc-select/lib/Select";
 import TextArea from 'antd/es/input/TextArea';
 import { RecordModel } from "pocketbase";
 
@@ -85,11 +85,18 @@ const RecordMetadataForm = <T extends RecordModel>({
               />
             );
           } else if (value.valueEditorType === 'multiselect') {
+            let customRender = undefined;
+            if (value.renderType === 'user_label') {
+              customRender = (option: DefaultOptionType | LabelInValueType) => <UserLabel id={option.value as string} />;
+            }
+
             inputElement = (
               <Select
                 mode="tags"
                 options={uniqueValuesPerField[fieldValue].map(val => ({ value: val, label: val }))}
                 disabled={disabled}
+                optionRender={customRender}
+                labelRender={customRender}
               />
             );
           } else if (value.inputType === 'date') {
