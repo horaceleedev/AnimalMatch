@@ -65,6 +65,7 @@ const RecordMetadataForm = <T extends RecordModel>({
                 {option.label}
               </Tag>
             );
+            let customClassName = undefined;
             if (value.renderType === 'video_link') {
               size = 'large';
               labelRender = (option) => <VideoLinkButton id={option.value as string} linkTemplate={videoLinkTemplate} openModal={openModal} />;
@@ -74,6 +75,7 @@ const RecordMetadataForm = <T extends RecordModel>({
             } else if (value.renderType === 'user_label') {
               size = 'large';
               labelRender = (option) => <UserLabel id={option.value as string} />;
+              customClassName = "select-user"
             }
 
             inputElement = (
@@ -82,6 +84,7 @@ const RecordMetadataForm = <T extends RecordModel>({
                 disabled={disabled}
                 size={size}
                 labelRender={labelRender}
+                className={customClassName}
               />
             );
           } else if (value.valueEditorType === 'multiselect') {
