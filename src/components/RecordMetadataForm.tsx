@@ -5,7 +5,7 @@ import { RecordModel } from "pocketbase";
 
 import useFormManager from "../utils/useFormManager";
 import { MetadataFieldsType, RecordType } from "../types";
-import { IndividualLinkButton, VideoLinkButton } from "./smart-components/LinkButtons";
+import { IndividualLinkButton, UserLabel, VideoLinkButton } from "./smart-components/LinkButtons";
 import "./RecordMetadataForm.scss";
 
 type RecordMetadataFormProps<T extends RecordModel> = {
@@ -71,6 +71,9 @@ const RecordMetadataForm = <T extends RecordModel>({
             } else if (value.renderType === 'individual_link') {
               size = 'large';
               labelRender = (option) => <IndividualLinkButton id={option.value as string} linkTemplate={individualLinkTemplate} openModal={openModal} />;
+            } else if (value.renderType === 'user_label') {
+              size = 'large';
+              labelRender = (option) => <UserLabel id={option.value as string} />;
             }
 
             inputElement = (

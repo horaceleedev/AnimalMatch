@@ -55,6 +55,7 @@ export interface IndividualRecord extends RecordModel {
   updated: string;
   id: string;
   name: string;
+  created_by: string;
   is_identified: boolean;
   videos: string[];
   age: string;
@@ -73,6 +74,7 @@ export interface CropRecord extends RecordModel {
   updated: string;
   id: string;
   image: string;
+  created_by: string;
   source_video: string;
   individual: string;
   body_part: string;
@@ -93,7 +95,7 @@ export type MetadataFieldsType = Record<string, {
   inputType?: string;
   valueEditorType?: string;
   presetOptions?: string[];
-  renderType?: 'video_link' | 'individual_link';
+  renderType?: 'user_label' | 'video_link' | 'individual_link';
   displayBooleanValuesAs?: string[];
   isInternal?: boolean;
   isUneditable?: boolean;

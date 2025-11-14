@@ -1,6 +1,6 @@
 import { Editor, type EditorType, type Editors, type ReactElement } from '@revolist/react-datagrid';
 
-import Icon, { CalendarOutlined, ClockCircleOutlined, FileTextOutlined, IdcardOutlined, PlaySquareOutlined, QuestionOutlined, TagsOutlined } from "@ant-design/icons";
+import Icon, { CalendarOutlined, ClockCircleOutlined, FileTextOutlined, IdcardOutlined, PlaySquareOutlined, QuestionOutlined, TagsOutlined, UserOutlined } from "@ant-design/icons";
 import Location from './assets/material_symbols/location_on_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Forest from './assets/material_symbols/forest_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import CalendarMonth from './assets/material_symbols/calendar_month_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -195,6 +195,14 @@ export const individualsMetadataFields: MetadataFieldsType = {
     type: 'text',
     inputType: 'text',
   },
+  'created_by': {
+    displayName: 'Created by',
+    icon: <UserOutlined />,
+    type: 'select',
+    valueEditorType: 'select',
+    renderType: 'user_label',
+    isUneditable: true,
+  },
   'is_identified': {
     displayName: 'Is identified',
     icon: <QuestionOutlined />,
@@ -239,6 +247,14 @@ export const cropsMetadataFields: MetadataFieldsType = {
     type: 'text',
     inputType: 'text',
     isInternal: true,
+  },
+  'created_by': {
+    displayName: 'Created by',
+    icon: <UserOutlined />,
+    type: 'select',
+    valueEditorType: 'select',
+    renderType: 'user_label',
+    isUneditable: true,
   },
   'source_video': {
     displayName: 'Linked video',
