@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Button, Modal, Space } from "antd";
 import { intersection } from 'es-toolkit';
 
-import { useVideoStore, useIndividualsStoreWithCrops } from "../DataStores.tsx";
+import { useVideoStore, useIndividualsStoreWithCrops, useAuth } from "../DataStores.tsx";
 import VideoAnnotator from '../components/VideoAnnotator/VideoAnnotator.tsx';
 import InnerModal from './InnerModal.tsx';
 import { RecordType } from '../types.ts';
@@ -31,6 +31,8 @@ const VideoAnnotatorModal: React.FC = () => {
     return individuals.filter(indiv => indiv.videos.includes(video.id))
   }, [individuals, video?.id]);
 
+  const { user } = useAuth();
+
   const [innerModalProps, setInnerModalProps] = useState<{ type?: RecordType; id?: string; }>({
     type: undefined,
     id: undefined,
@@ -57,6 +59,7 @@ const VideoAnnotatorModal: React.FC = () => {
         individualsInVideo={individualsInVideo}
         individualsUniqueValuesPerField={individualsUniqueValuesPerField}
         cropsUniqueValuesPerField={cropsUniqueValuesPerField}
+        userId={user?.id}
         createIndividual={createIndividual}
         deleteIndividual={deleteIndividual}
         createCrop={createCrop}
