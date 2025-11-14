@@ -7,7 +7,7 @@ import PocketBase, { ClientResponseError, RecordModel } from 'pocketbase';
 import dayjs from 'dayjs';
 import { App } from 'antd';
 
-import type { Video, VideoRecord, LocationInfo, Individual, IndividualRecord, CropRecord, Crop, UserRecord } from "./types.ts";
+import type { Video, VideoRecord, LocationInfo, Individual, IndividualRecord, CropRecord, Crop, UserRecord, User } from "./types.ts";
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from "./metadata.tsx";
 import { getUniqueLocationsFromVideos, getUniqueValuesPerField } from './utils/utils.ts';
 
@@ -168,6 +168,26 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
     },
   }));
 };
+
+
+// --- Users store ---
+export const useUsersStore = createRealtimeCollectionStore<UserRecord, User>({
+  collectionName: 'users',
+  sortField: 'username',
+  processRecords: (records: UserRecord[]) => {
+    const processedUsers: User[] = records.map((record: UserRecord) => {
+      return {
+        ...record,
+        avatarUrl: pb.files.getURL(record, record.avatar),
+      };
+    });
+    console.log('Processed users', processedUsers);
+
+    return { processedRecords: processedUsers, uniqueValuesPerField: {} };
+  },
+  // For now ignore the avatarUrl key
+  ignoredUpdateKeys: ['avatarUrl'],
+});
 
 
 // --- Video store ---

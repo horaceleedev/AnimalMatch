@@ -4,7 +4,7 @@ import { Layout, App as AntApp } from 'antd';
 const { Content } = Layout;
 import { useShallow } from 'zustand/react/shallow'
 
-import { useCropsStore, useIndividualsStore, useDisconnectedMessage, useVideoStore, useAuth } from "./DataStores.tsx";
+import { useCropsStore, useIndividualsStore, useDisconnectedMessage, useVideoStore, useAuth, useUsersStore } from "./DataStores.tsx";
 import AppHeader from "./components/AppHeader.tsx";
 import "./App.scss"
 
@@ -13,6 +13,9 @@ const App: React.FC = () => {
 
   const { user, logout } = useAuth();
 
+  const [fetchUsers, subscribeToUsers, unsubscribeFromUsers] = useUsersStore(
+    useShallow((state) => [state.fetch, state.subscribe, state.unsubscribe])
+  );
   const [fetchVideos, subscribeToVideos, unsubscribeFromVideos] = useVideoStore(
     useShallow((state) => [state.fetch, state.subscribe, state.unsubscribe])
   );
@@ -31,7 +34,7 @@ const App: React.FC = () => {
       content: 'Loading...',
       duration: 0,
     });
-    Promise.all([fetchVideos(), fetchIndividuals(), fetchCrops()]).then(() => {
+    Promise.all([fetchUsers(), fetchVideos(), fetchIndividuals(), fetchCrops()]).then(() => {
       message.destroy('fetching-data');
     }).catch((e) => {
       message.error({
@@ -40,10 +43,12 @@ const App: React.FC = () => {
       });
       console.error(e);
     });
+    subscribeToUsers();
     subscribeToVideos();
     subscribeToIndividuals();
     subscribeToCrops();
     return () => {
+      unsubscribeFromUsers();
       unsubscribeFromVideos();
       unsubscribeFromIndividuals();
       unsubscribeFromCrops();

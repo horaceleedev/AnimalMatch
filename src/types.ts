@@ -6,6 +6,23 @@ export interface RecordDetailModalProps {
   exitModal?: () => void;
 }
 
+export interface UserRecord extends RecordModel {
+  collectionId: string;
+  collectionName: string;
+  created: string;
+  updated: string;
+  id: string;
+  username: string;
+  verified: boolean;
+  emailVisibility: boolean;
+  email: string;
+  name: string;
+  avatar: string;
+};
+export interface User extends UserRecord {
+  avatarUrl: string;
+};
+
 export interface VideoRecord extends RecordModel {
   collectionId: string;
   collectionName: string;
@@ -67,20 +84,6 @@ export interface CropRecord extends RecordModel {
 };
 export interface Crop extends CropRecord {
   imageUrl: string;
-};
-
-export interface UserRecord extends RecordModel {
-  collectionId: string;
-  collectionName: string;
-  created: string;
-  updated: string;
-  id: string;
-  username: string;
-  verified: boolean;
-  emailVisibility: boolean;
-  email: string;
-  name: string;
-  avatar: string;
 };
 
 export type MetadataFieldsType = Record<string, {
