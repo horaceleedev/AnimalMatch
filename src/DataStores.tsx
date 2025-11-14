@@ -1,13 +1,13 @@
 // This file contains the 'stores' which store the global state and data of the app
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
-import { useEffect, useMemo } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import proj4 from "proj4";
 import PocketBase, { ClientResponseError, RecordModel } from 'pocketbase';
 import dayjs from 'dayjs';
 import { App } from 'antd';
 
-import type { Video, VideoRecord, LocationInfo, Individual, IndividualRecord, CropRecord, Crop } from "./types.ts";
+import type { Video, VideoRecord, LocationInfo, Individual, IndividualRecord, CropRecord, Crop, UserRecord } from "./types.ts";
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from "./metadata.tsx";
 import { getUniqueLocationsFromVideos, getUniqueValuesPerField } from './utils/utils.ts';
 
@@ -44,6 +44,48 @@ export const useDisconnectedMessage = () => {
     return () => clearInterval(interval);
   }, []);
 };
+
+
+interface AuthContextType {
+  user: UserRecord | null;
+  login: (usernameOrEmail: string, password: string) => Promise<void>;
+  logout: () => void;
+}
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState(pb.authStore.record as UserRecord | null);
+
+  useEffect(() => {
+    return pb.authStore.onChange((_, record) => {
+      setUser(record as UserRecord | null);
+    });
+  }, []);
+
+  // const register = useCallback(async (email: string, password: string) => {
+  //   await pb.collection("users").create({ email, password, passwordConfirm: password });
+  // }, []);
+
+  const login = useCallback(async (usernameOrEmail: string, password: string) => {
+    await pb.collection("users").authWithPassword(usernameOrEmail, password);
+  }, []);
+
+  const logout = useCallback(() => {
+    pb.authStore.clear();
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+  return context;
+};
+
 
 // Create a Zustand store for a PocketBase collection with real-time updates
 interface CollectionStore<TRecord, TProcessed, TExtra> {

@@ -17,6 +17,9 @@ import IndividualDetailModal from './routes/IndividualDetailModal.tsx';
 import CropDetailModal from './routes/CropDetailModal.tsx';
 import CompareModal from './routes/CompareModal.tsx';
 import VideoAnnotatorModal from './routes/VideoAnnotatorModal.tsx';
+import { AuthProvider } from './DataStores.tsx';
+import { ProtectedRoute } from './routes/ProtectedRoute.tsx';
+import { LoginPage } from './routes/LoginPage.tsx';
 import './index.css'
 
 const comparisonSubroutes = [
@@ -85,7 +88,11 @@ const comparisonSubroutes = [
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: (
+      <ProtectedRoute>
+        <App />
+      </ProtectedRoute>
+    ),
     errorElement: <ErrorPage />,
     children: [
       {
@@ -136,12 +143,18 @@ const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: '/login',
+    element: <LoginPage />,
+  }
 ]);
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <AntApp>
-      <RouterProvider router={router} />
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
     </AntApp>
   </React.StrictMode>,
 )

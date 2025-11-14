@@ -69,6 +69,20 @@ export interface Crop extends CropRecord {
   imageUrl: string;
 };
 
+export interface UserRecord extends RecordModel {
+  collectionId: string;
+  collectionName: string;
+  created: string;
+  updated: string;
+  id: string;
+  username: string;
+  verified: boolean;
+  emailVisibility: boolean;
+  email: string;
+  name: string;
+  avatar: string;
+};
+
 export type MetadataFieldsType = Record<string, {
   displayName: string;
   icon?: JSX.Element;

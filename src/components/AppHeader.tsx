@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link } from "react-router-dom";
 import { Avatar, Button, Dropdown, Layout, Menu } from 'antd';
-import { UserOutlined } from "@ant-design/icons";
 const { Header } = Layout;
+
+import { UserRecord } from '../types';
 
 const headerMenuItems = [
   {
@@ -29,15 +30,13 @@ const headerMenuItems = [
     label: 'Project Settings',
   },
 ];
-const accountDropdownItems = [{
-  key: '1',
-  label: 'Sign out',
-}];
 
 interface AppHeaderProps {
   currentMenuPage: string;
+  user: UserRecord | null;
+  logout: () => void;
 }
-const AppHeader: React.FC<AppHeaderProps> = ({currentMenuPage}: AppHeaderProps) => {
+const AppHeader: React.FC<AppHeaderProps> = ({currentMenuPage, user, logout}: AppHeaderProps) => {
   return (
     <Header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
       <Link to="/">
@@ -51,26 +50,48 @@ const AppHeader: React.FC<AppHeaderProps> = ({currentMenuPage}: AppHeaderProps) 
         items={headerMenuItems}
         style={{
           flex: "0 0 auto",
-          minWidth: "calc(307px + 104px/2)" // 307px = width of 4 menu items, 104px = width of AnimalMatch text
+          minWidth: "307px" // 307px = width of 4 menu items
         }}
       />
-
-      {/* Remove span later (temporarily added) */}
-      <span></span>
-      
-      {/* <Dropdown menu={{ items: accountDropdownItems }}>
-        <Button type="text" style={{color: 'white'}}
-                icon={<Avatar icon={<UserOutlined />} style={{background: 'rgba(255, 255, 255, 0.25)'}} />}
-                iconPosition="end"
+      <Dropdown
+        menu={{
+          items: [
+            // temporary hack to display username (TODO figure out a better implementation later)
+            {
+              key: 'username',
+              label: user?.username,
+              disabled: true,
+            },
+            {
+              key: 'logout',
+              label: 'Log out',
+            }
+          ],
+          onClick: ({key}) => {
+            if (key === 'logout') {
+              logout();
+            }
+          }
+        }}
+      >
+        <Button
+          type="text"
+          style={{color: 'white'}}
+          icon={
+            <Avatar style={{background: 'rgba(255, 255, 255, 0.25)'}}>
+              {/* First letter of user's name */}
+              {user?.name[0].toLocaleUpperCase()}
+            </Avatar>
+          }
+          iconPosition="end"
         >
-          John Doe
+          {user?.name}
         </Button>
-      </Dropdown> */}
+      </Dropdown>
       {/*
       TODO add to header:
       - help button
         - also show "About" info (e.g. created by VGG)
-      - account button
       */}
       {/* TODO add */}
     </Header>

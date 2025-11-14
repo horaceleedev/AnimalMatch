@@ -4,12 +4,14 @@ import { Layout, App as AntApp } from 'antd';
 const { Content } = Layout;
 import { useShallow } from 'zustand/react/shallow'
 
-import { useCropsStore, useIndividualsStore, useDisconnectedMessage, useVideoStore } from "./DataStores.tsx";
+import { useCropsStore, useIndividualsStore, useDisconnectedMessage, useVideoStore, useAuth } from "./DataStores.tsx";
 import AppHeader from "./components/AppHeader.tsx";
 import "./App.scss"
 
 const App: React.FC = () => {
   const { message } = AntApp.useApp();
+
+  const { user, logout } = useAuth();
 
   const [fetchVideos, subscribeToVideos, unsubscribeFromVideos] = useVideoStore(
     useShallow((state) => [state.fetch, state.subscribe, state.unsubscribe])
@@ -53,7 +55,7 @@ const App: React.FC = () => {
 
   return (
     <Layout>
-      <AppHeader currentMenuPage={currentMenuPage} />
+      <AppHeader currentMenuPage={currentMenuPage} user={user} logout={logout} />
       <Content>
         <Outlet />
       </Content>
