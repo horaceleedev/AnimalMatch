@@ -40,6 +40,8 @@ export interface VideoRecord extends RecordModel {
   utm_easting: number;
   utm_northing: number;
   custom_tags: string[];
+  assignees: string[];
+  annotation_status: string;
 };
 export interface Video extends VideoRecord {
   url: string;
