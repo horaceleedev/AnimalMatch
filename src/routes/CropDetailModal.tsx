@@ -56,9 +56,9 @@ const CropDetailModal: React.FC<RecordDetailModalProps> = ({
       title={
         <Space>
           Crop
-          <Link to={"/crops/compare/c/" + cropId}>
+          {/* <Link to={"/crops/compare/c/" + cropId}>
             <Button icon={<Icon component={Compare} />}>Open comparison view</Button>
-          </Link>
+          </Link> */}
         </Space>
       }
       open={isModalOpen}

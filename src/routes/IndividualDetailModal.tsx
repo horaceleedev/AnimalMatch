@@ -67,9 +67,9 @@ const IndividualDetailModal: React.FC<RecordDetailModalProps> = ({
       title={
         <Space>
           {individual.name}
-          <Link to={"/individuals/compare/i/" + individualId}>
+          {/* <Link to={"/individuals/compare/i/" + individualId}>
             <Button icon={<Icon component={Compare} />}>Open comparison view</Button>
-          </Link>
+          </Link> */}
         </Space>
       }
       open={isModalOpen}
