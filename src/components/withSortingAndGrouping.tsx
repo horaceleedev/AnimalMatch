@@ -28,7 +28,10 @@ const withSortingAndGrouping = <P extends object, T extends RecordModel>(
     groupOrders,
     basicGridViewProps,
   }: OuterProps<T> & { basicGridViewProps: P }) => {
-    const recordsSorted = orderBy(processedRecords, sortFields, sortOrders);
+    const recordsSorted = useMemo(
+      () => orderBy(processedRecords, sortFields, sortOrders),
+      [processedRecords, sortFields, sortOrders],
+    );
 
     // TODO check if the below works when groupFields.length === 0
     const groupedRecords: [any, T[]][] = useMemo(
@@ -37,7 +40,7 @@ const withSortingAndGrouping = <P extends object, T extends RecordModel>(
         [([groupValue, _]) => groupValue],
         [groupOrders[0]],
       ),
-      [recordsSorted],
+      [recordsSorted, groupFields, groupOrders],
     );
 
     if (groupFields.length === 0) {
