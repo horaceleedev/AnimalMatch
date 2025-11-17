@@ -97,10 +97,15 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
       {
         (view === 'list') ? 
         <IndividualsGridView
-          individuals={filteredIndividuals}
-          individualsMetadataFields={individualsMetadataFields}
-          linkTemplate={linkTemplate}
-          buttons={listViewButtons}
+          processedRecords={filteredIndividuals}
+          metadataFields={individualsMetadataFields}
+          processedRecordsPropName="individuals"
+          basicGridViewProps={{
+            individuals: filteredIndividuals,
+            individualsMetadataFields: individualsMetadataFields,
+            linkTemplate: linkTemplate,
+            buttons: listViewButtons,
+          }}
           sortFields={sortFields}
           sortOrders={sortOrders}
           groupFields={groupFields}
@@ -115,10 +120,15 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
           <Splitter>
             <Splitter.Panel defaultSize="40%" min="20%" max="70%" style={{height: 600, overflow: 'scroll', paddingRight: 12}}>
               <IndividualsGridView
-                individuals={filteredIndividuals}
-                individualsMetadataFields={individualsMetadataFields}
-                linkTemplate={linkTemplate}
-                buttons={listViewButtons}
+                processedRecords={filteredIndividuals}
+                metadataFields={individualsMetadataFields}
+                processedRecordsPropName="individuals"
+                basicGridViewProps={{
+                  individuals: filteredIndividuals,
+                  individualsMetadataFields: individualsMetadataFields,
+                  linkTemplate: linkTemplate,
+                  buttons: listViewButtons,
+                }}
                 sortFields={sortFields}
                 sortOrders={sortOrders}
                 groupFields={groupFields}

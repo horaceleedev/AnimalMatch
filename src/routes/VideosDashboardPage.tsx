@@ -63,8 +63,18 @@ const VideosDashboardPage: React.FC = () => {
       {
         (view === 'grid') ? 
           <VideosGridView
-            videos={videos} videoMetadataFields={videoMetadataFields} isListView={false}
-            sortFields={sortFields} sortOrders={sortOrders} groupFields={groupFields} groupOrders={groupOrders}
+            processedRecords={videos}
+            metadataFields={videoMetadataFields}
+            processedRecordsPropName="videos"
+            basicGridViewProps={{
+              videos,
+              videoMetadataFields,
+              isListView: false,
+            }}
+            sortFields={sortFields} 
+            sortOrders={sortOrders} 
+            groupFields={groupFields} 
+            groupOrders={groupOrders}
           />
         :
         (
@@ -75,8 +85,18 @@ const VideosDashboardPage: React.FC = () => {
           <Splitter>
             <Splitter.Panel defaultSize="40%" min="20%" max="70%" style={{height: 600, overflow: 'scroll', paddingRight: 12}}>
               <VideosGridView
-                videos={videos} videoMetadataFields={videoMetadataFields} isListView={true}
-                sortFields={sortFields} sortOrders={sortOrders} groupFields={groupFields} groupOrders={groupOrders}
+                processedRecords={videos}
+                metadataFields={videoMetadataFields}
+                processedRecordsPropName="videos"
+                basicGridViewProps={{
+                  videos,
+                  videoMetadataFields,
+                  isListView: true,
+                }}
+                sortFields={sortFields}
+                sortOrders={sortOrders}
+                groupFields={groupFields}
+                groupOrders={groupOrders}
               />
             </Splitter.Panel>
             <Splitter.Panel style={{paddingLeft: 12}}>
