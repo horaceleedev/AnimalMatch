@@ -1,11 +1,11 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { generatePath, Link } from 'react-router-dom';
-import { Button, Card, Collapse, Flex, Select, Space, Tag, Tooltip } from 'antd';
-import { groupBy, orderBy } from 'es-toolkit';
+import { Button, Card, Flex, Select, Space, Tag, Tooltip } from 'antd';
 
 import { StarOutlined } from '@ant-design/icons';
 
 import { Individual, MetadataFieldsType, RecordType } from '../types.ts';
+import withSortingAndGrouping from './withSortingAndGrouping.tsx';
 import "./IndividualsGridView.scss";
 
 const imgStyle: React.CSSProperties = {
@@ -131,76 +131,6 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
   );
 };
 
-interface IndividualsGridViewProps extends BasicIndividualsGridViewProps {
-  sortFields: string[];
-  sortOrders: ("asc" | "desc")[];
-  groupFields: string[];
-  groupOrders: ("asc" | "desc")[];
-};
-
-const IndividualsGridView: React.FC<IndividualsGridViewProps> = ({
-  individuals, individualsMetadataFields, isListView, linkTemplate,
-  buttons, allowEditingAgeAndSex,
-  sortFields, sortOrders, groupFields, groupOrders,
-  openModal,
-}: IndividualsGridViewProps) => {
-  const individualsSorted = orderBy(individuals, sortFields, sortOrders);
-  
-  // TODO check if the below works when groupFields.length === 0
-  const groupedIndividuals: [any, Individual[]][] = useMemo(() => (
-    orderBy(
-      Object.entries(groupBy<Individual, any>(individualsSorted, indiv => indiv[groupFields[0]])),
-      [([groupValue, _]) => groupValue],
-      [groupOrders[0]]
-    )
-  ), [individualsSorted]);
-  
-  if (groupFields.length === 0) return (
-    <BasicIndividualsGridView
-      individuals={individualsSorted}
-      individualsMetadataFields={individualsMetadataFields}
-      isListView={isListView}
-      linkTemplate={linkTemplate}
-      buttons={buttons}
-      allowEditingAgeAndSex={allowEditingAgeAndSex}
-      openModal={openModal}
-    />
-  );
-  return groupedIndividuals.map(([groupValue, groupIndividuals]) => (
-    <Collapse
-      key={groupValue}
-      collapsible="header"
-      defaultActiveKey={['1']}
-      style={{
-        marginBottom: 12
-      }}
-      items={[
-        {
-          key: '1',
-          label: (
-            (individualsMetadataFields[groupFields[0]].displayBooleanValuesAs) ? 
-            // Use 'displayBooleanValuesAs'
-            <span>{individualsMetadataFields[groupFields[0]].displayBooleanValuesAs[Number(groupValue === 'true')]}</span>
-            :
-            <span>{individualsMetadataFields[groupFields[0]].displayName}: {groupValue}</span>
-          ),
-          children: (
-            <BasicIndividualsGridView
-              individuals={groupIndividuals}
-              individualsMetadataFields={individualsMetadataFields}
-              isListView={isListView}
-              linkTemplate={linkTemplate}
-              buttons={buttons}
-              allowEditingAgeAndSex={allowEditingAgeAndSex}
-              openModal={openModal}
-            />
-          ),
-        },
-      ]}
-      // expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
-      // style={{ background: token.colorBgContainer }}
-    />
-  ));
-};
+const IndividualsGridView = withSortingAndGrouping<BasicIndividualsGridViewProps, Individual>(BasicIndividualsGridView);
 
 export default IndividualsGridView;

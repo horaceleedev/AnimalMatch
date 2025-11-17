@@ -171,15 +171,20 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                 {
                   videosWithIndividual.length > 0 ?
                   <VideosGridView
-                    videos={videosWithIndividual}
-                    videoMetadataFields={videoMetadataFields}
-                    isListView={false}
-                    linkTemplate={videosLinkTemplate}
+                    processedRecords={videosWithIndividual}
+                    metadataFields={videoMetadataFields}
+                    processedRecordsPropName="videos"
+                    basicGridViewProps={{
+                      videos: videosWithIndividual,
+                      videoMetadataFields: videoMetadataFields,
+                      isListView: false,
+                      linkTemplate: videosLinkTemplate,
+                      openModal: openModal,
+                    }}
                     sortFields={[]}
                     sortOrders={[]}
                     groupFields={[]}
                     groupOrders={[]}
-                    openModal={openModal}
                   />
                   :
                   <p>No videos with this individual</p>
@@ -196,14 +201,19 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                 {
                   (seenTogetherIndividuals.length > 0) ?
                   <IndividualsGridView
-                    individuals={seenTogetherIndividuals}
-                    individualsMetadataFields={individualsMetadataFields}
-                    linkTemplate={individualsLinkTemplate}
+                    processedRecords={seenTogetherIndividuals}
+                    metadataFields={individualsMetadataFields}
+                    processedRecordsPropName="individuals"
+                    basicGridViewProps={{
+                      individuals: seenTogetherIndividuals,
+                      individualsMetadataFields: individualsMetadataFields,
+                      linkTemplate: individualsLinkTemplate,
+                      openModal: openModal,
+                    }}
                     sortFields={[]}
                     sortOrders={[]}
                     groupFields={[]}
                     groupOrders={[]}
-                    openModal={openModal}
                   />
                   :
                   <p>No other individuals seen together</p>

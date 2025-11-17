@@ -1,11 +1,10 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { generatePath, Link } from "react-router-dom";
-import { Card, Collapse, Flex, Tag, Tooltip, Typography } from "antd";
-import { groupBy, orderBy } from "es-toolkit";
-
+import { Card, Flex, Tag, Tooltip, Typography } from "antd";
 
 import type { RecordType, Video } from "../types.ts";
 import type { MetadataFieldsType } from "../types.tsx";
+import withSortingAndGrouping from './withSortingAndGrouping.tsx';
 import "./VideosGridView.scss"
 
 interface BasicVideosGridViewProps {
@@ -99,64 +98,6 @@ const BasicVideosGridView: React.FC<BasicVideosGridViewProps> = ({
   );
 };
 
-interface VideosGridViewProps extends BasicVideosGridViewProps {
-  sortFields: string[];
-  sortOrders: ("asc" | "desc")[];
-  groupFields: string[];
-  groupOrders: ("asc" | "desc")[];
-};
-
-const VideosGridView: React.FC<VideosGridViewProps> = ({
-  videos, videoMetadataFields, isListView, linkTemplate, sortFields, sortOrders, groupFields, groupOrders, openModal
-}: VideosGridViewProps) => {
-  const videosSorted = orderBy(videos, sortFields, sortOrders);
-  
-  // TODO check if the below works when groupFields.length === 0
-  const groupedVideos: [any, Video[]][] = useMemo(() => (
-    orderBy(
-      Object.entries(groupBy<Video, any>(videosSorted, v => v[groupFields[0]])),
-      [([groupValue, _]) => groupValue],
-      [groupOrders[0]]
-    )
-  ), [videosSorted]);
-
-  if (groupFields.length === 0) return (
-    <BasicVideosGridView
-      videos={videosSorted}
-      videoMetadataFields={videoMetadataFields}
-      isListView={isListView}
-      linkTemplate={linkTemplate}
-      openModal={openModal}
-    />
-  );
-
-  return groupedVideos.map(([groupValue, groupVideos]) => (
-    <Collapse
-      key={groupValue}
-      collapsible="header"
-      defaultActiveKey={['1']}
-      style={{
-        marginBottom: 12
-      }}
-      items={[
-        {
-          key: '1',
-          label: <span>{videoMetadataFields[groupFields[0]].displayName}: {groupValue}</span>,
-          children: (
-            <BasicVideosGridView
-              videos={groupVideos}
-              videoMetadataFields={videoMetadataFields}
-              isListView={isListView}
-              linkTemplate={linkTemplate}
-              openModal={openModal}
-            />
-          ),
-        },
-      ]}
-      // expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
-      // style={{ background: token.colorBgContainer }}
-    />
-  ));
-};
+const VideosGridView = withSortingAndGrouping<BasicVideosGridViewProps, Video>(BasicVideosGridView);
 
 export default VideosGridView;

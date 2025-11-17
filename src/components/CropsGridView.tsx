@@ -4,6 +4,7 @@ import { Card, Collapse, Flex, Space, Tag, Tooltip, Typography } from "antd";
 import { groupBy, orderBy } from "es-toolkit";
 
 import type { Crop, MetadataFieldsType, RecordType } from "../types.ts";
+import withSortingAndGrouping from './withSortingAndGrouping.tsx';
 import "./CropsGridView.scss"
 
 interface BasicCropsGridViewProps {
@@ -73,64 +74,6 @@ const BasicCropsGridView: React.FC<BasicCropsGridViewProps> = ({
   );
 };
 
-interface CropsGridViewProps extends BasicCropsGridViewProps {
-  sortFields: string[];
-  sortOrders: ("asc" | "desc")[];
-  groupFields: string[];
-  groupOrders: ("asc" | "desc")[];
-};
-
-const CropsGridView: React.FC<CropsGridViewProps> = ({
-  crops, cropsMetadataFields, linkTemplate,
-  sortFields, sortOrders, groupFields, groupOrders,
-  openModal,
-}: CropsGridViewProps) => {
-  const cropsSorted = orderBy(crops, sortFields, sortOrders);
-  
-  // TODO check if the below works when groupFields.length === 0
-  const groupedCrops: [any, Crop[]][] = useMemo(() => (
-    orderBy(
-      Object.entries(groupBy<Crop, any>(cropsSorted, v => v[groupFields[0]])),
-      [([groupValue, _]) => groupValue],
-      [groupOrders[0]]
-    )
-  ), [cropsSorted]);
-
-  if (groupFields.length === 0) return (
-    <BasicCropsGridView
-      crops={cropsSorted}
-      cropsMetadataFields={cropsMetadataFields}
-      linkTemplate={linkTemplate}
-      openModal={openModal}
-    />
-  );
-
-  return groupedCrops.map(([groupValue, groupCrops]) => (
-    <Collapse
-      key={groupValue}
-      collapsible="header"
-      defaultActiveKey={['1']}
-      style={{
-        marginBottom: 12
-      }}
-      items={[
-        {
-          key: '1',
-          label: <span>{cropsMetadataFields[groupFields[0]].displayName}: {groupValue}</span>,
-          children: (
-            <BasicCropsGridView
-              crops={groupCrops}
-              cropsMetadataFields={cropsMetadataFields}
-              linkTemplate={linkTemplate}
-              openModal={openModal}
-            />
-          ),
-        },
-      ]}
-      // expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
-      // style={{ background: token.colorBgContainer }}
-    />
-  ));
-};
+const CropsGridView = withSortingAndGrouping<BasicCropsGridViewProps, Crop>(BasicCropsGridView);
 
 export default CropsGridView;

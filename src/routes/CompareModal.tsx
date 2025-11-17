@@ -326,10 +326,15 @@ const CompareModal: React.FC = () => {
         {
           (compareType === 'videos') ?
           <VideosGridView
-            videos={videos}
-            videoMetadataFields={videoMetadataFields}
-            isListView={true}
-            linkTemplate={routerLocation.pathname + "/:videoId"}
+            processedRecords={videos}
+            metadataFields={videoMetadataFields}
+            processedRecordsPropName="videos"
+            basicGridViewProps={{
+              videos,
+              videoMetadataFields,
+              isListView: true,
+              linkTemplate: routerLocation.pathname + "/:videoId",
+            }}
             sortFields={[]}
             sortOrders={[]}
             groupFields={[]}
@@ -532,10 +537,15 @@ const CompareModal: React.FC = () => {
                   <Popover placement="topRight" title="Shortlist" content={
                     <div style={{maxHeight: 'calc(88vh - 180px)', width: 450, overflow: 'scroll'}}>
                       <IndividualsGridView
-                        individuals={individuals.filter(x => shortlistedIndividualIds.includes(x.id))}
-                        individualsMetadataFields={individualsMetadataFields} 
-                        linkTemplate={routeSplits.slice(0,6).join('/') + "/:individualId"}
-                        buttons={shortlistButton}
+                        processedRecords={individuals.filter(x => shortlistedIndividualIds.includes(x.id))}
+                        metadataFields={individualsMetadataFields}
+                        processedRecordsPropName="individuals"
+                        basicGridViewProps={{
+                          individuals: individuals.filter(x => shortlistedIndividualIds.includes(x.id)),
+                          individualsMetadataFields: individualsMetadataFields,
+                          linkTemplate: routeSplits.slice(0,6).join('/') + "/:individualId",
+                          buttons: shortlistButton,
+                        }}
                         sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]}
                       />
                     </div>

@@ -44,12 +44,17 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
       <Divider />
       <h3>Individuals</h3>
       <IndividualsGridView 
-        individuals={individualsInVideo} individualsMetadataFields={individualsMetadataFields}
-        // isListView={true}
-        linkTemplate={individualsLinkTemplate}
-        allowEditingAgeAndSex={true}
+        processedRecords={individualsInVideo}
+        metadataFields={individualsMetadataFields}
+        processedRecordsPropName="individuals"
+        basicGridViewProps={{
+          individuals: individualsInVideo,
+          individualsMetadataFields: individualsMetadataFields,
+          linkTemplate: individualsLinkTemplate,
+          allowEditingAgeAndSex: true,
+          openModal: openModal,
+        }}
         sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]}
-        openModal={openModal}
       />
       <Divider />
       <h3>Video metadata</h3>
