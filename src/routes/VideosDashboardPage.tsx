@@ -10,6 +10,7 @@ import "./VideosDashboardPage.scss";
 import Table from '../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Map from '../assets/material_symbols/map_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import { gridEditors, tableColumns, videoMetadataFields } from "../metadata.tsx";
+import DashboardContent from '../components/DashboardContent.tsx';
 import VideosGridView from "../components/VideosGridView.tsx";
 import QueryOperationsButtons from "../components/QueryOperationsButtons.tsx";
 import { useVideoStore } from "../DataStores.tsx";
@@ -50,7 +51,7 @@ const VideosDashboardPage: React.FC = () => {
   }
   
   return (
-    <>
+    <DashboardContent>
       <QueryOperationsButtons
         metadataFields={videoMetadataFields} uniqueValuesPerField={uniqueValuesPerField}
         sortFields={sortFields} setSortFields={setSortFields} sortOrders={sortOrders} setSortOrders={setSortOrders}
@@ -107,7 +108,7 @@ const VideosDashboardPage: React.FC = () => {
       }
       {/* Outlet for VideoDetailView */}
       <Outlet />
-    </>
+    </DashboardContent>
   );
 };
 

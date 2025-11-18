@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { Outlet, useLocation } from "react-router-dom";
 import { Layout, App as AntApp } from 'antd';
-const { Content } = Layout;
 import { useShallow } from 'zustand/react/shallow'
 
 import { useCropsStore, useIndividualsStore, useDisconnectedMessage, useVideoStore, useAuth, useUsersStore } from "./DataStores.tsx";
@@ -62,9 +61,7 @@ const App: React.FC = () => {
   return (
     <Layout>
       <AppHeader currentMenuPage={currentMenuPage} user={user} logout={logout} />
-      <Content>
-        <Outlet />
-      </Content>
+      <Outlet />
     </Layout>
   );
 };
