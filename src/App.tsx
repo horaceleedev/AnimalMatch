@@ -29,16 +29,17 @@ const App: React.FC = () => {
 
   // App initialization
   useEffect(() => {
+    const key = "fetching-data-" + Date.now();
     message.loading({
-      key: 'fetching-data',
+      key: key,
       content: 'Loading...',
       duration: 0,
     });
     Promise.all([fetchUsers(), fetchVideos(), fetchIndividuals(), fetchCrops()]).then(() => {
-      message.destroy('fetching-data');
+      message.destroy(key);
     }).catch((e) => {
       message.error({
-        key: 'fetching-data',
+        key: key,
         content: 'Unable to load data from the server. Try reloading the page.'
       });
       console.error(e);
