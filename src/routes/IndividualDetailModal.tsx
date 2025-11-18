@@ -54,11 +54,6 @@ const IndividualDetailModal: React.FC<RecordDetailModalProps> = ({
     return getUniqueLocationsFromIndividuals(individuals, allVideos);
   }, [individuals, allVideos]);
 
-  if (!individual) {
-    console.error(`Individual with id ${individualId} not found`);
-    return <></>;
-  }
-
   // TODO
   // add back button (to the left of the title)
   // disable closing by escape key
@@ -66,7 +61,7 @@ const IndividualDetailModal: React.FC<RecordDetailModalProps> = ({
     <Modal
       title={
         <Space>
-          {individual.name}
+          {individual?.name ?? "Unknown individual"}
           {/* <Link to={"/individuals/compare/i/" + individualId}>
             <Button icon={<Icon component={Compare} />}>Open comparison view</Button>
           </Link> */}
@@ -79,16 +74,21 @@ const IndividualDetailModal: React.FC<RecordDetailModalProps> = ({
       centered={true}
       className="individual-detail-modal"
     >
-      <IndividualDetailView
-        individual={individual} 
-        seenTogetherIndividuals={seenTogetherIndividuals}
-        videosWithIndividual={videosWithIndividual}
-        uniqueValuesPerField={individualsUniqueValuesPerField}
-        cropsUniqueValuesPerField={cropsUniqueValuesPerField}
-        uniqueLocations={uniqueIndividualLocations}
-        openModal={(type, id) => setInnerModalProps({ type, id })}
-        updateIndividual={updateIndividual}
-      />
+      {
+        individual ?
+        <IndividualDetailView
+          individual={individual} 
+          seenTogetherIndividuals={seenTogetherIndividuals}
+          videosWithIndividual={videosWithIndividual}
+          uniqueValuesPerField={individualsUniqueValuesPerField}
+          cropsUniqueValuesPerField={cropsUniqueValuesPerField}
+          uniqueLocations={uniqueIndividualLocations}
+          openModal={(type, id) => setInnerModalProps({ type, id })}
+          updateIndividual={updateIndividual}
+        />
+        :
+        "Individual not found"
+      }
       <InnerModal {...innerModalProps} exitModal={() => setInnerModalProps({ type: undefined, id: undefined })} />
     </Modal>
   );

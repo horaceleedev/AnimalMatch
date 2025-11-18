@@ -46,11 +46,6 @@ const VideoDetailModal: React.FC<RecordDetailModalProps> = ({
 
   const { individuals } = useIndividualsStoreWithCrops();
   const individualsInVideo = video ? (individuals.filter(x => x.videos.includes(video.id)) || []) : [];
-
-  if (!video) {
-    console.error(`Video with id ${videoId} not found`);
-    return <></>;
-  }
   
   // TODO
   // add back button (to the left of the title)
@@ -59,7 +54,7 @@ const VideoDetailModal: React.FC<RecordDetailModalProps> = ({
     <Modal
       title={
         <Space>
-          {video.filename}
+          {video?.filename ?? "Unknown video"}
           {/* <Link to={"/videos/compare/v/" + videoId}>
             <Button icon={<Icon component={Compare} />}>Open comparison view</Button>
           </Link> */}
@@ -72,14 +67,19 @@ const VideoDetailModal: React.FC<RecordDetailModalProps> = ({
       centered={true}
       className="video-detail-modal"
     >
-      <VideoDetailView
-        video={video}
-        individualsInVideo={individualsInVideo}
-        uniqueValuesPerField={uniqueValuesPerField}
-        uniqueLocations={uniqueLocations}
-        openModal={(type, id) => setInnerModalProps({ type, id })}
-        updateVideo={updateVideo}
-      />
+      {
+        video ?
+        <VideoDetailView
+          video={video}
+          individualsInVideo={individualsInVideo}
+          uniqueValuesPerField={uniqueValuesPerField}
+          uniqueLocations={uniqueLocations}
+          openModal={(type, id) => setInnerModalProps({ type, id })}
+          updateVideo={updateVideo}
+        />
+        :
+        "Video not found"
+      }
       <InnerModal {...innerModalProps} exitModal={() => setInnerModalProps({ type: undefined, id: undefined })} />
     </Modal>
   );

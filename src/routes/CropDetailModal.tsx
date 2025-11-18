@@ -43,11 +43,6 @@ const CropDetailModal: React.FC<RecordDetailModalProps> = ({
   );
   const crop = crops.find(x => x.id === cropId);
 
-  if (!crop) {
-    console.error(`Crop with id ${cropId} not found`);
-    return <></>;
-  }
-
   // TODO
   // add back button (to the left of the title)
   // disable closing by escape key
@@ -67,12 +62,17 @@ const CropDetailModal: React.FC<RecordDetailModalProps> = ({
       afterOpenChange={handleOpenChange}
       centered={true}
     >
-      <CropDetailView
-        crop={crop}
-        uniqueValuesPerField={uniqueValuesPerField}
-        updateCrop={updateCrop}
-        openModal={(type, id) => setInnerModalProps({ type, id })}
-      />
+      {
+        crop ?
+        <CropDetailView
+          crop={crop}
+          uniqueValuesPerField={uniqueValuesPerField}
+          updateCrop={updateCrop}
+          openModal={(type, id) => setInnerModalProps({ type, id })}
+        />
+        :
+        "Crop not found"
+      }
       <InnerModal {...innerModalProps} exitModal={() => setInnerModalProps({ type: undefined, id: undefined })} />
     </Modal>
   );
