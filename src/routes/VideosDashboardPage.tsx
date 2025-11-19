@@ -190,7 +190,13 @@ const VideosDashboardPage: React.FC = () => {
             :
             (
               (view === 'table') ?
-              <RevoGrid columns={tableColumns} source={videosFiltered} rowHeaders={true} resize={true} autoSizeColumn={true} range={true} readonly={true} editors={gridEditors} />
+              <>
+                {
+                  (sortFields.length > 0 || groupFields.length > 0) &&
+                  "Note: the sorting/grouping options you have selected are not applied to this table view at the moment"
+                }
+                <RevoGrid columns={tableColumns} source={videosFiltered} rowHeaders={true} resize={true} autoSizeColumn={true} range={true} readonly={true} editors={gridEditors} />
+              </>
               :
               (uniqueLocations.length > 0) &&
               <Splitter>
