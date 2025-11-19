@@ -59,7 +59,7 @@ const App: React.FC = () => {
   const currentMenuPage = routerLocation.pathname.split('/')[1]; // e.g. 'videos' or 'individuals'
 
   return (
-    <Layout>
+    <Layout className="app-layout">
       <AppHeader currentMenuPage={currentMenuPage} user={user} logout={logout} />
       <Outlet />
     </Layout>
