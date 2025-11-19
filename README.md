@@ -1,4 +1,21 @@
-# AnimalMatch
+# AnimalMatch frontend
+
+This frontend web app is implemented with React and TypeScript + SASS + HTML. Here are some other key libraries used:
+* UI component library: [Ant Design](https://ant.design/)
+* Global state management: [Zustand](https://github.com/pmndrs/zustand)
+* JS utility library: [es-toolkit](https://es-toolkit.dev) (similar to Lodash)
+
+## Development setup
+### Prerequisites
+- Make sure you have [npm](https://docs.npmjs.com/about-npm) installed beforehand. If you do not have `npm` installed, we recommend installing [nvm (Node Version Manager)](https://github.com/nvm-sh/nvm#install--update-script) first and then running `nvm install node` to install `npm` and `node`.
+- Clone this repo, `cd` into this directory and then run `npm install` to install the project dependencies
+
+### Start development server
+1. Make sure you have completed the prerequisite steps above, and `cd`'ed into this directory if you haven't already done so
+2. Start the development server using `npm run dev`. Once the server is running, open `localhost:5173` in your browser to access the development version of the frontend
+
+### Production build
+TODO
 
 ## React Components
 
@@ -14,6 +31,7 @@ Note:
   - VideoLinkButton, IndividualLinkButton
   - BasicMapView
   - InnerModal
+  - etc
 
 # Original README created by Vite (TODO remove this later):
 
