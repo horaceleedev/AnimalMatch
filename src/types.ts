@@ -40,6 +40,8 @@ export interface VideoRecord extends RecordModel {
   utm_easting: number;
   utm_northing: number;
   custom_tags: string[];
+  assignees: string[];
+  annotation_status: string;
 };
 export interface Video extends VideoRecord {
   url: string;
@@ -56,7 +58,7 @@ export interface IndividualRecord extends RecordModel {
   id: string;
   name: string;
   created_by: string;
-  is_identified: boolean;
+  // is_identified: boolean;
   videos: string[];
   age: string;
   sex: string;
@@ -73,7 +75,7 @@ export interface CropRecord extends RecordModel {
   created: string;
   updated: string;
   id: string;
-  image: string;
+  image: string | Blob | File;
   created_by: string;
   source_video: string;
   individual: string;
@@ -82,7 +84,9 @@ export interface CropRecord extends RecordModel {
   description: string;
   frame_number: number;
   timestamp: number;
-  bounding_box: object; // TODO define more specifically
+  crop_coordinates: [number, number, number, number]; // l, t, w, h normalized
+  width: number; // width of crop image in px
+  height: number; // height of crop image in px
 };
 export interface Crop extends CropRecord {
   imageUrl: string;

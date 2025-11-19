@@ -1,6 +1,6 @@
 import { Editor, type EditorType, type Editors, type ReactElement } from '@revolist/react-datagrid';
 
-import Icon, { CalendarOutlined, ClockCircleOutlined, FileTextOutlined, IdcardOutlined, PlaySquareOutlined, QuestionOutlined, TagsOutlined, UserOutlined } from "@ant-design/icons";
+import Icon, { CalendarOutlined, ClockCircleOutlined, ColumnHeightOutlined, ColumnWidthOutlined, FileTextOutlined, IdcardOutlined, PlaySquareOutlined, QuestionOutlined, TagsOutlined, UserOutlined } from "@ant-design/icons";
 import Location from './assets/material_symbols/location_on_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Forest from './assets/material_symbols/forest_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import CalendarMonth from './assets/material_symbols/calendar_month_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -10,6 +10,7 @@ import WC from './assets/material_symbols/wc_24dp_5F6368_FILL0_wght400_GRAD0_ops
 import Altitude from './assets/material_symbols/altitude_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import BoundingBoxIcon from "./assets/material_symbols/activity_zone_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 import FaceZone from "./assets/material_symbols/familiar_face_and_zone_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
+import PendingActions from "./assets/material_symbols/pending_actions_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 
 import { MetadataFieldsType } from './types';
 
@@ -91,7 +92,21 @@ export const videoMetadataFields: MetadataFieldsType = {
     icon: <TagsOutlined />,
     type: 'multiselect',
     valueEditorType: 'multiselect',
-  }
+  },
+  'assignees': {
+    displayName: 'Assignees',
+    icon: <UserOutlined />,
+    type: 'multiselect',
+    valueEditorType: 'multiselect',
+    renderType: 'user_label',
+  },
+  'annotation_status': {
+    displayName: 'Annotation status',
+    icon: <Icon component={PendingActions} />,
+    type: 'select',
+    valueEditorType: 'select',
+    presetOptions: ['to annotate', 'annotated', 'reviewed'],
+  },
 };
 
 const CustomEditor = ({ close } : EditorType) => {
@@ -203,14 +218,14 @@ export const individualsMetadataFields: MetadataFieldsType = {
     renderType: 'user_label',
     isUneditable: true,
   },
-  'is_identified': {
-    displayName: 'Is identified',
-    icon: <QuestionOutlined />,
-    type: 'boolean',
-    inputType: 'text', // TODO change this later
-    displayBooleanValuesAs: ["Unidentified", "Identified"],
-    isUneditable: true,
-  },
+  // 'is_identified': {
+  //   displayName: 'Is identified',
+  //   icon: <QuestionOutlined />,
+  //   type: 'boolean',
+  //   inputType: 'text', // TODO change this later
+  //   displayBooleanValuesAs: ["Unidentified", "Identified"],
+  //   isUneditable: true,
+  // },
   'age': {
     displayName: 'Age',
     icon: <Icon component={Cake} />,
@@ -279,17 +294,17 @@ export const cropsMetadataFields: MetadataFieldsType = {
     valueEditorType: 'select',
     presetOptions: ['full body', 'face', 'butt', 'ear'],
   },
-  'custom_tags': {
-    displayName: 'Custom tags',
-    icon: <TagsOutlined />,
-    type: 'multiselect',
-    valueEditorType: 'multiselect',
-  },
   'description': {
     displayName: 'Description',
     icon: <FileTextOutlined />,
     type: 'rich_text',
     inputType: 'text',
+  },
+  'custom_tags': {
+    displayName: 'Custom tags',
+    icon: <TagsOutlined />,
+    type: 'multiselect',
+    valueEditorType: 'multiselect',
   },
   'frame_number': {
     displayName: 'Frame number',
@@ -305,11 +320,25 @@ export const cropsMetadataFields: MetadataFieldsType = {
     inputType: 'number',
     isUneditable: true,
   },
-  'bounding_box': {
-    displayName: 'Bounding box',
+  'crop_coordinates': {
+    displayName: 'Crop coordinates',
     icon: <Icon component={BoundingBoxIcon} />,
     type: 'text',
     inputType: 'text',
+    isUneditable: true,
+  },
+  'width': {
+    displayName: 'Width (px)',
+    icon: <ColumnWidthOutlined />,
+    type: 'number',
+    inputType: 'number',
+    isUneditable: true,
+  },
+  'height': {
+    displayName: 'Height (px)',
+    icon: <ColumnHeightOutlined />,
+    type: 'number',
+    inputType: 'number',
     isUneditable: true,
   },
 };

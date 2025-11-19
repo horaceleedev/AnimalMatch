@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useShallow } from 'zustand/react/shallow';
-import { Button, Modal, Space } from "antd";
+import { Flex, Modal } from "antd";
 import Icon from '@ant-design/icons';
 
 import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -9,7 +9,9 @@ import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght40
 import { useCropsStore } from "../DataStores.tsx";
 import CropDetailView from '../components/CropDetailView.tsx';
 import InnerModal from './InnerModal.tsx';
+import RecordActionsButton from '../components/RecordActionsButton.tsx';
 import { RecordDetailModalProps, RecordType } from '../types.ts';
+import "./CropDetailModal.scss";
 
 const CropDetailModal: React.FC<RecordDetailModalProps> = ({
   id: cropIdFromProps, // if not provided, will get from useParams
@@ -38,8 +40,8 @@ const CropDetailModal: React.FC<RecordDetailModalProps> = ({
     id: undefined,
   });
 
-  const [crops, updateCrop, uniqueValuesPerField] = useCropsStore(
-    useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField])
+  const [crops, updateCrop, deleteCrop, uniqueValuesPerField] = useCropsStore(
+    useShallow((state) => [state.processedRecords, state.update, state.delete, state.uniqueValuesPerField])
   );
   const crop = crops.find(x => x.id === cropId);
 
@@ -49,18 +51,25 @@ const CropDetailModal: React.FC<RecordDetailModalProps> = ({
   return (
     <Modal
       title={
-        <Space>
+        <Flex gap="small" align="center" justify="space-between" style={{height: 24, marginRight: "32px"}}>
           Crop
           {/* <Link to={"/crops/compare/c/" + cropId}>
             <Button icon={<Icon component={Compare} />}>Open comparison view</Button>
           </Link> */}
-        </Space>
+          <RecordActionsButton
+            recordType="crop"
+            recordId={cropId!}
+            deleteFunction={deleteCrop}
+            onDelete={handleDismiss}
+          />
+        </Flex>
       }
       open={isModalOpen}
       footer={null}
       onCancel={handleDismiss}
       afterOpenChange={handleOpenChange}
       centered={true}
+      className="crop-detail-modal"
     >
       {
         crop ?
