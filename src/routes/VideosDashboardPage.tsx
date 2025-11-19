@@ -1,20 +1,26 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Outlet } from "react-router-dom";
-import { Splitter, Tabs } from "antd";
+import { Layout, Menu, Splitter, Tabs, theme } from "antd";
 import type { TabsProps } from 'antd';
-import Icon, { AppstoreOutlined } from "@ant-design/icons";
+import Icon, { AppstoreOutlined, PlaySquareOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
 import { RevoGrid } from '@revolist/react-datagrid';
 import { RuleGroupType } from 'react-querybuilder';
+const { Sider } = Layout;
 
-import "./VideosDashboardPage.scss";
 import Table from '../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Map from '../assets/material_symbols/map_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
+import PendingActions from "../assets/material_symbols/pending_actions_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
+import CheckCircle from "../assets/material_symbols/check_circle_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
+import Approval from "../assets/material_symbols/approval_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
+
 import { gridEditors, tableColumns, videoMetadataFields } from "../metadata.tsx";
 import DashboardContent from '../components/DashboardContent.tsx';
 import VideosGridView from "../components/VideosGridView.tsx";
 import QueryOperationsButtons from "../components/QueryOperationsButtons.tsx";
-import { useVideoStore } from "../DataStores.tsx";
+import { useAuth, useVideoStore } from "../DataStores.tsx";
 import BasicMapView from '../components/BasicMapView.tsx';
+import { Video } from '../types.ts';
+import "./VideosDashboardPage.scss";
 
 const viewsTabsItems: TabsProps['items'] = [
   {
@@ -41,6 +47,8 @@ const VideosDashboardPage: React.FC = () => {
   const uniqueLocations = useVideoStore((state) => state.extra.uniqueLocations);
   const uniqueValuesPerField = useVideoStore((state) => state.uniqueValuesPerField);
 
+  const { user } = useAuth();
+
   const [sortFields, setSortFields] = useState<string[]>([]);
   const [sortOrders, setSortOrders] = useState<("asc" | "desc")[]>([]);
   const [groupFields, setGroupFields] = useState<string[]>([]);
@@ -49,66 +57,170 @@ const VideosDashboardPage: React.FC = () => {
   const setQuery = () => {
     alert('Not implemented');
   }
-  
+  const [selectedSiderKey, setSelectedSiderKey] = useState("all-videos");
+  const videosBySiderKey: Record<string, Video[]> = useMemo(() => ({
+    "all-videos": videos,
+    "assigned-to-me": user ? videos.filter(video => video.assignees.includes(user.id)) : [],
+    "to annotate": videos.filter(video => video.annotation_status === "to annotate"),
+    "annotated": videos.filter(video => video.annotation_status === "annotated"),
+    "reviewed": videos.filter(video => video.annotation_status === "reviewed"),
+    ...videos.reduce((acc: Record<string, Video[]>, cur: Video) => {
+      for (const tag of cur.custom_tags) {
+        const tagWithPrefix = "custom-tags/" + tag;
+        if (!(tagWithPrefix in acc)) acc[tagWithPrefix] = [];
+        acc[tagWithPrefix].push(cur);
+      }
+      return acc;
+    }, {}),
+  }), [videos, user]);
+  const videosFiltered = useMemo(() => 
+    videosBySiderKey[selectedSiderKey],
+    [videosBySiderKey, selectedSiderKey]
+  );
+
+  const { colorBgContainer } = theme.useToken().token;
+
   return (
-    <DashboardContent>
-      <QueryOperationsButtons
-        metadataFields={videoMetadataFields} uniqueValuesPerField={uniqueValuesPerField}
-        sortFields={sortFields} setSortFields={setSortFields} sortOrders={sortOrders} setSortOrders={setSortOrders}
-        groupFields={groupFields} setGroupFields={setGroupFields} groupOrders={groupOrders} setGroupOrders={setGroupOrders}
-        query={query} setQuery={setQuery}
-      />
-
-      <Tabs defaultActiveKey="grid" items={viewsTabsItems} onChange={setView} />
-
-      {
-        (view === 'grid') ? 
-          <VideosGridView
-            processedRecords={videos}
-            metadataFields={videoMetadataFields}
-            processedRecordsPropName="videos"
-            basicGridViewProps={{
-              videos,
-              videoMetadataFields,
-              isListView: false,
-            }}
-            sortFields={sortFields} 
-            sortOrders={sortOrders} 
-            groupFields={groupFields} 
-            groupOrders={groupOrders}
+    <>
+      <Layout
+        className="videos-dashboard-layout"
+        style={{ /* background: colorBgContainer */ }}
+      >
+        <Sider className="videos-dashboard-sider" style={{ /* background: colorBgContainer */ }} width={220}>
+          <h3>Videos</h3>
+          <Menu
+            mode="inline"
+            selectedKeys={[selectedSiderKey]}
+            className="videos-dashboard-sider-menu"
+            items={[
+              {
+                key: 'all-videos',
+                label: 'All videos',
+                icon: <PlaySquareOutlined />,
+                extra: videosBySiderKey['all-videos'].length,
+                // children: (uniqueValuesPerField['location_name'] ?? []).map(x => ({key: x, label: x, icon: <FolderOutlined />})),
+              },
+              {
+                key: 'assigned-to-me',
+                label: 'Assigned to me',
+                icon: <UserOutlined />,
+                extra: videosBySiderKey['assigned-to-me'].length,
+              },
+              // {
+              //   key: 'recently-added',
+              //   label: 'Recently added',
+              // },
+              // {
+              //   key: 'folders',
+              //   label: 'Folders',
+              //   type: 'group',
+              //   children: uniqueValuesPerField['location_name'].map(x => ({key: x, label: x, icon: <FolderOutlined />})),
+              // },
+              {
+                key: 'by-annotation-status',
+                label: 'By annotation status',
+                type: 'group',
+                children: [
+                  {
+                    key: 'to annotate',
+                    label: 'To annotate',
+                    icon: <Icon component={PendingActions} />,
+                    extra: videosBySiderKey['to annotate'].length,
+                  },
+                  {
+                    key: 'annotated',
+                    label: 'Annotated',
+                    icon: <Icon component={CheckCircle} />,
+                    extra: videosBySiderKey['annotated'].length,
+                  },
+                  {
+                    key: 'reviewed',
+                    label: 'Reviewed',
+                    icon: <Icon component={Approval} />,
+                    extra: videosBySiderKey['reviewed'].length,
+                  },
+                ],
+              },
+              (
+                uniqueValuesPerField['custom_tags']?.length ?
+                {
+                  key: 'custom-tags',
+                  label: 'Custom tags',
+                  type: 'group',
+                  children: uniqueValuesPerField['custom_tags'].map(x => ({
+                    key: 'custom-tags/'+x,
+                    label: x,
+                    icon: <TagOutlined />,
+                    extra: videosBySiderKey['custom-tags/'+x].length,
+                  })),
+                }
+                :
+                null
+              ),
+            ]}
+            onClick={({key}) => setSelectedSiderKey(key)}
           />
-        :
-        (
-          (view === 'table') ?
-          <RevoGrid columns={tableColumns} source={videos} rowHeaders={true} resize={true} autoSizeColumn={true} range={true} readonly={true} editors={gridEditors} />
-          :
-          (uniqueLocations.length > 0) &&
-          <Splitter>
-            <Splitter.Panel defaultSize="40%" min="20%" max="70%" style={{height: 600, overflow: 'scroll', paddingRight: 12}}>
+        </Sider>
+        <DashboardContent style={{ overflow: 'scroll', padding: '28px 36px 36px' }} >
+          <QueryOperationsButtons
+            metadataFields={videoMetadataFields} uniqueValuesPerField={uniqueValuesPerField}
+            sortFields={sortFields} setSortFields={setSortFields} sortOrders={sortOrders} setSortOrders={setSortOrders}
+            groupFields={groupFields} setGroupFields={setGroupFields} groupOrders={groupOrders} setGroupOrders={setGroupOrders}
+            query={query} setQuery={setQuery}
+          />
+
+          <Tabs defaultActiveKey="grid" items={viewsTabsItems} onChange={setView} />
+
+          {
+            (view === 'grid') ? 
               <VideosGridView
-                processedRecords={videos}
+                processedRecords={videosFiltered}
                 metadataFields={videoMetadataFields}
                 processedRecordsPropName="videos"
                 basicGridViewProps={{
-                  videos,
+                  videos: videosFiltered,
                   videoMetadataFields,
-                  isListView: true,
+                  isListView: false,
                 }}
-                sortFields={sortFields}
-                sortOrders={sortOrders}
-                groupFields={groupFields}
+                sortFields={sortFields} 
+                sortOrders={sortOrders} 
+                groupFields={groupFields} 
                 groupOrders={groupOrders}
               />
-            </Splitter.Panel>
-            <Splitter.Panel style={{paddingLeft: 12}}>
-              <BasicMapView style={{height: 600, width: 800}} uniqueLocations={uniqueLocations} />
-            </Splitter.Panel>
-          </Splitter>
-        )
-      }
+            :
+            (
+              (view === 'table') ?
+              <RevoGrid columns={tableColumns} source={videosFiltered} rowHeaders={true} resize={true} autoSizeColumn={true} range={true} readonly={true} editors={gridEditors} />
+              :
+              (uniqueLocations.length > 0) &&
+              <Splitter>
+                <Splitter.Panel defaultSize="40%" min="20%" max="70%" style={{height: 600, overflow: 'scroll', paddingRight: 12}}>
+                  <VideosGridView
+                    processedRecords={videosFiltered}
+                    metadataFields={videoMetadataFields}
+                    processedRecordsPropName="videos"
+                    basicGridViewProps={{
+                      videos: videosFiltered,
+                      videoMetadataFields,
+                      isListView: true,
+                    }}
+                    sortFields={sortFields}
+                    sortOrders={sortOrders}
+                    groupFields={groupFields}
+                    groupOrders={groupOrders}
+                  />
+                </Splitter.Panel>
+                <Splitter.Panel style={{paddingLeft: 12}}>
+                  <BasicMapView style={{height: 600, width: 800}} uniqueLocations={uniqueLocations} />
+                </Splitter.Panel>
+              </Splitter>
+            )
+          }
+        </DashboardContent>
+      </Layout>
       {/* Outlet for VideoDetailView */}
       <Outlet />
-    </DashboardContent>
+    </>
   );
 };
 
