@@ -21,6 +21,8 @@ TODO
 
 Here is a diagram showing the key React components in this codebase:
 
+(The diagram might not be reflect some recent changes in the codebase / it is not fully up to date)
+
 <img src="docs/react-components-diagram.svg">
 
 Note:
