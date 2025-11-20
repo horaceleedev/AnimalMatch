@@ -277,6 +277,22 @@ export const useCropsStore = createRealtimeCollectionStore<CropRecord, Crop>({
 });
 
 
+// --- Videos store with list of users included in videosUniqueValuesPerField['assignees']  ---
+export const useVideosStoreWithUsers = () => {
+  const [videos, updateVideo, deleteVideo, _videosUniqueValuesPerField, uniqueVideoLocations] = useVideoStore(
+    useShallow((state) => [state.processedRecords, state.update, state.delete, state.uniqueValuesPerField, state.extra.uniqueLocations])
+  );
+  const users = useUsersStore(state => state.processedRecords);
+
+  const videosUniqueValuesPerField = useMemo(() => ({
+    ..._videosUniqueValuesPerField,
+    'assignees': users.map(user => user.id), // replace videosUniqueValuesPerField['assignees'] with list of user ids
+  }), [_videosUniqueValuesPerField, users]);
+
+  return { videos, updateVideo, deleteVideo, videosUniqueValuesPerField, uniqueVideoLocations };
+};
+
+
 // --- Individuals store with crops included ---
 export const useIndividualsStoreWithCrops = () => {
   const [individuals, createIndividual, updateIndividual, deleteIndividual, individualsUniqueValuesPerField] = useIndividualsStore(

@@ -6,7 +6,7 @@ import { useShallow } from 'zustand/react/shallow';
 
 import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
-import { useIndividualsStoreWithCrops, useVideoStore } from "../DataStores.tsx";
+import { useIndividualsStoreWithCrops, useVideosStoreWithUsers } from "../DataStores.tsx";
 import VideoDetailView from '../components/VideoDetailView.tsx';
 import { RecordDetailModalProps, RecordType } from '../types.ts';
 import InnerModal from './InnerModal.tsx';
@@ -40,9 +40,13 @@ const VideoDetailModal: React.FC<RecordDetailModalProps> = ({
     id: undefined,
   });
 
-  const [videos, updateVideo, deleteVideo, uniqueValuesPerField, uniqueLocations] = useVideoStore(
-    useShallow((state) => [state.processedRecords, state.update, state.delete, state.uniqueValuesPerField, state.extra.uniqueLocations])
-  );
+  const {
+    videos,
+    updateVideo,
+    deleteVideo,
+    videosUniqueValuesPerField: uniqueValuesPerField,
+    uniqueVideoLocations: uniqueLocations
+  } = useVideosStoreWithUsers();
   const video = videos.find(x => x.id === videoId);
 
   const { individuals } = useIndividualsStoreWithCrops();

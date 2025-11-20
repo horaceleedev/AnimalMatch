@@ -12,7 +12,7 @@ import classnames from 'classnames';
 import RightPanelOpen from '../assets/material_symbols/right_panel_open_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import RightPanelClose from '../assets/material_symbols/right_panel_close_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
-import { useIndividualsStoreWithCrops, useVideoStore, useCropsStore, useUsersStore } from "../DataStores.tsx";
+import { useIndividualsStoreWithCrops, useCropsStore, useVideosStoreWithUsers } from "../DataStores.tsx";
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
 import VideoDetailView from '../components/VideoDetailView.tsx';
 import IndividualDetailView from '../components/IndividualDetailView.tsx';
@@ -55,15 +55,7 @@ const CompareModal: React.FC = () => {
     if (open === false) navigate(routeSplits.slice(0,2).join('/'));
   };
 
-  const [videos, updateVideo, _videoUniqueValuesPerField, uniqueVideoLocations] = useVideoStore(
-    useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField, state.extra.uniqueLocations])
-  );
-  const users = useUsersStore(state => state.processedRecords);
-  const videoUniqueValuesPerField = useMemo(() => ({
-    ..._videoUniqueValuesPerField,
-    'assignees': users.map(user => user.id), // add list of user ids to videoUniqueValuesPerField['assignees']
-  }), [_videoUniqueValuesPerField, users]);
-
+  const { videos, updateVideo, videosUniqueValuesPerField, uniqueVideoLocations } = useVideosStoreWithUsers();
   const { individuals, updateIndividual, deleteIndividual, individualsUniqueValuesPerField, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
   // TODO figure out if I should compute this (uniqueIndividualLocations) here or inside DataStores.tsx
   const uniqueIndividualLocations = useMemo(() => {
@@ -241,7 +233,7 @@ const CompareModal: React.FC = () => {
       <VideoDetailView
         video={videoDetailProps.video}
         individualsInVideo={videoDetailProps.individualsInVideo}
-        uniqueValuesPerField={videoUniqueValuesPerField}
+        uniqueValuesPerField={videosUniqueValuesPerField}
         uniqueLocations={uniqueVideoLocations}
         individualsLinkTemplate={leftPanelIndividualsLinkTemplate}
         updateVideo={updateVideo}
@@ -287,7 +279,7 @@ const CompareModal: React.FC = () => {
         <VideoDetailView key={compareVideoDetailProps.video.id}
           video={compareVideoDetailProps.video}
           individualsInVideo={compareVideoDetailProps.individualsInVideo}
-          uniqueValuesPerField={videoUniqueValuesPerField}
+          uniqueValuesPerField={videosUniqueValuesPerField}
           uniqueLocations={uniqueVideoLocations}
           individualsLinkTemplate={rightPanelIndividualsLinkTemplate}
           updateVideo={updateVideo}
