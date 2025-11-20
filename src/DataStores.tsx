@@ -134,7 +134,12 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
           let records = [...state.unprocessedRecords];
           const { action, record } = e;
           if (action === 'create') {
-            records = [...records, record];
+            // Update record if it already exists in `records`, otherwise add it to `records`
+            if (records.find((item: TRecord) => item.id === record.id)) {
+              records = records.map((item: TRecord) => item.id === record.id ? record : item);
+            } else {
+              records = [...records, record];
+            }
             // TODO sort records by sortField
           } else if (action === 'update') {
             records = records.map((item: TRecord) => item.id === record.id ? record : item);
@@ -166,7 +171,25 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
       for (const k of ignoredUpdateKeys) {
         if (k in payload) delete payload[k];
       }
-      await pb.collection(collectionName).create(payload);
+      const newRecord = await pb.collection(collectionName).create<TRecord>(payload);
+
+      set((state) => {
+        let records = [...state.unprocessedRecords];
+        // Update record if it already exists in `records`, otherwise add it to `records`
+        if (records.find((item: TRecord) => item.id === newRecord.id)) {
+          records = records.map((item: TRecord) => item.id === newRecord.id ? newRecord : item);
+        } else {
+          records = [...records, newRecord];
+        }
+        // TODO sort records by sortField
+        const { processedRecords, uniqueValuesPerField, extra } = processRecords(records);
+        return {
+          unprocessedRecords: records,
+          processedRecords,
+          uniqueValuesPerField,
+          extra,
+        };
+      });
     },
     update: async (id: string, data: Partial<TProcessed>) => {
       // remove some keys before sending to backend
@@ -174,10 +197,34 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
       for (const k of ignoredUpdateKeys) {
         if (k in payload) delete payload[k];
       }
-      await pb.collection(collectionName).update(id, payload);
+      const updatedRecord = await pb.collection(collectionName).update<TRecord>(id, payload);
+
+      set((state) => {
+        const records = state.unprocessedRecords.map((item: TRecord) => item.id === updatedRecord.id ? updatedRecord : item);
+        // TODO sort records by sortField
+        const { processedRecords, uniqueValuesPerField, extra } = processRecords(records);
+        return {
+          unprocessedRecords: records,
+          processedRecords,
+          uniqueValuesPerField,
+          extra,
+        };
+      });
     },
     delete: async (id: string) => {
       await pb.collection(collectionName).delete(id);
+
+      set((state) => {
+        const records = state.unprocessedRecords.filter((item: TRecord) => item.id !== id);
+        // TODO sort records by sortField
+        const { processedRecords, uniqueValuesPerField, extra } = processRecords(records);
+        return {
+          unprocessedRecords: records,
+          processedRecords,
+          uniqueValuesPerField,
+          extra,
+        };
+      });
     },
   }));
 };
