@@ -76,7 +76,9 @@ const BasicVideosGridView: React.FC<BasicVideosGridViewProps> = ({
                   preload="none"
                 />
                 <Flex vertical align="flex-start" justify="space-between" style={{ padding: 12 }}>
-                  <Typography.Title level={5} style={{marginTop: 0, fontSize: 14}}>{video.filename}</Typography.Title>
+                  <Typography.Title level={5} className="video-title" ellipsis={{tooltip: video.filename}}>
+                    {video.filename}
+                  </Typography.Title>
                   <Flex wrap gap={4}>
                     {
                       ['location_name', 'month_of_SD_retrieval', 'habitat', 'recording_date'].map(field => (
