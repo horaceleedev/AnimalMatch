@@ -11,7 +11,7 @@ type CropDetailViewProps = {
   videoLinkTemplate?: string;
   individualLinkTemplate?: string;
   openModal?: (type: RecordType , id: string) => void;
-  updateCrop: (id: string, data: Partial<Crop>) => Promise<void>;
+  updateCrop: (id: string, data: Partial<Crop>) => Promise<Crop>;
 }
 
 const CropDetailView: React.FC<CropDetailViewProps> = ({

@@ -12,7 +12,7 @@ type RecordMetadataFormProps<T extends RecordModel> = {
   processedRecord: T;
   metadataFields: MetadataFieldsType;
   uniqueValuesPerField: Record<string, string[]>;
-  updateFunction: (id: string, data: Partial<T>) => Promise<void>;
+  updateFunction: (id: string, data: Partial<T>) => Promise<T>;
   showIconInSelectionFields?: boolean;
   videoLinkTemplate?: string;
   individualLinkTemplate?: string;

@@ -17,7 +17,7 @@ type VideoDetailViewProps = {
   uniqueLocations: LocationInfo[],
   individualsLinkTemplate?: string;
   openModal?: (type: RecordType , id: string) => void;
-  updateVideo: (id: string, data: Partial<Video>) => Promise<void>;
+  updateVideo: (id: string, data: Partial<Video>) => Promise<Video>;
 };
 
 const VideoDetailView: React.FC<VideoDetailViewProps> = ({

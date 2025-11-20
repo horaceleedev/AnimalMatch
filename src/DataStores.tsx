@@ -96,8 +96,8 @@ interface CollectionStore<TRecord, TProcessed, TExtra> {
   fetch: () => Promise<void>;
   subscribe: () => void;
   unsubscribe: () => void;
-  create: (data: Partial<TProcessed>) => Promise<void>;
-  update: (id: string, data: Partial<TProcessed>) => Promise<void>;
+  create: (data: Partial<TProcessed>) => Promise<TProcessed>;
+  update: (id: string, data: Partial<TProcessed>) => Promise<TProcessed>;
   delete: (id: string) => Promise<void>;
 };
 const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed extends RecordModel, TExtra extends Record<string, any> = {}>(opts: {
@@ -173,22 +173,25 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
       }
       const newRecord = await pb.collection(collectionName).create<TRecord>(payload);
 
-      set((state) => {
-        let records = [...state.unprocessedRecords];
-        // Update record if it already exists in `records`, otherwise add it to `records`
-        if (records.find((item: TRecord) => item.id === newRecord.id)) {
-          records = records.map((item: TRecord) => item.id === newRecord.id ? newRecord : item);
-        } else {
-          records = [...records, newRecord];
-        }
-        // TODO sort records by sortField
-        const { processedRecords, uniqueValuesPerField, extra } = processRecords(records);
-        return {
-          unprocessedRecords: records,
-          processedRecords,
-          uniqueValuesPerField,
-          extra,
-        };
+      return new Promise((resolve) => {
+        set((state) => {
+          let records = [...state.unprocessedRecords];
+          // Update record if it already exists in `records`, otherwise add it to `records`
+          if (records.find((item: TRecord) => item.id === newRecord.id)) {
+            records = records.map((item: TRecord) => item.id === newRecord.id ? newRecord : item);
+          } else {
+            records = [...records, newRecord];
+          }
+          // TODO sort records by sortField
+          const { processedRecords, uniqueValuesPerField, extra } = processRecords(records);
+          resolve(processedRecords.find(item => item.id === newRecord.id)!);
+          return {
+            unprocessedRecords: records,
+            processedRecords,
+            uniqueValuesPerField,
+            extra,
+          };
+        });
       });
     },
     update: async (id: string, data: Partial<TProcessed>) => {
@@ -199,16 +202,19 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
       }
       const updatedRecord = await pb.collection(collectionName).update<TRecord>(id, payload);
 
-      set((state) => {
-        const records = state.unprocessedRecords.map((item: TRecord) => item.id === updatedRecord.id ? updatedRecord : item);
-        // TODO sort records by sortField
-        const { processedRecords, uniqueValuesPerField, extra } = processRecords(records);
-        return {
-          unprocessedRecords: records,
-          processedRecords,
-          uniqueValuesPerField,
-          extra,
-        };
+      return new Promise((resolve) => {
+        set((state) => {
+          const records = state.unprocessedRecords.map((item: TRecord) => item.id === updatedRecord.id ? updatedRecord : item);
+          // TODO sort records by sortField
+          const { processedRecords, uniqueValuesPerField, extra } = processRecords(records);
+          resolve(processedRecords.find(item => item.id === updatedRecord.id)!);
+          return {
+            unprocessedRecords: records,
+            processedRecords,
+            uniqueValuesPerField,
+            extra,
+          };
+        });
       });
     },
     delete: async (id: string) => {

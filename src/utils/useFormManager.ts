@@ -8,7 +8,7 @@ import { MetadataFieldsType } from "../types";
 const useFormManager = <T extends RecordModel>(
   processedRecord: T,
   metadataFields: MetadataFieldsType,
-  updateFunction: (id: string, data: Partial<T>) => Promise<void>,
+  updateFunction: (id: string, data: Partial<T>) => Promise<T>,
 ) => {
   const { message } = App.useApp();
 

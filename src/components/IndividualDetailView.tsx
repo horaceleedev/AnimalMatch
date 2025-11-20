@@ -26,7 +26,7 @@ type IndividualDetailViewProps = {
   individualsLinkTemplate?: string;
   cropsLinkTemplate?: string;
   openModal?: (type: RecordType , id: string) => void;
-  updateIndividual: (id: string, data: Partial<Individual>) => Promise<void>;
+  updateIndividual: (id: string, data: Partial<Individual>) => Promise<Individual>;
 }
 
 const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
