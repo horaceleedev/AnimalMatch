@@ -161,7 +161,7 @@ const VideosDashboardPage: React.FC = () => {
             onClick={({key}) => setSelectedSiderKey(key)}
           />
         </Sider>
-        <DashboardContent style={{ overflow: 'scroll', padding: '28px 36px 36px' }} >
+        <DashboardContent style={{ padding: '28px 36px 36px' }} >
           <QueryOperationsButtons
             metadataFields={videoMetadataFields} uniqueValuesPerField={uniqueValuesPerField}
             sortFields={sortFields} setSortFields={setSortFields} sortOrders={sortOrders} setSortOrders={setSortOrders}
