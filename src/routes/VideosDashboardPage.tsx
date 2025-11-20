@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Outlet } from "react-router-dom";
-import { Layout, Menu, Splitter, Tabs, theme } from "antd";
+import { Layout, Menu, Splitter, Tabs, theme, Typography } from "antd";
 import type { TabsProps } from 'antd';
 import Icon, { AppstoreOutlined, PlaySquareOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
 import { RevoGrid } from '@revolist/react-datagrid';
@@ -149,7 +149,7 @@ const VideosDashboardPage: React.FC = () => {
                   type: 'group',
                   children: uniqueValuesPerField['custom_tags'].map(x => ({
                     key: 'custom-tags/'+x,
-                    label: x,
+                    label: <Typography.Text ellipsis={{tooltip: x}}>{x}</Typography.Text>,
                     icon: <TagOutlined />,
                     extra: videosBySiderKey['custom-tags/'+x].length,
                   })),
