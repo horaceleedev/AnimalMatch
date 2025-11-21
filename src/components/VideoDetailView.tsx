@@ -37,7 +37,7 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
   
   return (
     <>
-      <video src={video.url} style={{width: '100%', maxWidth: 800}} controls />
+      <video src={video.url} style={{width: '100%', maxWidth: 800}} controls autoPlay />
       <br />
       <Link to="annotate"><Button type="primary">Annotate individuals</Button></Link>
       <br />
