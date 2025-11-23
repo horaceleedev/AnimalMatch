@@ -2,6 +2,7 @@
 
 This frontend web app is implemented with React and TypeScript + SASS + HTML. Here are some other key libraries used:
 * UI component library: [Ant Design](https://ant.design/)
+* Client-side routing: [React Router v6](https://reactrouter.com/6.30.2)
 * Global state management: [Zustand](https://github.com/pmndrs/zustand)
 * JS utility library: [es-toolkit](https://es-toolkit.dev) (similar to Lodash)
 
