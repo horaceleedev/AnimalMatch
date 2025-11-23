@@ -85,7 +85,7 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
                       allowEditingAgeAndSex ? 
                       <>
                         <Select
-                          options={['adult', 'infant', 'juvenile', 'adolescent', 'unknown age'].map(val => ({ value: val, label: val }))}
+                          options={individualsMetadataFields['age'].presetOptions!.map(val => ({ value: val, label: val }))}
                           labelRender={(option) => (
                             <Tag>{option.label}</Tag>
                           )}
@@ -96,7 +96,7 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
                           style={{width: 'fit-content'}}
                         />
                         <Select
-                          options={['female', 'male', 'unknown/other sex'].map(val => ({ value: val, label: val }))}
+                          options={individualsMetadataFields['sex'].presetOptions!.map(val => ({ value: val, label: val }))}
                           labelRender={(option) => (
                             <Tag>{option.label}</Tag>
                           )}
