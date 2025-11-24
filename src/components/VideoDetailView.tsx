@@ -43,19 +43,24 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
       <br />
       <Divider />
       <h3>Individuals</h3>
-      <IndividualsGridView 
-        processedRecords={individualsInVideo}
-        metadataFields={individualsMetadataFields}
-        processedRecordsPropName="individuals"
-        basicGridViewProps={{
-          individuals: individualsInVideo,
-          individualsMetadataFields: individualsMetadataFields,
-          linkTemplate: individualsLinkTemplate,
-          allowEditingAgeAndSex: true,
-          openModal: openModal,
-        }}
-        sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]}
-      />
+      {
+        (individualsInVideo.length === 0) ?
+        <p>No individuals annotated in this video yet.</p>
+        :
+        <IndividualsGridView 
+          processedRecords={individualsInVideo}
+          metadataFields={individualsMetadataFields}
+          processedRecordsPropName="individuals"
+          basicGridViewProps={{
+            individuals: individualsInVideo,
+            individualsMetadataFields: individualsMetadataFields,
+            linkTemplate: individualsLinkTemplate,
+            allowEditingAgeAndSex: true,
+            openModal: openModal,
+          }}
+          sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]}
+        />
+      }
       <Divider />
       <h3>Video metadata</h3>
       <RecordMetadataForm
