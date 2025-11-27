@@ -99,7 +99,8 @@ export type MetadataFieldsType = Record<string, {
   inputType?: string;
   valueEditorType?: string;
   presetOptions?: string[];
-  renderType?: 'user_label' | 'video_link' | 'individual_link';
+  extraData?: Record<string, any>;
+  renderType?: 'user_label' | 'video_link' | 'individual_link' | 'annotation_status_label';
   displayBooleanValuesAs?: string[];
   isInternal?: boolean;
   isUneditable?: boolean;

@@ -9,9 +9,6 @@ const { Sider } = Layout;
 
 import Table from '../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Map from '../assets/material_symbols/map_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
-import PendingActions from "../assets/material_symbols/pending_actions_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
-import CheckCircle from "../assets/material_symbols/check_circle_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
-import Approval from "../assets/material_symbols/approval_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 
 import { gridEditors, tableColumns, videoMetadataFields } from "../metadata.tsx";
 import DashboardContent from '../components/DashboardContent.tsx';
@@ -19,6 +16,7 @@ import VideosGridView from "../components/VideosGridView.tsx";
 import QueryOperationsButtons from "../components/QueryOperationsButtons.tsx";
 import { useAuth, useVideoStore } from "../DataStores.tsx";
 import BasicMapView from '../components/BasicMapView.tsx';
+import AnnotationStatusLabel from '../components/AnnotationStatusLabel.tsx';
 import { Video } from '../types.ts';
 import "./VideosDashboardPage.scss";
 
@@ -61,9 +59,12 @@ const VideosDashboardPage: React.FC = () => {
   const videosBySiderKey: Record<string, Video[]> = useMemo(() => ({
     "all-videos": videos,
     "assigned-to-me": user ? videos.filter(video => video.assignees.includes(user.id)) : [],
-    "to annotate": videos.filter(video => video.annotation_status === "to annotate"),
-    "annotated": videos.filter(video => video.annotation_status === "annotated"),
-    "reviewed": videos.filter(video => video.annotation_status === "reviewed"),
+    // annotation statuses
+    ...videoMetadataFields['annotation_status'].presetOptions!.reduce((acc: Record<string, Video[]>, status: string) => {
+      acc[status] = videos.filter(video => video.annotation_status === status);
+      return acc;
+    }, {}),
+    // custom tags
     ...videos.reduce((acc: Record<string, Video[]>, cur: Video) => {
       for (const tag of cur.custom_tags) {
         const tagWithPrefix = "custom-tags/" + tag;
@@ -120,26 +121,11 @@ const VideosDashboardPage: React.FC = () => {
                 key: 'by-annotation-status',
                 label: 'By annotation status',
                 type: 'group',
-                children: [
-                  {
-                    key: 'to annotate',
-                    label: 'To annotate',
-                    icon: <Icon component={PendingActions} />,
-                    extra: videosBySiderKey['to annotate'].length,
-                  },
-                  {
-                    key: 'annotated',
-                    label: 'Annotated',
-                    icon: <Icon component={CheckCircle} />,
-                    extra: videosBySiderKey['annotated'].length,
-                  },
-                  {
-                    key: 'reviewed',
-                    label: 'Reviewed',
-                    icon: <Icon component={Approval} />,
-                    extra: videosBySiderKey['reviewed'].length,
-                  },
-                ],
+                children: videoMetadataFields['annotation_status'].presetOptions!.map(status => ({
+                  key: status,
+                  label: <AnnotationStatusLabel status={status} largeSize />,
+                  extra: videosBySiderKey[status].length,
+                })),
               },
               (
                 uniqueValuesPerField['custom_tags']?.length ?

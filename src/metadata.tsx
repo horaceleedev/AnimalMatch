@@ -1,4 +1,5 @@
 import { Editor, type EditorType, type Editors, type ReactElement } from '@revolist/react-datagrid';
+import { blue, gray, green, orange } from '@ant-design/colors';
 
 import Icon, { CalendarOutlined, ClockCircleOutlined, ColumnHeightOutlined, ColumnWidthOutlined, FileTextOutlined, IdcardOutlined, PlaySquareOutlined, QuestionOutlined, TagsOutlined, UserOutlined } from "@ant-design/icons";
 import Location from './assets/material_symbols/location_on_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -105,7 +106,16 @@ export const videoMetadataFields: MetadataFieldsType = {
     icon: <Icon component={PendingActions} />,
     type: 'select',
     valueEditorType: 'select',
-    presetOptions: ['to annotate', 'annotated', 'reviewed'],
+    presetOptions: ['to annotate', 'in progress', 'annotated', 'reviewed'],
+    extraData: {
+      colorMapping: {
+        'to annotate': gray[1],
+        'in progress': orange[4],
+        'annotated': green[4],
+        'reviewed': blue[4],
+      }
+    },
+    renderType: 'annotation_status_label',
   },
 };
 

@@ -4,6 +4,7 @@ import { groupBy, orderBy } from "es-toolkit";
 import { Collapse, Space } from "antd";
 
 import { IndividualLinkButton, UserLabel, VideoLinkButton } from "./smart-components/LinkButtons";
+import AnnotationStatusLabel from "./AnnotationStatusLabel";
 import { MetadataFieldsType, RecordType } from "../types";
 
 interface BasicGridViewProps {
@@ -81,6 +82,8 @@ const withSortingAndGrouping = <P extends BasicGridViewProps, T extends RecordMo
         } else {
           renderedGroupValue = <UserLabel id={groupValue as string} />;
         }
+      } else if (renderType === 'annotation_status_label') {
+        renderedGroupValue = <AnnotationStatusLabel status={groupValue as string} />;
       }
 
       return (

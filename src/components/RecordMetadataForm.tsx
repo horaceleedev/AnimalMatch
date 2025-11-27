@@ -6,6 +6,7 @@ import { RecordModel } from "pocketbase";
 import useFormManager from "../utils/useFormManager";
 import { MetadataFieldsType, RecordType } from "../types";
 import { IndividualLinkButton, UserLabel, VideoLinkButton } from "./smart-components/LinkButtons";
+import AnnotationStatusLabel from "./AnnotationStatusLabel";
 import "./RecordMetadataForm.scss";
 
 type RecordMetadataFormProps<T extends RecordModel> = {
@@ -60,6 +61,7 @@ const RecordMetadataForm = <T extends RecordModel>({
             inputElement = <Input disabled={disabled} />;
           } else if (value.valueEditorType === 'select') {
             let size: 'small' | 'middle' | 'large' | undefined;
+            let optionRender = undefined;
             let labelRender = (option: LabelInValueType) => (
               <Tag icon={showIconInSelectionFields ? value.icon : undefined}>
                 {option.label}
@@ -76,6 +78,9 @@ const RecordMetadataForm = <T extends RecordModel>({
               size = 'large';
               labelRender = (option) => <UserLabel id={option.value as string} />;
               customClassName = "select-user"
+            } else if (value.renderType === 'annotation_status_label') {
+              optionRender = (option: DefaultOptionType) => <AnnotationStatusLabel status={option.value as string} />;
+              labelRender = (option) => <AnnotationStatusLabel status={option.value as string} />;
             }
 
             inputElement = (
@@ -83,6 +88,7 @@ const RecordMetadataForm = <T extends RecordModel>({
                 options={uniqueValuesPerField[fieldValue].map(val => ({ value: val, label: val }))}
                 disabled={disabled}
                 size={size}
+                optionRender={optionRender}
                 labelRender={labelRender}
                 className={customClassName}
               />
