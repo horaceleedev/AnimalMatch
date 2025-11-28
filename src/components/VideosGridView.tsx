@@ -1,4 +1,4 @@
-import React from 'react'
+import { FC, MouseEvent } from "react";
 import { generatePath, Link } from "react-router-dom";
 import { Card, Flex, Tag, Tooltip, Typography } from "antd";
 
@@ -15,8 +15,16 @@ interface BasicVideosGridViewProps {
   openModal?: (type: RecordType , id: string) => void;
 };
 
+function playVideoPreview(event: MouseEvent<HTMLElement>) {
+  event.currentTarget.querySelector('video')?.play();
+}
+
+function stopVideoPreview(event: MouseEvent<HTMLElement>) {
+  event.currentTarget.querySelector('video')?.load();
+}
+
 // Basic video grid view (without grouping and sorting)
-const BasicVideosGridView: React.FC<BasicVideosGridViewProps> = ({
+const BasicVideosGridView: FC<BasicVideosGridViewProps> = ({
   videos, videoMetadataFields, isListView, linkTemplate = "/videos/:videoId", openModal,
 }: BasicVideosGridViewProps) => {
   return (
@@ -64,8 +72,8 @@ const BasicVideosGridView: React.FC<BasicVideosGridViewProps> = ({
               style={{ overflow: 'hidden' }}
               styles={{ body: { padding: 0 } }}
               // video hover preview
-              onMouseEnter={(e) => e.currentTarget.querySelector('video')?.play()}
-              onMouseLeave={(e) => e.currentTarget.querySelector('video')?.load()}
+              onMouseEnter={playVideoPreview}
+              onMouseLeave={stopVideoPreview}
             >
               <Flex vertical={!isListView} justify={isListView ? "flex-start" : "space-between"}>
                 <video
