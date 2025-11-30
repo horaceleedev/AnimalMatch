@@ -79,6 +79,11 @@ const VideosDashboardPage: React.FC = () => {
     [videosBySiderKey, selectedSiderKey]
   );
 
+  const highlightLocationIds = useMemo(
+    () => new Set(videosFiltered.map(video => JSON.stringify([video.lat, video.long]))),
+    [videosFiltered]
+  );
+
   const { colorBgContainer } = theme.useToken().token;
 
   return (
@@ -203,7 +208,7 @@ const VideosDashboardPage: React.FC = () => {
                   />
                 </Splitter.Panel>
                 <Splitter.Panel style={{paddingLeft: 12}}>
-                  <BasicMapView style={{height: 600, width: 800}} uniqueLocations={uniqueLocations} />
+                  <BasicMapView style={{height: 600, width: 800}} uniqueLocations={uniqueLocations} highlightLocationIds={highlightLocationIds} />
                 </Splitter.Panel>
               </Splitter>
             )
