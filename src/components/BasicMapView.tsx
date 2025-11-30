@@ -11,7 +11,7 @@ import "./BasicMapView.scss";
 
 type BasicMapViewProps = {
   uniqueLocations: LocationInfo[];
-  highlightLocationIds?: string[]; // each string is created using JSON.stringify([lat, long])
+  highlightLocationIds?: Set<string>; // each string is created using JSON.stringify([lat, long])
   style: React.CSSProperties;
 };
 
@@ -42,10 +42,10 @@ const BasicMapView = ({uniqueLocations, highlightLocationIds, style}: BasicMapVi
   }, [uniqueLocations]);
 
   const highlightedLocations = useMemo(() => {
-    return uniqueLocations.filter(location => !highlightLocationIds || highlightLocationIds.includes(location.id));
+    return uniqueLocations.filter(location => !highlightLocationIds || highlightLocationIds.has(location.id));
   }, [uniqueLocations, highlightLocationIds]);
   const nonHighlightedLocations = useMemo(() => {
-    return uniqueLocations.filter(location => highlightLocationIds && !highlightLocationIds.includes(location.id));
+    return uniqueLocations.filter(location => highlightLocationIds && !highlightLocationIds.has(location.id));
   }, [uniqueLocations, highlightLocationIds]);
   
   return (
@@ -74,13 +74,13 @@ const BasicMapView = ({uniqueLocations, highlightLocationIds, style}: BasicMapVi
             icon={
               // display different marker colors https://github.com/pointhi/leaflet-color-markers
               new LeafletIcon({
-                iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${(!highlightLocationIds || highlightLocationIds.includes(locationInfo.id)) ? 'blue' : 'grey'}.png`,
+                iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${(!highlightLocationIds || highlightLocationIds.has(locationInfo.id)) ? 'blue' : 'grey'}.png`,
                 shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
                 iconSize: [25, 41],
                 iconAnchor: [12, 41],
                 popupAnchor: [1, -34],
                 shadowSize: [41, 41],
-                className: (highlightLocationIds && !highlightLocationIds.includes(locationInfo.id)) ? 'non-highlighted-marker' : undefined,
+                className: (highlightLocationIds && !highlightLocationIds.has(locationInfo.id)) ? 'non-highlighted-marker' : undefined,
               })
             }
           >

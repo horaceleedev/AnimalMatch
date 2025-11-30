@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button, Divider } from "antd";
 import dayjs from "dayjs";
@@ -34,7 +34,12 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
   useEffect(() => {
     setShowMap(true);
   }, []);
-  
+
+  const highlightLocationIds = useMemo(
+    () => new Set([JSON.stringify([video.lat, video.long])]),
+    [video]
+  );
+
   return (
     <>
       <video src={video.url} style={{width: '100%', maxWidth: 800}} controls autoPlay />
@@ -72,7 +77,7 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
       />
       {
         showMap && // Temporary hack needed because map wasn't showing up properly
-        <BasicMapView style={{height: 400, width: 600}} uniqueLocations={uniqueLocations} highlightLocationIds={[JSON.stringify([video.lat, video.long])]} />
+        <BasicMapView style={{height: 400, width: 600}} uniqueLocations={uniqueLocations} highlightLocationIds={highlightLocationIds} />
       }
     </>
   );

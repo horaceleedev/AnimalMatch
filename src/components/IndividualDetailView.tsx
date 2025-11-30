@@ -48,6 +48,11 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
     setShowMap(true);
   }, []);
 
+  const highlightLocationIds = useMemo(
+    () => new Set(videosWithIndividual.map(video => JSON.stringify([video.lat, video.long]))),
+    [videosWithIndividual]
+  );
+
   const bodyPartOptions = [ANY_BODY_PART, ...(cropsUniqueValuesPerField['body_part'] ?? [])];
   const [selectedBodyPart, setSelectedBodyPart] = useState(ANY_BODY_PART);
   const availableBodyParts = useMemo(
@@ -134,7 +139,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                   <BasicMapView
                     style={{height: 400, width: 600}}
                     uniqueLocations={uniqueLocations} 
-                    highlightLocationIds={videosWithIndividual.map(video => JSON.stringify([video.lat, video.long]))}
+                    highlightLocationIds={highlightLocationIds}
                   />
                 }
               </>
