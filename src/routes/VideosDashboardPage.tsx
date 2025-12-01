@@ -86,6 +86,10 @@ const VideosDashboardPage: React.FC = () => {
 
   const { colorBgContainer } = theme.useToken().token;
 
+  const outletContext = useMemo(() => ({
+    videos: videosFiltered,
+  }), [videosFiltered]);
+
   return (
     <>
       <Layout
@@ -216,7 +220,7 @@ const VideosDashboardPage: React.FC = () => {
         </DashboardContent>
       </Layout>
       {/* Outlet for VideoDetailView */}
-      <Outlet />
+      <Outlet context={outletContext} />
     </>
   );
 };

@@ -1,13 +1,60 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { Button, Divider } from "antd";
-import dayjs from "dayjs";
+import { FC, useEffect, useMemo, useState } from "react";
+import { generatePath, Link, useNavigate } from "react-router-dom";
+import { Button, Divider, Flex } from "antd";
+import { LeftCircleOutlined, RightCircleOutlined } from "@ant-design/icons";
 
 import BasicMapView from '../components/BasicMapView.tsx';
-import { Individual, LocationInfo, MetadataFieldsType, RecordType, Video } from '../types.ts';
+import { Individual, LocationInfo, RecordType, Video } from '../types.ts';
 import { individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
 import IndividualsGridView from "./IndividualsGridView.tsx";
 import RecordMetadataForm from "./RecordMetadataForm.tsx";
+
+import "./VideoDetailView.scss";
+
+const VideoToolbar: FC<{
+  video: Video,
+  videoLinkTemplate?: string,
+  videos?: Video[],
+}> = ({
+  video,
+  videoLinkTemplate = "/videos/:videoId",
+  videos = [],
+}) => {
+  const navigate = useNavigate();
+  const videoIndex = videos.findIndex(v => v.id === video.id);
+  const nextIndex = (videoIndex + 1) % videos.length;
+  const prevIndex = (videoIndex - 1 + videos.length) % videos.length;
+  const nextVideo = videos[nextIndex];
+  const prevVideo = videos[prevIndex];
+
+  function openAnnotationEditor() {
+    navigate("annotate");
+  }
+
+  return (
+    <div className="controls">
+      <Button type="primary" onClick={openAnnotationEditor}>
+        Annotate individuals
+      </Button>
+      {videos?.length > 1 && (
+        <Flex gap="large" justify="start">
+          <Link
+            aria-label="Previous video"
+            to={generatePath(videoLinkTemplate, { videoId: prevVideo.id })}
+          >
+            <LeftCircleOutlined />
+          </Link>
+          <Link
+            aria-label="Next video"
+            to={generatePath(videoLinkTemplate, { videoId: nextVideo.id })}
+          >
+            <RightCircleOutlined />
+          </Link>
+        </Flex>
+      )}
+    </div>
+  );
+}
 
 type VideoDetailViewProps = {
   video: Video,
@@ -18,9 +65,11 @@ type VideoDetailViewProps = {
   individualsLinkTemplate?: string;
   openModal?: (type: RecordType , id: string) => void;
   updateVideo: (id: string, data: Partial<Video>) => Promise<Video>;
+  videoLinkTemplate?: string;
+  videos?: Video[];
 };
 
-const VideoDetailView: React.FC<VideoDetailViewProps> = ({
+const VideoDetailView: FC<VideoDetailViewProps> = ({
   video,
   individualsInVideo,
   uniqueValuesPerField,
@@ -28,6 +77,8 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
   individualsLinkTemplate,
   openModal,
   updateVideo,
+  videoLinkTemplate,
+  videos = [],
 }: VideoDetailViewProps) => {
   // Temporary hack needed because map wasn't showing up properly
   const [showMap, setShowMap] = useState(false);
@@ -42,17 +93,20 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
 
   return (
     <>
-      <video src={video.url} style={{width: '100%', maxWidth: 800}} controls autoPlay />
-      <br />
-      <Link to="annotate"><Button type="primary">Annotate individuals</Button></Link>
-      <br />
+      <Flex justify="space-between" vertical className="video">
+        <video
+          src={video.url}
+          controls
+          autoPlay
+        />
+        <VideoToolbar video={video} videoLinkTemplate={videoLinkTemplate} videos={videos} />
+      </Flex>
       <Divider />
       <h3>Individuals</h3>
-      {
-        (individualsInVideo.length === 0) ?
+      {individualsInVideo.length === 0 ? (
         <p>No individuals annotated in this video yet.</p>
-        :
-        <IndividualsGridView 
+      ) : (
+        <IndividualsGridView
           processedRecords={individualsInVideo}
           metadataFields={individualsMetadataFields}
           processedRecordsPropName="individuals"
@@ -63,9 +117,12 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
             allowEditingAgeAndSex: true,
             openModal: openModal,
           }}
-          sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]}
+          sortFields={[]}
+          sortOrders={[]}
+          groupFields={[]}
+          groupOrders={[]}
         />
-      }
+      )}
       <Divider />
       <h3>Video metadata</h3>
       <RecordMetadataForm
@@ -77,7 +134,11 @@ const VideoDetailView: React.FC<VideoDetailViewProps> = ({
       />
       {
         showMap && // Temporary hack needed because map wasn't showing up properly
-        <BasicMapView style={{height: 400, width: 600}} uniqueLocations={uniqueLocations} highlightLocationIds={highlightLocationIds} />
+        <BasicMapView
+          style={{height: 400, width: 600}}
+          uniqueLocations={uniqueLocations}
+          highlightLocationIds={highlightLocationIds}
+        />
       }
     </>
   );
