@@ -1,7 +1,7 @@
 import { FC, useEffect, useMemo, useState } from "react";
 import { generatePath, Link, useNavigate } from "react-router-dom";
 import { Button, Divider, Flex } from "antd";
-import { LeftCircleOutlined, RightCircleOutlined } from "@ant-design/icons";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 
 import BasicMapView from '../components/BasicMapView.tsx';
 import { Individual, LocationInfo, RecordType, Video } from '../types.ts';
@@ -22,10 +22,16 @@ const VideoToolbar: FC<{
 }) => {
   const navigate = useNavigate();
   const videoIndex = videos.findIndex(v => v.id === video.id);
-  const nextIndex = (videoIndex + 1) % videos.length;
-  const prevIndex = (videoIndex - 1 + videos.length) % videos.length;
-  const nextVideo = videos[nextIndex];
-  const prevVideo = videos[prevIndex];
+  let nextVideoId = '';
+  let prevVideoId = '';
+  if (videoIndex < videos.length - 1) {
+    // If not the last video
+    nextVideoId = videos[videoIndex + 1].id;
+  }
+  if (videoIndex > 0) {
+    // If not the first video
+    prevVideoId = videos[videoIndex - 1].id;
+  }
 
   function openAnnotationEditor() {
     navigate("annotate");
@@ -36,22 +42,20 @@ const VideoToolbar: FC<{
       <Button type="primary" onClick={openAnnotationEditor}>
         Annotate individuals
       </Button>
-      {videos?.length > 1 && (
-        <Flex gap="large" justify="start">
-          <Link
-            aria-label="Previous video"
-            to={generatePath(videoLinkTemplate, { videoId: prevVideo.id })}
-          >
-            <LeftCircleOutlined />
-          </Link>
-          <Link
-            aria-label="Next video"
-            to={generatePath(videoLinkTemplate, { videoId: nextVideo.id })}
-          >
-            <RightCircleOutlined />
-          </Link>
-        </Flex>
-      )}
+      <Flex gap="middle" justify="start">
+        <Link
+          aria-label="Previous video"
+          to={generatePath(videoLinkTemplate, { videoId: prevVideoId })}
+        >
+          <Button shape="circle" icon={<LeftOutlined />} disabled={!prevVideoId} />
+        </Link>
+        <Link
+          aria-label="Next video"
+          to={generatePath(videoLinkTemplate, { videoId: nextVideoId })}
+        >
+          <Button shape="circle" icon={<RightOutlined />} disabled={!nextVideoId} />
+        </Link>
+      </Flex>
     </div>
   );
 }
