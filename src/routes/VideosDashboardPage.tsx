@@ -18,6 +18,7 @@ import BasicMapView from '../components/ui/BasicMapView.tsx';
 import { useVideosDashboardSiderState, VideosDashboardSider } from '../components/dashboards/VideosDashboardSider.tsx';
 import { Video } from '../types.ts';
 import "./VideosDashboardPage.scss";
+import { useSelectionStore } from '../hooks/useSelectionStore.ts';
 
 /**
  * Store a copy of the filtered video list for use in outlet context.
@@ -67,6 +68,7 @@ const VideosDashboardPage: React.FC = () => {
   const videos = useVideoStore((state) => state.processedRecords);
   const uniqueLocations = useVideoStore((state) => state.extra.uniqueLocations);
   const uniqueValuesPerField = useVideoStore((state) => state.uniqueValuesPerField);
+  const selectionStore = useSelectionStore();
 
   const { user } = useAuth();
 
@@ -95,9 +97,11 @@ const VideosDashboardPage: React.FC = () => {
     setOutletVideos(groupRecords);
   };
   // Update outlet videos after selecting a sider key
-  useEffect(() => {
-    setOutletVideos(videosBySiderKey[selectedSiderKey]);
-  }, [selectedSiderKey]);
+  function onSiderChange({ key }: { key: string }) {
+    setOutletVideos(videosBySiderKey[key]);
+    setSelectedSiderKey(key);
+    selectionStore.clearSelection();
+  }
 
   const highlightLocationIds = useMemo(
     () => new Set(videosFiltered.map(video => JSON.stringify([video.lat, video.long]))),
@@ -114,10 +118,10 @@ const VideosDashboardPage: React.FC = () => {
       >
         <VideosDashboardSider
           selectedSiderKey={selectedSiderKey}
-          setSelectedSiderKey={setSelectedSiderKey}
           videosBySiderKey={videosBySiderKey}
           videoMetadataFields={videoMetadataFields}
           uniqueValuesPerField={uniqueValuesPerField}
+          onChange={onSiderChange}
         />
         <DashboardContent>
           <QueryOperationsButtons

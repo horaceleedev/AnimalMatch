@@ -6,6 +6,7 @@ import type { RecordType, Video } from "../../types.ts";
 import type { MetadataFieldsType } from "../../types.ts";
 import withSortingAndGrouping from './withSortingAndGrouping.tsx';
 import "./VideosGridView.scss"
+import { useSelectionStore } from "../../hooks/useSelectionStore.ts";
 
 interface BasicVideosGridViewProps {
   videos: Video[];
@@ -33,15 +34,20 @@ const BasicVideosGridView: FC<BasicVideosGridViewProps> = ({
   openModal,
   onSelectRecord,
 }: BasicVideosGridViewProps) => {
-  const openVideoModal = useCallback(
-    (videoId: string) => (e: MouseEvent) => {
-      onSelectRecord?.();
-      if (!openModal) return;
-      e.preventDefault();
-      openModal("video", videoId);
-    },
-    [openModal, onSelectRecord]
-  );
+  const { selectionMode, selectedItems, toggleItemSelection } = useSelectionStore();
+  const selectVideo = useCallback((videoId: string) => (e: MouseEvent) => {
+    e.preventDefault();
+    toggleItemSelection(videoId);
+  }, [toggleItemSelection]);
+
+  const openVideoModal = useCallback((videoId: string) => (e: MouseEvent) => {
+    onSelectRecord?.();
+    if (!openModal) return;
+    e.preventDefault();
+    openModal("video", videoId);
+  }, [openModal, onSelectRecord]);
+
+  const onClickVideo = selectionMode ? selectVideo : openVideoModal;
 
   return (
     <div className={isListView ? "videos-list " : "videos-grid"}>
@@ -76,9 +82,14 @@ const BasicVideosGridView: FC<BasicVideosGridViewProps> = ({
         <Link
           key={video.id}
           to={generatePath(linkTemplate, { videoId: video.id })}
-          onClick={openVideoModal(video.id)}
+          onClick={onClickVideo(video.id)}
         >
           <Card
+            className={
+              selectionMode && selectedItems.has(video.id)
+                ? "selected"
+                : ""
+            }
             hoverable
             style={{ overflow: "hidden" }}
             styles={{ body: { padding: 0 } }}

@@ -1,19 +1,25 @@
-import React, { useMemo } from 'react'
-import { Button, Input, Popover, Select, Space } from "antd";
-import { QueryBuilderDnD } from '@react-querybuilder/dnd';
-import * as ReactDnD from 'react-dnd';
-import * as ReactDndHtml5Backend from 'react-dnd-html5-backend';
-import type { Field, RuleGroupType } from 'react-querybuilder';
-import { QueryBuilder } from 'react-querybuilder';
+import { FC, useMemo } from "react";
+import { Button, Input, Popover, Select, Space, Switch } from "antd";
+import { QueryBuilderDnD } from "@react-querybuilder/dnd";
+import * as ReactDnD from "react-dnd";
+import * as ReactDndHtml5Backend from "react-dnd-html5-backend";
+import type { Field, RuleGroupType, RuleType, ValueEditorType } from "react-querybuilder";
+import { QueryBuilder } from "react-querybuilder";
 // import { fields } from './fields';
-import 'react-querybuilder/dist/query-builder.scss';
-import { QueryBuilderAntD } from '@react-querybuilder/antd';
+import "react-querybuilder/dist/query-builder.scss";
+import { QueryBuilderAntD } from "@react-querybuilder/antd";
 
-import Icon, { CloseOutlined, FilterOutlined, GroupOutlined } from "@ant-design/icons";
-import SwapVert from '../../assets/material_symbols/swap_vert_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
+import Icon, {
+  CloseOutlined,
+  FilterOutlined,
+  GroupOutlined,
+} from "@ant-design/icons";
+import SwapVert from "../../assets/material_symbols/swap_vert_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 
 import type { MetadataFieldsType } from "../../types.ts";
 import "./QueryOperationsButtons.scss";
+import { useSelectionStore } from "../../hooks/useSelectionStore.ts";
+import { BatchEditPopup } from "../ui/BatchEditPopup.tsx";
 
 type FieldSelectorProps = {
   metadataFields: MetadataFieldsType;
@@ -21,41 +27,59 @@ type FieldSelectorProps = {
   onChange: (x: string) => void;
 };
 
-const FieldSelector: React.FC<FieldSelectorProps> = ({
+const FieldSelector: FC<FieldSelectorProps> = ({
   metadataFields,
-  value, onChange,
+  value,
+  onChange,
 }: FieldSelectorProps) => {
   const fieldOptions = useMemo(
-    () => Object.entries(metadataFields).map(([fieldValue, field]) => ({
-      value: fieldValue,
-      label: field.displayName,
-      icon: field.icon,
-    })),
+    () =>
+      Object.entries(metadataFields).map(([fieldValue, field]) => ({
+        value: fieldValue,
+        label: field.displayName,
+        icon: field.icon,
+      })),
     [metadataFields]
   );
 
-  const optionRender = (option) => (
-    <Space>{option.data.icon} {option.label}</Space>
+  interface FieldOption {
+    value: string;
+    label: string;
+    icon: React.ReactNode;
+  }
+
+  interface OptionRenderData {
+    data?: FieldOption;
+    label?: string | React.ReactNode;
+    value?: string | number;
+  }
+
+  const optionRender = (option: OptionRenderData): React.ReactNode => (
+    <Space>
+      {option.data?.icon} {option.label}
+    </Space>
   );
-  const labelRender = (option) => (
-    <Space>{metadataFields[option.value].icon} {option.label}</Space>
-  )
-  
-  return <Select
-    showSearch
-    placeholder="Select a field"
-    optionFilterProp="label"
-    value={value}
-    onChange={onChange}
-    options={fieldOptions}
-    optionRender={optionRender}
-    labelRender={labelRender}
-    popupMatchSelectWidth={false}
-    style={{minWidth: 150}}
-  />
+  const labelRender = (option: OptionRenderData): React.ReactNode => (
+    <Space>
+      {metadataFields[`${option.value}`].icon} {option.label}
+    </Space>
+  );
+
+  return (
+    <Select
+      showSearch
+      placeholder="Select a field"
+      optionFilterProp="label"
+      value={value}
+      onChange={onChange}
+      options={fieldOptions}
+      optionRender={optionRender}
+      labelRender={labelRender}
+      popupMatchSelectWidth={false}
+      style={{ minWidth: 150 }}
+    />
+  );
 };
-
-
 
 type CustomQueryBuilderProps = {
   metadataFields: MetadataFieldsType;
@@ -63,29 +87,40 @@ type CustomQueryBuilderProps = {
   query: RuleGroupType;
   setQuery: (x: RuleGroupType) => void;
 };
-const CustomQueryBuilder = ({metadataFields, uniqueValuesPerField, query, setQuery}: CustomQueryBuilderProps) => {
+const CustomQueryBuilder: FC<CustomQueryBuilderProps> = ({
+  metadataFields,
+  uniqueValuesPerField,
+  query,
+  setQuery,
+}) => {
   const fields = useMemo(() => {
     if (Object.keys(uniqueValuesPerField).length === 0) return [];
     return Object.entries(metadataFields).map(([fieldValue, field]) => {
-      let output: Field = {
+      const output: Field = {
         name: fieldValue,
         label: field.displayName,
         icon: field.icon,
         datatype: field.type,
         inputType: field.inputType,
-        valueEditorType: field.valueEditorType,
+        valueEditorType: field.valueEditorType as ValueEditorType | undefined,
+      };
+      if (field.inputType === "text") {
+        output.defaultOperator = "contains";
       }
-      if (field.inputType === 'text') {
-        output.defaultOperator = 'contains';
+      if (
+        field.valueEditorType === "select" ||
+        field.valueEditorType === "multiselect"
+      ) {
+        output.values = uniqueValuesPerField[fieldValue].map((x) => ({
+          name: x,
+          value: x,
+        }));
       }
-      if (field.valueEditorType === 'select' || field.valueEditorType === 'multiselect') {
-        output.values = uniqueValuesPerField[fieldValue].map(x => ({name: x, value: x}));
+      if (field.type === "rich_text") {
+        output.datatype = "text";
       }
-      if (field.type === 'rich_text') {
-        output.datatype = 'text';
-      }
-      return output
-    })
+      return output;
+    });
   }, [metadataFields, uniqueValuesPerField]);
 
   console.log(query);
@@ -107,7 +142,6 @@ const CustomQueryBuilder = ({metadataFields, uniqueValuesPerField, query, setQue
   );
 };
 
-
 type QueryOperationsButtonsProps = {
   metadataFields: MetadataFieldsType;
   uniqueValuesPerField: Record<string, string[]>;
@@ -121,20 +155,30 @@ type QueryOperationsButtonsProps = {
   setGroupOrders: (x: ("asc" | "desc")[]) => void;
   query: RuleGroupType;
   setQuery: (x: RuleGroupType) => void;
-}
+};
 
-const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
-  metadataFields, uniqueValuesPerField,
-  sortFields, setSortFields, sortOrders, setSortOrders,
-  groupFields, setGroupFields, groupOrders, setGroupOrders,
-  query, setQuery
+const QueryOperationsButtons: FC<QueryOperationsButtonsProps> = ({
+  metadataFields,
+  uniqueValuesPerField,
+  sortFields,
+  setSortFields,
+  sortOrders,
+  setSortOrders,
+  groupFields,
+  setGroupFields,
+  groupOrders,
+  setGroupOrders,
+  query,
+  setQuery,
 }: QueryOperationsButtonsProps) => {
+  const { selectedItems, selectionMode, toggleSelectionMode } = useSelectionStore();
+
   const handleSortFieldSelect = (val: string) => {
     setSortFields([val]);
     if (sortOrders.length > 0) {
       setSortOrders([sortOrders[0]]);
     } else {
-      setSortOrders(['asc']);
+      setSortOrders(["asc"]);
     }
   };
   const handleGroupFieldSelect = (val: string) => {
@@ -142,7 +186,7 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
     if (groupOrders.length > 0) {
       setGroupOrders([groupOrders[0]]);
     } else {
-      setGroupOrders(['asc']);
+      setGroupOrders(["asc"]);
     }
   };
 
@@ -158,35 +202,72 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
   return (
     <Space size="small" style={{ marginBottom: 10 }}>
       {/* Search button */}
-      <Input.Search placeholder="Search" allowClear onSearch={() => {}} style={{ minWidth: 300 }} />
+      <Input.Search
+        placeholder="Search"
+        allowClear
+        onSearch={() => {}}
+        style={{ minWidth: 300 }}
+      />
 
       {/* Sort button and popover */}
-      <Popover title={groupFields.length > 0 ? "Sort within groups by" : "Sort by"} content={
-        <Space>
-          <FieldSelector metadataFields={metadataFields} value={sortFields[0]} onChange={handleSortFieldSelect} />
-          {
-            sortFields.length > 0 &&
+      <Popover
+        title={groupFields.length > 0 ? "Sort within groups by" : "Sort by"}
+        content={
+          <Space>
+            <FieldSelector
+              metadataFields={metadataFields}
+              value={sortFields[0]}
+              onChange={handleSortFieldSelect}
+            />
+            {sortFields.length > 0 && (
               <>
                 <Select
                   value={sortOrders[0]}
-                  onChange={(val: string) => setSortOrders([val as ("asc" | "desc")])}
-                  options={[{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }]}
+                  onChange={(val: string) =>
+                    setSortOrders([val as "asc" | "desc"])
+                  }
+                  options={[
+                    { value: "asc", label: "Ascending" },
+                    { value: "desc", label: "Descending" },
+                  ]}
                 />
-                <Button type="text" icon={<CloseOutlined />} onClick={() => clearSort()} />
+                <Button
+                  type="text"
+                  icon={<CloseOutlined />}
+                  onClick={() => clearSort()}
+                />
               </>
-          }
-        </Space>
-      } trigger="click" arrow={false} placement="bottomLeft" >
-        <Button type="text" icon={<Icon component={SwapVert} />} color={(sortFields.length > 0) ? "primary" : "default"} variant={(sortFields.length > 0) ? "filled" : "text"}>
-          {(sortFields.length > 0) ? `Sorted by ${metadataFields[sortFields[0]].displayName}` : "Sort"}
+            )}
+          </Space>
+        }
+        trigger="click"
+        arrow={false}
+        placement="bottomLeft"
+      >
+        <Button
+          type="text"
+          icon={<Icon component={SwapVert} />}
+          color={sortFields.length > 0 ? "primary" : "default"}
+          variant={sortFields.length > 0 ? "filled" : "text"}
+        >
+          {sortFields.length > 0
+            ? `Sorted by ${metadataFields[sortFields[0]].displayName}`
+            : "Sort"}
         </Button>
       </Popover>
 
       {/* Filter button and popover */}
-      <Popover title="Filter" content={
-        <Space>
-          <CustomQueryBuilder metadataFields={metadataFields} uniqueValuesPerField={uniqueValuesPerField} query={query} setQuery={setQuery} />
-          {/* <FieldSelector metadataFields={metadataFields} value={groupFields[0]} onChange={handleGroupFieldSelect} />
+      <Popover
+        title="Filter"
+        content={
+          <Space>
+            <CustomQueryBuilder
+              metadataFields={metadataFields}
+              uniqueValuesPerField={uniqueValuesPerField}
+              query={query}
+              setQuery={setQuery}
+            />
+            {/* <FieldSelector metadataFields={metadataFields} value={groupFields[0]} onChange={handleGroupFieldSelect} />
           {
             groupFields.length > 0 &&
               <>
@@ -198,42 +279,90 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
                 <Button type="text" icon={<CloseOutlined />} onClick={() => clearGroup()} />
               </>
           } */}
-        </Space>
-      } trigger="click" arrow={false} placement="bottomLeft" >
+          </Space>
+        }
+        trigger="click"
+        arrow={false}
+        placement="bottomLeft"
+      >
         {/* <Button type="text" icon={<GroupOutlined />} color={(groupFields.length > 0) ? "primary" : "default"} variant={(groupFields.length > 0) ? "filled" : "text"}>
           {(groupFields.length > 0) ? `Grouped by ${metadataFields[groupFields[0]].displayName}` : "Group"}
         </Button> */}
-        <Button type="text" icon={<FilterOutlined />}
-          color={(query.rules.length > 0) ? "primary" : "default"}
-          variant={(query.rules.length > 0) ? "filled" : "text"}
+        <Button
+          type="text"
+          icon={<FilterOutlined />}
+          color={query.rules.length > 0 ? "primary" : "default"}
+          variant={query.rules.length > 0 ? "filled" : "text"}
         >
-          {(query.rules.length > 0) ? `Filtered by ${metadataFields[query.rules[0].field].displayName}` : "Filter"}
+          {query.rules.length > 0
+            ? `Filtered by ${metadataFields[(query.rules[0] as RuleType).field].displayName}`
+            : "Filter"}
         </Button>
       </Popover>
 
       {/* Group button and popover */}
-      <Popover title="Group by" content={
-        <Space>
-          <FieldSelector metadataFields={metadataFields} value={groupFields[0]} onChange={handleGroupFieldSelect} />
-          {
-            groupFields.length > 0 &&
+      <Popover
+        title="Group by"
+        content={
+          <Space>
+            <FieldSelector
+              metadataFields={metadataFields}
+              value={groupFields[0]}
+              onChange={handleGroupFieldSelect}
+            />
+            {groupFields.length > 0 && (
               <>
                 <Select
                   value={groupOrders[0]}
-                  onChange={(val: string) => setGroupOrders([val as ("asc" | "desc")])}
-                  options={[{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }]}
+                  onChange={(val: string) =>
+                    setGroupOrders([val as "asc" | "desc"])
+                  }
+                  options={[
+                    { value: "asc", label: "Ascending" },
+                    { value: "desc", label: "Descending" },
+                  ]}
                 />
-                <Button type="text" icon={<CloseOutlined />} onClick={() => clearGroup()} />
+                <Button
+                  type="text"
+                  icon={<CloseOutlined />}
+                  onClick={() => clearGroup()}
+                />
               </>
-          }
-        </Space>
-      } trigger="click" arrow={false} placement="bottomLeft" >
-        <Button type="text" icon={<GroupOutlined />} color={(groupFields.length > 0) ? "primary" : "default"} variant={(groupFields.length > 0) ? "filled" : "text"}>
-          {(groupFields.length > 0) ? `Grouped by ${metadataFields[groupFields[0]].displayName}` : "Group"}
+            )}
+          </Space>
+        }
+        trigger="click"
+        arrow={false}
+        placement="bottomLeft"
+      >
+        <Button
+          type="text"
+          icon={<GroupOutlined />}
+          color={groupFields.length > 0 ? "primary" : "default"}
+          variant={groupFields.length > 0 ? "filled" : "text"}
+        >
+          {groupFields.length > 0
+            ? `Grouped by ${metadataFields[groupFields[0]].displayName}`
+            : "Group"}
         </Button>
       </Popover>
+
+      {/* Selection mode toggle */}
+      <Switch
+        checkedChildren={`Selected ${selectedItems.size}`}
+        unCheckedChildren="Select"
+        onChange={toggleSelectionMode}
+        checked={selectionMode}
+      />
+
+      {/* Batch edit button and popover */}
+      <BatchEditPopup
+        selectionMode={selectionMode}
+        selectedItems={selectedItems}
+        uniqueValuesPerField={uniqueValuesPerField}
+      />
     </Space>
-  )
+  );
 };
 
 export default QueryOperationsButtons;

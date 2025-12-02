@@ -17,7 +17,7 @@ export const getUniqueLocationsFromVideos = (videos: Video[]) => {
 };
 
 export const getUniqueLocationsFromIndividuals = (individuals: Individual[], allVideos: Video[]) => {
-  let videos: Video[] = []; // list of videos where the individuals appear in
+  const videos: Video[] = []; // list of videos where the individuals appear in
   for (const indiv of individuals) {
     for (const videoId of indiv.videos) {
       const video = allVideos.find(v => v.id === videoId);
@@ -43,7 +43,7 @@ export const getUniqueLocationsFromIndividuals = (individuals: Individual[], all
 }
 
 export const getUniqueValuesPerField = (metadataFields: MetadataFieldsType, processedRecords: Record<string, any>[]) => {
-  let uniqueValuesPerField: Record<string, string[]> = {}; // an object where each key is a field name and its associated value is a list of unique values for that field
+  const uniqueValuesPerField: Record<string, string[]> = {}; // an object where each key is a field name and its associated value is a list of unique values for that field
   Object.entries(metadataFields).forEach(([fieldValue, field]) => {
     if (field.type === 'select') {
       // Use preset options if available
