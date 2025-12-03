@@ -1,5 +1,5 @@
 import { FC, useEffect, useMemo, useState } from "react";
-import { generatePath, Link, useNavigate } from "react-router-dom";
+import { generatePath, useNavigate } from "react-router-dom";
 import { Button, Divider, Flex } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 

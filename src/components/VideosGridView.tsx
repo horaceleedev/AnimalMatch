@@ -1,4 +1,4 @@
-import { FC, MouseEvent } from "react";
+import { FC, MouseEvent, useCallback } from "react";
 import { generatePath, Link } from "react-router-dom";
 import { Card, Flex, Tag, Tooltip, Typography } from "antd";
 
@@ -13,6 +13,7 @@ interface BasicVideosGridViewProps {
   isListView: boolean;
   linkTemplate?: string;
   openModal?: (type: RecordType , id: string) => void;
+  onSelectRecord?: () => void;
 };
 
 function playVideoPreview(event: MouseEvent<HTMLElement>) {
@@ -25,85 +26,112 @@ function stopVideoPreview(event: MouseEvent<HTMLElement>) {
 
 // Basic video grid view (without grouping and sorting)
 const BasicVideosGridView: FC<BasicVideosGridViewProps> = ({
-  videos, videoMetadataFields, isListView, linkTemplate = "/videos/:videoId", openModal,
+  videos,
+  videoMetadataFields,
+  isListView,
+  linkTemplate = "/videos/:videoId",
+  openModal,
+  onSelectRecord,
 }: BasicVideosGridViewProps) => {
+  const openVideoModal = useCallback(
+    (videoId: string) => (e: MouseEvent) => {
+      onSelectRecord?.();
+      if (!openModal) return;
+      e.preventDefault();
+      openModal("video", videoId);
+    },
+    [openModal, onSelectRecord]
+  );
+
   return (
     <div className={isListView ? "videos-list " : "videos-grid"}>
-      {
-        videos.map((video: Video) => (
-          // Old version:
-          // <Link key={video.id} to={"/videos/" + video.id}>
-          //   <Card
-          //     hoverable
-          //     size="small"
-          //     cover={<video src={video.url} width="300px" controls />}
-          //   >
-          //     <Card.Meta
-          //       title={video.filename}
-          //       description={
-          //         <Flex wrap gap={4}>
-          //           {
-          //             ['location_name', 'month_of_SD_retrieval', 'habitat', 'recording_date'].map(field => (
-          //               <Tooltip title={videoMetadataFields[field].displayName} key={field}>
-          //                 <Tag icon={videoMetadataFields[field].icon}>
-          //                   {video[field]}
-          //                 </Tag>
-          //               </Tooltip>
-          //             ))
-          //           }
-          //         </Flex>
-          //       }
-          //     />
-          //   </Card>
-          // </Link>
+      {videos.map((video: Video) => (
+        // Old version:
+        // <Link key={video.id} to={"/videos/" + video.id}>
+        //   <Card
+        //     hoverable
+        //     size="small"
+        //     cover={<video src={video.url} width="300px" controls />}
+        //   >
+        //     <Card.Meta
+        //       title={video.filename}
+        //       description={
+        //         <Flex wrap gap={4}>
+        //           {
+        //             ['location_name', 'month_of_SD_retrieval', 'habitat', 'recording_date'].map(field => (
+        //               <Tooltip title={videoMetadataFields[field].displayName} key={field}>
+        //                 <Tag icon={videoMetadataFields[field].icon}>
+        //                   {video[field]}
+        //                 </Tag>
+        //               </Tooltip>
+        //             ))
+        //           }
+        //         </Flex>
+        //       }
+        //     />
+        //   </Card>
+        // </Link>
 
-          // New version:
-          <Link
-            key={video.id}
-            to={generatePath(linkTemplate, { videoId: video.id })}
-            onClick={(e) => {
-              if (!openModal) return;
-              e.preventDefault();
-              openModal("video", video.id);
-            }}
+        // New version:
+        <Link
+          key={video.id}
+          to={generatePath(linkTemplate, { videoId: video.id })}
+          onClick={openVideoModal(video.id)}
+        >
+          <Card
+            hoverable
+            style={{ overflow: "hidden" }}
+            styles={{ body: { padding: 0 } }}
+            // video hover preview
+            onMouseEnter={playVideoPreview}
+            onMouseLeave={stopVideoPreview}
           >
-            <Card
-              hoverable
-              style={{ overflow: 'hidden' }}
-              styles={{ body: { padding: 0 } }}
-              // video hover preview
-              onMouseEnter={playVideoPreview}
-              onMouseLeave={stopVideoPreview}
+            <Flex
+              vertical={!isListView}
+              justify={isListView ? "flex-start" : "space-between"}
             >
-              <Flex vertical={!isListView} justify={isListView ? "flex-start" : "space-between"}>
-                <video
-                  src={video.url}
-                  poster={video.thumbnailUrl}
-                  playsInline
-                  muted
-                  preload="none"
-                />
-                <Flex vertical align="flex-start" justify="space-between" style={{ padding: 12 }}>
-                  <Typography.Title level={5} className="video-title" ellipsis={{tooltip: video.filename}}>
-                    {video.filename}
-                  </Typography.Title>
-                  <Flex wrap gap={4}>
-                    {
-                      ['location_name', 'month_of_SD_retrieval', 'habitat', 'recording_date'].map(field => (
-                        <Tooltip title={videoMetadataFields[field].displayName} key={field}>
-                          <Tag icon={videoMetadataFields[field].icon}>
-                            {video[field]}
-                          </Tag>
-                        </Tooltip>
-                      ))
-                    }
-                  </Flex>
+              <video
+                src={video.url}
+                poster={video.thumbnailUrl}
+                playsInline
+                muted
+                preload="none"
+              />
+              <Flex
+                vertical
+                align="flex-start"
+                justify="space-between"
+                style={{ padding: 12 }}
+              >
+                <Typography.Title
+                  level={5}
+                  className="video-title"
+                  ellipsis={{ tooltip: video.filename }}
+                >
+                  {video.filename}
+                </Typography.Title>
+                <Flex wrap gap={4}>
+                  {[
+                    "location_name",
+                    "month_of_SD_retrieval",
+                    "habitat",
+                    "recording_date",
+                  ].map((field) => (
+                    <Tooltip
+                      title={videoMetadataFields[field].displayName}
+                      key={field}
+                    >
+                      <Tag icon={videoMetadataFields[field].icon}>
+                        {video[field]}
+                      </Tag>
+                    </Tooltip>
+                  ))}
                 </Flex>
               </Flex>
-            </Card>
-          </Link>
-        ))
-      }
+            </Flex>
+          </Card>
+        </Link>
+      ))}
     </div>
   );
 };

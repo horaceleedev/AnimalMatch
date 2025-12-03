@@ -112,6 +112,11 @@ const VideosDashboardPage: React.FC = () => {
     videos: outletVideos,
   }), [outletVideos]);
 
+  // Update outlet videos after selecting a group in VideosGridView.
+  const onSelectGroup = (groupRecords: Video[]) => {
+    setOutletVideos(groupRecords);
+  };
+
   const highlightLocationIds = useMemo(
     () => new Set(videosFiltered.map(video => JSON.stringify([video.lat, video.long]))),
     [videosFiltered]
@@ -215,6 +220,7 @@ const VideosDashboardPage: React.FC = () => {
                 sortOrders={sortOrders} 
                 groupFields={groupFields} 
                 groupOrders={groupOrders}
+                onSelectGroup={onSelectGroup}
               />
             :
             (
