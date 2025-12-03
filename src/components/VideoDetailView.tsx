@@ -37,24 +37,29 @@ const VideoToolbar: FC<{
     navigate("annotate");
   }
 
+  function navigateToVideo(videoId: string) {
+    return () => navigate(generatePath(videoLinkTemplate, { videoId }));
+  }
+
   return (
     <div className="controls">
       <Button type="primary" onClick={openAnnotationEditor}>
         Annotate individuals
       </Button>
       <Flex gap="middle" justify="start">
-        <Link
+        <Button
           aria-label="Previous video"
-          to={generatePath(videoLinkTemplate, { videoId: prevVideoId })}
-        >
-          <Button shape="circle" icon={<LeftOutlined />} disabled={!prevVideoId} />
-        </Link>
-        <Link
+          shape="circle" icon={<LeftOutlined />}
+          disabled={!prevVideoId}
+          onClick={navigateToVideo(prevVideoId)}
+        />
+        <Button
           aria-label="Next video"
-          to={generatePath(videoLinkTemplate, { videoId: nextVideoId })}
-        >
-          <Button shape="circle" icon={<RightOutlined />} disabled={!nextVideoId} />
-        </Link>
+          shape="circle"
+          icon={<RightOutlined />}
+          disabled={!nextVideoId}
+          onClick={navigateToVideo(nextVideoId)}
+        />
       </Flex>
     </div>
   );
