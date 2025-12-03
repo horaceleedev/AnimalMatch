@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Outlet } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from 'react';
+import { Outlet, useLocation } from "react-router-dom";
 import { Layout, Menu, Splitter, Tabs, theme, Typography } from "antd";
 import type { TabsProps } from 'antd';
 import Icon, { AppstoreOutlined, PlaySquareOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
@@ -19,6 +19,30 @@ import BasicMapView from '../components/BasicMapView.tsx';
 import AnnotationStatusLabel from '../components/AnnotationStatusLabel.tsx';
 import { Video } from '../types.ts';
 import "./VideosDashboardPage.scss";
+
+/**
+ * Store a copy of the filtered video list for use in outlet context.
+ * @param videosFiltered 
+ * @returns [outletVideos, setOutletVideos]
+ */
+function useOutletVideosState(videosFiltered: Video[]): [Video[], React.Dispatch<React.SetStateAction<Video[]>>] {
+  /*
+    Outlet video state stores the video list used to navigate between videos in VideoDetailView.
+    Keep this separate from videosFiltered so that outlet context is not changed when the user
+    edits a video eg. by changing its annotation status or custom tags.
+  */
+  const [outletVideos, setOutletVideos] = useState<Video[]>(videosFiltered);
+
+  // Update the outlet videos after navigating back to the dashboard page.
+  const { pathname } = useLocation();
+  useEffect(() => {
+    if (pathname === "/videos") {
+      setOutletVideos(videosFiltered);
+    }
+  }, [pathname, videosFiltered]);
+
+  return [outletVideos, setOutletVideos];
+}
 
 const viewsTabsItems: TabsProps['items'] = [
   {
@@ -78,6 +102,15 @@ const VideosDashboardPage: React.FC = () => {
     videosBySiderKey[selectedSiderKey],
     [videosBySiderKey, selectedSiderKey]
   );
+  
+  /*
+    Keep a copy of filteredVideos, which only updates when navigating back to the dashboard
+    or changing the sider selection.
+  */
+  const [outletVideos, setOutletVideos] = useOutletVideosState(videosFiltered);
+  const outletContext = useMemo(() => ({
+    videos: outletVideos,
+  }), [outletVideos]);
 
   const highlightLocationIds = useMemo(
     () => new Set(videosFiltered.map(video => JSON.stringify([video.lat, video.long]))),
@@ -86,9 +119,10 @@ const VideosDashboardPage: React.FC = () => {
 
   const { colorBgContainer } = theme.useToken().token;
 
-  const outletContext = useMemo(() => ({
-    videos: videosFiltered,
-  }), [videosFiltered]);
+  function selectSiderKey({ key }: { key: string }) {
+    setSelectedSiderKey(key);
+    setOutletVideos(videosBySiderKey[key]);
+  }
 
   return (
     <>
@@ -153,7 +187,7 @@ const VideosDashboardPage: React.FC = () => {
                 null
               ),
             ]}
-            onClick={({key}) => setSelectedSiderKey(key)}
+            onClick={selectSiderKey}
           />
         </Sider>
         <DashboardContent style={{ padding: '28px 36px 36px' }} >
