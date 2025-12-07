@@ -249,6 +249,7 @@ const VideosDashboardPage: React.FC = () => {
                     sortOrders={sortOrders}
                     groupFields={groupFields}
                     groupOrders={groupOrders}
+                    onSelectGroup={onSelectGroup}
                   />
                 </Splitter.Panel>
                 <Splitter.Panel style={{paddingLeft: 12}}>
