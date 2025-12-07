@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Outlet, useLocation } from "react-router-dom";
+import { matchPath, Outlet, useLocation } from "react-router-dom";
 import { Layout, Menu, Splitter, Tabs, theme, Typography } from "antd";
 import type { TabsProps } from 'antd';
 import Icon, { AppstoreOutlined, PlaySquareOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
@@ -36,7 +36,7 @@ function useOutletVideosState(videosFiltered: Video[]): [Video[], React.Dispatch
   // Update the outlet videos after navigating back to the dashboard page.
   const { pathname } = useLocation();
   useEffect(() => {
-    if (pathname === "/videos") {
+    if (matchPath("/videos", pathname)) {
       setOutletVideos(videosFiltered);
     }
   }, [pathname, videosFiltered]);
