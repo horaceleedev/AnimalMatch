@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { ComponentType, useMemo } from "react";
 import { RecordModel } from "pocketbase";
 import { groupBy, orderBy } from "es-toolkit";
 import { Collapse, Space } from "antd";
@@ -19,10 +19,11 @@ interface OuterProps<T> {
   sortOrders: ("asc" | "desc")[];
   groupFields: string[];
   groupOrders: ("asc" | "desc")[];
+  onSelectGroup?: (groupRecords: T[]) => void;
 };
 
 const withSortingAndGrouping = <P extends BasicGridViewProps, T extends RecordModel>(
-  BasicGridView: React.ComponentType<P>
+  BasicGridView: ComponentType<P>
 ) => {
   return ({
     processedRecords,
@@ -33,6 +34,7 @@ const withSortingAndGrouping = <P extends BasicGridViewProps, T extends RecordMo
     groupFields,
     groupOrders,
     basicGridViewProps,
+    onSelectGroup,
   }: OuterProps<T> & { basicGridViewProps: P }) => {
     const recordsSorted = useMemo(
       () => orderBy(processedRecords, sortFields, sortOrders),
@@ -53,6 +55,9 @@ const withSortingAndGrouping = <P extends BasicGridViewProps, T extends RecordMo
       return <BasicGridView {...basicGridViewProps} {...{[processedRecordsPropName]: recordsSorted}} />;
     }
     return groupedRecords.map(([groupValue, groupRecords]) => {
+      const onSelectGroupRecord = () => {
+        onSelectGroup?.(groupRecords);
+      };
       let renderedGroupValue = groupValue;
       const renderType = metadataFields[groupFields[0]].renderType;
       if (renderType === 'video_link') {
@@ -100,7 +105,7 @@ const withSortingAndGrouping = <P extends BasicGridViewProps, T extends RecordMo
               label:  (
                 (metadataFields[groupFields[0]].displayBooleanValuesAs) ? 
                 // Use 'displayBooleanValuesAs'
-                <span>{metadataFields[groupFields[0]].displayBooleanValuesAs[Number(groupValue === 'true')]}</span>
+                <span>{metadataFields[groupFields[0]].displayBooleanValuesAs?.[Number(groupValue === 'true')]}</span>
                 :
                 // the <Space> helps with rendering multiple <UserLabel>'s, and
                 // preventing <VideoLinkButton> and <IndividualLinkButton> from taking up the full width
@@ -110,7 +115,7 @@ const withSortingAndGrouping = <P extends BasicGridViewProps, T extends RecordMo
                 </Space>
               ),
               children: (
-                <BasicGridView {...basicGridViewProps} {...{[processedRecordsPropName]: groupRecords}} />
+                <BasicGridView {...basicGridViewProps} {...{[processedRecordsPropName]: groupRecords}} onSelectRecord={onSelectGroupRecord} />
               ),
             },
           ]}

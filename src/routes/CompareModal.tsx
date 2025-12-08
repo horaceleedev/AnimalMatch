@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { FC, useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useLocation, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { differenceBy, intersection } from 'es-toolkit';
 import { Button, Flex, Input, Layout, Modal, Popover, Space, Tabs, Tooltip } from "antd";
 import type { TabsProps } from "antd";
@@ -22,7 +22,7 @@ import IndividualsGridView from '../components/IndividualsGridView.tsx';
 import IndividualsDashboardView from '../components/IndividualsDashboardView.tsx';
 import CropsDashboardView from '../components/CropsDashboardView.tsx';
 import RecordActionsButton from '../components/RecordActionsButton.tsx';
-import { Individual } from '../types.ts';
+import { Individual, Video } from '../types.ts';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import "./CompareModal.scss";
 
@@ -37,7 +37,7 @@ const recordTypeLongNameToShortName: Record<string, string> = {
   "crops": "c",
 };
 
-const CompareModal: React.FC = () => {
+const CompareModal: FC = () => {
   const navigate = useNavigate();
   const { videoId, individualId, cropId, compareId } = useParams();
   const routerLocation = useLocation();
@@ -45,6 +45,11 @@ const CompareModal: React.FC = () => {
   const isCompareView = routeSplits[2] === "compare";
   const compareType = recordTypeShortNameToLongName[routeSplits[5]];
   console.log(videoId, individualId, cropId, compareId, routerLocation, isCompareView, compareType)
+  // Outlet context contains filtered videos from the parent dashboard view.
+  const outletContext = useOutletContext<{
+    videos?: Video[],
+  }>();
+  const leftPanelVideos = outletContext?.videos || [];
 
   const [isModalOpen, setIsModalOpen] = useState(true);
   const handleDismiss = () => {
@@ -236,6 +241,8 @@ const CompareModal: React.FC = () => {
         uniqueValuesPerField={videosUniqueValuesPerField}
         uniqueLocations={uniqueVideoLocations}
         individualsLinkTemplate={leftPanelIndividualsLinkTemplate}
+        videoLinkTemplate={leftPanelVideosLinkTemplate}
+        navigationVideos={leftPanelVideos}
         updateVideo={updateVideo}
       />
     );
@@ -282,6 +289,8 @@ const CompareModal: React.FC = () => {
           uniqueValuesPerField={videosUniqueValuesPerField}
           uniqueLocations={uniqueVideoLocations}
           individualsLinkTemplate={rightPanelIndividualsLinkTemplate}
+          videoLinkTemplate={rightPanelVideosLinkTemplate}
+          navigationVideos={videos}
           updateVideo={updateVideo}
         />
       );
