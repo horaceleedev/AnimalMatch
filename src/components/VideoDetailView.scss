@@ -1,4 +1,4 @@
-.video {
+.video-with-toolbar {
   width: fit-content;
 
   video {
@@ -6,7 +6,7 @@
     max-width: 800px;
   }
 
-  .controls {
+  .video-toolbar {
     margin-top: 8px;
     display: flex;
     gap: 8px;

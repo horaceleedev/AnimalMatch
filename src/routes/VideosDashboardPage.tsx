@@ -29,7 +29,7 @@ function useOutletVideosState(videosFiltered: Video[]): [Video[], React.Dispatch
   /*
     Outlet video state stores the video list used to navigate between videos in VideoDetailView.
     Keep this separate from videosFiltered so that outlet context is not changed when the user
-    edits a video eg. by changing its annotation status or custom tags.
+    edits the metadata of a video eg. by changing its annotation status or custom tags.
   */
   const [outletVideos, setOutletVideos] = useState<Video[]>(videosFiltered);
 
@@ -117,17 +117,17 @@ const VideosDashboardPage: React.FC = () => {
     setOutletVideos(groupRecords);
   };
 
+  function selectSiderKey({ key }: { key: string }) {
+    setSelectedSiderKey(key);
+    setOutletVideos(videosBySiderKey[key]);
+  }
+
   const highlightLocationIds = useMemo(
     () => new Set(videosFiltered.map(video => JSON.stringify([video.lat, video.long]))),
     [videosFiltered]
   );
 
   const { colorBgContainer } = theme.useToken().token;
-
-  function selectSiderKey({ key }: { key: string }) {
-    setSelectedSiderKey(key);
-    setOutletVideos(videosBySiderKey[key]);
-  }
 
   return (
     <>

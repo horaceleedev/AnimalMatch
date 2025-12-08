@@ -42,7 +42,7 @@ const VideoToolbar: FC<{
   }
 
   return (
-    <div className="controls">
+    <div className="video-toolbar">
       <Button type="primary" onClick={openAnnotationEditor}>
         Annotate individuals
       </Button>
@@ -72,10 +72,10 @@ type VideoDetailViewProps = {
   uniqueValuesPerField: Record<string, string[]>,
   uniqueLocations: LocationInfo[],
   individualsLinkTemplate?: string;
+  videoLinkTemplate?: string;
+  navigationVideos?: Video[],
   openModal?: (type: RecordType , id: string) => void;
   updateVideo: (id: string, data: Partial<Video>) => Promise<Video>;
-  videoLinkTemplate?: string;
-  videos?: Video[];
 };
 
 const VideoDetailView: FC<VideoDetailViewProps> = ({
@@ -84,10 +84,10 @@ const VideoDetailView: FC<VideoDetailViewProps> = ({
   uniqueValuesPerField,
   uniqueLocations,
   individualsLinkTemplate,
+  videoLinkTemplate,
+  navigationVideos = [],
   openModal,
   updateVideo,
-  videoLinkTemplate,
-  videos = [],
 }: VideoDetailViewProps) => {
   // Temporary hack needed because map wasn't showing up properly
   const [showMap, setShowMap] = useState(false);
@@ -102,13 +102,13 @@ const VideoDetailView: FC<VideoDetailViewProps> = ({
 
   return (
     <>
-      <Flex justify="space-between" vertical className="video">
+      <Flex justify="space-between" vertical className="video-with-toolbar">
         <video
           src={video.url}
           controls
           autoPlay
         />
-        <VideoToolbar video={video} videoLinkTemplate={videoLinkTemplate} videos={videos} />
+        <VideoToolbar video={video} videoLinkTemplate={videoLinkTemplate} videos={navigationVideos} />
       </Flex>
       <Divider />
       <h3>Individuals</h3>

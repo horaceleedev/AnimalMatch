@@ -241,9 +241,9 @@ const CompareModal: FC = () => {
         uniqueValuesPerField={videosUniqueValuesPerField}
         uniqueLocations={uniqueVideoLocations}
         individualsLinkTemplate={leftPanelIndividualsLinkTemplate}
-        updateVideo={updateVideo}
         videoLinkTemplate={leftPanelVideosLinkTemplate}
-        videos={leftPanelVideos}
+        navigationVideos={leftPanelVideos}
+        updateVideo={updateVideo}
       />
     );
   } else if (individualDetailProps) {
@@ -289,9 +289,9 @@ const CompareModal: FC = () => {
           uniqueValuesPerField={videosUniqueValuesPerField}
           uniqueLocations={uniqueVideoLocations}
           individualsLinkTemplate={rightPanelIndividualsLinkTemplate}
-          updateVideo={updateVideo}
           videoLinkTemplate={rightPanelVideosLinkTemplate}
-          videos={videos}
+          navigationVideos={videos}
+          updateVideo={updateVideo}
         />
       );
     } else if (compareIndividualDetailProps) {
