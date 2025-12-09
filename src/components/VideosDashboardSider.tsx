@@ -36,13 +36,13 @@ export const useVideosDashboardSiderState = (videos: Video[], videoMetadataField
 
 interface VideosDashboardSiderProps {
   selectedSiderKey: string;
-  selectSiderKey: (x: { key: string }) => void;
+  setSelectedSiderKey: (key: string) => void;
   videosBySiderKey: Record<string, Video[]>;
   videoMetadataFields: MetadataFieldsType;
   uniqueValuesPerField: Record<string, string[]>;
 }
 export const VideosDashboardSider: FC<VideosDashboardSiderProps> = ({
-  selectedSiderKey, selectSiderKey, videosBySiderKey, videoMetadataFields, uniqueValuesPerField,
+  selectedSiderKey, setSelectedSiderKey, videosBySiderKey, videoMetadataFields, uniqueValuesPerField,
 }) => {
   return (
     <Sider className="videos-dashboard-sider" style={{ /* background: colorBgContainer */ }} width={220}>
@@ -102,7 +102,7 @@ export const VideosDashboardSider: FC<VideosDashboardSiderProps> = ({
             null
           ),
         ]}
-        onClick={selectSiderKey}
+        onClick={({key}: {key: string}) => setSelectedSiderKey(key)}
       />
     </Sider>
   );
