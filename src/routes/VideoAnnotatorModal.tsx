@@ -7,7 +7,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useVideoStore, useIndividualsStoreWithCrops, useAuth } from "../DataStores.tsx";
 import VideoAnnotator from '../components/VideoAnnotator/VideoAnnotator.tsx';
 import InnerModal from './InnerModal.tsx';
-import AnnotationStatusLabel from '../components/AnnotationStatusLabel.tsx';
+import AnnotationStatusLabel from '../components/misc/AnnotationStatusLabel.tsx';
 import { Individual, RecordType } from '../types.ts';
 
 const VideoAnnotatorModal: React.FC = () => {

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Space } from "antd";
 import { startCase } from "es-toolkit";
 
-import { videoMetadataFields } from "../metadata";
+import { videoMetadataFields } from "../../metadata";
 
 const defaultDotStyle = {
   width: 8,

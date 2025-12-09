@@ -3,7 +3,7 @@ import { Layout, Menu, Typography } from "antd";
 import { PlaySquareOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
 const { Sider } = Layout;
 
-import AnnotationStatusLabel from "../AnnotationStatusLabel";
+import AnnotationStatusLabel from "../misc/AnnotationStatusLabel";
 import { MetadataFieldsType, UserRecord, Video } from "../../types";
 import "./VideosDashboardSider.scss";
 
