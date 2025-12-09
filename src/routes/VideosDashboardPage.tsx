@@ -109,7 +109,7 @@ const VideosDashboardPage: React.FC = () => {
   return (
     <>
       <Layout
-        className="videos-dashboard-layout"
+        className="no-background"
         style={{ /* background: colorBgContainer */ }}
       >
         <VideosDashboardSider

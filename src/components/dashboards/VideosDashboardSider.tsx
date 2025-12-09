@@ -5,7 +5,7 @@ const { Sider } = Layout;
 
 import AnnotationStatusLabel from "../misc/AnnotationStatusLabel";
 import { MetadataFieldsType, UserRecord, Video } from "../../types";
-import "./VideosDashboardSider.scss";
+import "./DashboardSider.scss";
 
 export const useVideosDashboardSiderState = (videos: Video[], videoMetadataFields: MetadataFieldsType, user: UserRecord | null) => {
   const [selectedSiderKey, setSelectedSiderKey] = useState("all-videos");
@@ -45,12 +45,12 @@ export const VideosDashboardSider: FC<VideosDashboardSiderProps> = ({
   selectedSiderKey, setSelectedSiderKey, videosBySiderKey, videoMetadataFields, uniqueValuesPerField,
 }) => {
   return (
-    <Sider className="videos-dashboard-sider" style={{ /* background: colorBgContainer */ }} width={220}>
+    <Sider className="dashboard-sider" style={{ /* background: colorBgContainer */ }} width={220}>
       <h3>Videos</h3>
       <Menu
         mode="inline"
         selectedKeys={[selectedSiderKey]}
-        className="videos-dashboard-sider-menu"
+        className="dashboard-sider-menu"
         items={[
           {
             key: 'all-videos',
