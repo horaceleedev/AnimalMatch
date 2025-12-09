@@ -3,9 +3,9 @@ import { Splitter, Tabs, type TabsProps } from "antd";
 import Icon from "@ant-design/icons";
 import { formatQuery, RuleGroupType } from 'react-querybuilder';
 
-import Table from '../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
-import Map from '../assets/material_symbols/map_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
-import ViewList from '../assets/material_symbols/view_list_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
+import Table from '../../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
+import Map from '../../assets/material_symbols/map_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
+import ViewList from '../../assets/material_symbols/view_list_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
 import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
