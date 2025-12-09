@@ -95,9 +95,9 @@ const VideosDashboardPage: React.FC = () => {
     setOutletVideos(groupRecords);
   };
   // Update outlet videos after selecting a sider key
-  useEffect(() => {
-    setOutletVideos(videosBySiderKey[selectedSiderKey]);
-  }, [selectedSiderKey]);
+  function onSiderChange(key: string) {
+    setOutletVideos(videosBySiderKey[key]);
+  };
 
   const highlightLocationIds = useMemo(
     () => new Set(videosFiltered.map(video => JSON.stringify([video.lat, video.long]))),
@@ -118,6 +118,7 @@ const VideosDashboardPage: React.FC = () => {
           videosBySiderKey={videosBySiderKey}
           videoMetadataFields={videoMetadataFields}
           uniqueValuesPerField={uniqueValuesPerField}
+          onChange={onSiderChange}
         />
         <DashboardContent>
           <QueryOperationsButtons
