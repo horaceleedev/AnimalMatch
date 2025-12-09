@@ -7,11 +7,11 @@ import { intersection } from 'es-toolkit';
 import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
 import { useIndividualsStoreWithCrops, useVideoStore } from "../DataStores.tsx";
-import IndividualDetailView from '../components/IndividualDetailView.tsx';
+import IndividualDetailView from '../components/detail-views/IndividualDetailView.tsx';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import { RecordDetailModalProps, RecordType } from '../types.ts';
 import InnerModal from './InnerModal.tsx';
-import RecordActionsButton from '../components/RecordActionsButton.tsx';
+import RecordActionsButton from '../components/misc/RecordActionsButton.tsx';
 import "./IndividualDetailModal.scss";
 
 

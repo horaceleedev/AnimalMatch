@@ -10,12 +10,12 @@ import Table from '../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GR
 import Map from '../assets/material_symbols/map_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
 import { gridEditors, tableColumns, videoMetadataFields } from "../metadata.tsx";
-import DashboardContent from '../components/DashboardContent.tsx';
-import VideosGridView from "../components/VideosGridView.tsx";
-import QueryOperationsButtons from "../components/QueryOperationsButtons.tsx";
+import DashboardContent from '../components/dashboards/DashboardContent.tsx';
+import VideosGridView from "../components/grid-views/VideosGridView.tsx";
+import QueryOperationsButtons from "../components/dashboards/QueryOperationsButtons.tsx";
 import { useAuth, useVideoStore } from "../DataStores.tsx";
-import BasicMapView from '../components/BasicMapView.tsx';
-import { useVideosDashboardSiderState, VideosDashboardSider } from '../components/VideosDashboardSider.tsx';
+import BasicMapView from '../components/misc/BasicMapView.tsx';
+import { useVideosDashboardSiderState, VideosDashboardSider } from '../components/dashboards/VideosDashboardSider.tsx';
 import { Video } from '../types.ts';
 import "./VideosDashboardPage.scss";
 

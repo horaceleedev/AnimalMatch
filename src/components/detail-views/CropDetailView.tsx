@@ -1,9 +1,9 @@
 import React from 'react';
 import { Flex, Image } from 'antd';
 
-import RecordMetadataForm from '../components/RecordMetadataForm.tsx';
-import { cropsMetadataFields } from '../metadata.tsx';
-import { Crop, RecordType } from '../types.ts';
+import RecordMetadataForm from './RecordMetadataForm.tsx';
+import { cropsMetadataFields } from '../../metadata.tsx';
+import { Crop, RecordType } from '../../types.ts';
 
 type CropDetailViewProps = {
   crop: Crop;

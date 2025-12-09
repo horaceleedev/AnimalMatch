@@ -3,10 +3,10 @@ import type { DefaultOptionType, LabelInValueType } from "rc-select/lib/Select";
 import TextArea from 'antd/es/input/TextArea';
 import { RecordModel } from "pocketbase";
 
-import useFormManager from "../utils/useFormManager";
-import { MetadataFieldsType, RecordType } from "../types";
-import { IndividualLinkButton, UserLabel, VideoLinkButton } from "./smart-components/LinkButtons";
-import AnnotationStatusLabel from "./AnnotationStatusLabel";
+import useFormManager from "../../utils/useFormManager";
+import { MetadataFieldsType, RecordType } from "../../types";
+import { IndividualLinkButton, UserLabel, VideoLinkButton } from "../smart-components/LinkButtons";
+import AnnotationStatusLabel from "../AnnotationStatusLabel";
 import "./RecordMetadataForm.scss";
 
 type RecordMetadataFormProps<T extends RecordModel> = {

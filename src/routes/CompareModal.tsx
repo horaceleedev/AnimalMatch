@@ -14,14 +14,14 @@ import RightPanelClose from '../assets/material_symbols/right_panel_close_24dp_5
 
 import { useIndividualsStoreWithCrops, useCropsStore, useVideosStoreWithUsers } from "../DataStores.tsx";
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
-import VideoDetailView from '../components/VideoDetailView.tsx';
-import IndividualDetailView from '../components/IndividualDetailView.tsx';
-import CropDetailView from '../components/CropDetailView.tsx';
-import VideosGridView from '../components/VideosGridView.tsx';
-import IndividualsGridView from '../components/IndividualsGridView.tsx';
-import IndividualsDashboardView from '../components/IndividualsDashboardView.tsx';
-import CropsDashboardView from '../components/CropsDashboardView.tsx';
-import RecordActionsButton from '../components/RecordActionsButton.tsx';
+import VideoDetailView from '../components/detail-views/VideoDetailView.tsx';
+import IndividualDetailView from '../components/detail-views/IndividualDetailView.tsx';
+import CropDetailView from '../components/detail-views/CropDetailView.tsx';
+import VideosGridView from '../components/grid-views/VideosGridView.tsx';
+import IndividualsGridView from '../components/grid-views/IndividualsGridView.tsx';
+import IndividualsDashboardView from '../components/dashboards/IndividualsDashboardView.tsx';
+import CropsDashboardView from '../components/dashboards/CropsDashboardView.tsx';
+import RecordActionsButton from '../components/misc/RecordActionsButton.tsx';
 import { Individual, Video } from '../types.ts';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import "./CompareModal.scss";

@@ -6,8 +6,8 @@ import { RuleGroupType } from 'react-querybuilder';
 import Table from '../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
 import QueryOperationsButtons from './QueryOperationsButtons.tsx';
-import CropsGridView from '../components/CropsGridView.tsx';
-import { Crop, MetadataFieldsType, RecordType } from '../types.ts';
+import CropsGridView from '../grid-views/CropsGridView.tsx';
+import { Crop, MetadataFieldsType, RecordType } from '../../types.ts';
 
 const viewsTabsItems: TabsProps['items'] = [
   {

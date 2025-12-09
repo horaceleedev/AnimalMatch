@@ -3,9 +3,9 @@ import { RecordModel } from "pocketbase";
 import { groupBy, orderBy } from "es-toolkit";
 import { Collapse, Space } from "antd";
 
-import { IndividualLinkButton, UserLabel, VideoLinkButton } from "./smart-components/LinkButtons";
-import AnnotationStatusLabel from "./AnnotationStatusLabel";
-import { MetadataFieldsType, RecordType } from "../types";
+import { IndividualLinkButton, UserLabel, VideoLinkButton } from "../smart-components/LinkButtons";
+import AnnotationStatusLabel from "../AnnotationStatusLabel";
+import { MetadataFieldsType, RecordType } from "../../types";
 
 interface BasicGridViewProps {
   openModal?: (type: RecordType, id: string) => void

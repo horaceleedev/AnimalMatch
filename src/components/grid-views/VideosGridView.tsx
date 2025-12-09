@@ -2,8 +2,8 @@ import { FC, MouseEvent, useCallback } from "react";
 import { generatePath, Link } from "react-router-dom";
 import { Card, Flex, Tag, Tooltip, Typography } from "antd";
 
-import type { RecordType, Video } from "../types.ts";
-import type { MetadataFieldsType } from "../types.tsx";
+import type { RecordType, Video } from "../../types.ts";
+import type { MetadataFieldsType } from "../../types.ts";
 import withSortingAndGrouping from './withSortingAndGrouping.tsx';
 import "./VideosGridView.scss"
 

@@ -3,10 +3,10 @@ import { generatePath, useNavigate } from "react-router-dom";
 import { Button, Divider, Flex } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 
-import BasicMapView from '../components/BasicMapView.tsx';
-import { Individual, LocationInfo, RecordType, Video } from '../types.ts';
-import { individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
-import IndividualsGridView from "./IndividualsGridView.tsx";
+import BasicMapView from '../misc/BasicMapView.tsx';
+import { Individual, LocationInfo, RecordType, Video } from '../../types.ts';
+import { individualsMetadataFields, videoMetadataFields } from '../../metadata.tsx';
+import IndividualsGridView from "../grid-views/IndividualsGridView.tsx";
 import RecordMetadataForm from "./RecordMetadataForm.tsx";
 
 import "./VideoDetailView.scss";

@@ -4,7 +4,7 @@ import { Button, Card, Flex, Select, Space, Tag, Tooltip } from 'antd';
 
 import { StarOutlined } from '@ant-design/icons';
 
-import { Individual, MetadataFieldsType, RecordType } from '../types.ts';
+import { Individual, MetadataFieldsType, RecordType } from '../../types.ts';
 import withSortingAndGrouping from './withSortingAndGrouping.tsx';
 import "./IndividualsGridView.scss";
 

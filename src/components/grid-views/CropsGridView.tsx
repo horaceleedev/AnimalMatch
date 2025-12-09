@@ -3,7 +3,7 @@ import { generatePath, Link } from "react-router-dom";
 import { Card, Collapse, Flex, Space, Tag, Tooltip, Typography } from "antd";
 import { groupBy, orderBy } from "es-toolkit";
 
-import type { Crop, MetadataFieldsType, RecordType } from "../types.ts";
+import type { Crop, MetadataFieldsType, RecordType } from "../../types.ts";
 import withSortingAndGrouping from './withSortingAndGrouping.tsx';
 import "./CropsGridView.scss"
 

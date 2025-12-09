@@ -6,7 +6,7 @@ import { type LatLngTuple, Icon as LeafletIcon } from "leaflet";
 import { MapContainer, Marker, ScaleControl, TileLayer, Tooltip } from 'react-leaflet';
 import { mean } from 'es-toolkit';
 
-import { LocationInfo } from '../types';
+import { LocationInfo } from '../../types';
 import "./BasicMapView.scss";
 
 type BasicMapViewProps = {

@@ -7,9 +7,9 @@ import Icon from '@ant-design/icons';
 import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
 import { useCropsStore } from "../DataStores.tsx";
-import CropDetailView from '../components/CropDetailView.tsx';
+import CropDetailView from '../components/detail-views/CropDetailView.tsx';
 import InnerModal from './InnerModal.tsx';
-import RecordActionsButton from '../components/RecordActionsButton.tsx';
+import RecordActionsButton from '../components/misc/RecordActionsButton.tsx';
 import { RecordDetailModalProps, RecordType } from '../types.ts';
 import "./CropDetailModal.scss";
 
