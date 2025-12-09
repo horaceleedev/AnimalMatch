@@ -28,7 +28,7 @@ const CropsDashboardPage: React.FC = () => {
           cropsMetadataFields={cropsMetadataFields}
           uniqueValuesPerField={uniqueValuesPerField}
         />
-        <DashboardContent style={{ padding: '28px 36px 36px' }} >
+        <DashboardContent>
           <CropsDashboardView
             crops={cropsFiltered}
             uniqueValuesPerField={uniqueValuesPerField}

@@ -28,7 +28,7 @@ const IndividualsDashboardPage: React.FC = () => {
           individualsMetadataFields={individualsMetadataFields}
           uniqueValuesPerField={uniqueValuesPerField}
         />
-        <DashboardContent style={{ padding: '28px 36px 36px' }} >
+        <DashboardContent>
           <IndividualsDashboardView
             individuals={individualsFiltered}
             videos={videos}

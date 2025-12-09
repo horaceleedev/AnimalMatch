@@ -119,7 +119,7 @@ const VideosDashboardPage: React.FC = () => {
           videoMetadataFields={videoMetadataFields}
           uniqueValuesPerField={uniqueValuesPerField}
         />
-        <DashboardContent style={{ padding: '28px 36px 36px' }} >
+        <DashboardContent>
           <QueryOperationsButtons
             metadataFields={videoMetadataFields} uniqueValuesPerField={uniqueValuesPerField}
             sortFields={sortFields} setSortFields={setSortFields} sortOrders={sortOrders} setSortOrders={setSortOrders}

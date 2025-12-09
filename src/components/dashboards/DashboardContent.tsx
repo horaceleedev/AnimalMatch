@@ -4,7 +4,7 @@ const { Content } = Layout;
 
 const DashboardContent: React.FC<{children: React.ReactNode, style?: React.CSSProperties}> = ({children, style}) => {
   return (
-    <Content style={{padding: "36px 48px 48px 48px", overflow: "scroll", ...style}}>
+    <Content style={{padding: "28px 36px 36px", overflow: "scroll", ...style}}>
       {children}
     </Content>
   )

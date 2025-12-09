@@ -38,7 +38,7 @@ interface AppHeaderProps {
 }
 const AppHeader: React.FC<AppHeaderProps> = ({currentMenuPage, user, logout}: AppHeaderProps) => {
   return (
-    <Header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <Header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 28px' }}>
       <Link to="/">
         <h3 style={{color: 'white'}}>AnimalMatch</h3>
       </Link>
