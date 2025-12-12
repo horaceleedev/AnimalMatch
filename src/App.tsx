@@ -64,7 +64,7 @@ const App: React.FC = () => {
 
   return (
     <Layout className="app-layout">
-      {!webgpu && <WebGPUBanner />}
+      {webgpu === false && <WebGPUBanner />}
       <AppHeader currentMenuPage={currentMenuPage} user={user} logout={logout} />
       <Outlet />
     </Layout>
