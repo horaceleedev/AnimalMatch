@@ -40,6 +40,7 @@ export interface VideoRecord extends RecordModel {
   utm_easting: number;
   utm_northing: number;
   altitude: number;
+  num_individuals: number;
   custom_tags: string[];
   assignees: string[];
   annotation_status: string;
@@ -81,6 +82,7 @@ export interface CropRecord extends RecordModel {
   source_video: string;
   individual: string;
   body_part: string;
+  side: string;
   custom_tags: string[];
   description: string;
   frame_number: number;

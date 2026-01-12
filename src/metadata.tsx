@@ -1,7 +1,7 @@
 import { Editor, type EditorType, type Editors, type ReactElement } from '@revolist/react-datagrid';
 import { blue, gray, green, orange } from '@ant-design/colors';
 
-import Icon, { CalendarOutlined, ClockCircleOutlined, ColumnHeightOutlined, ColumnWidthOutlined, FileTextOutlined, IdcardOutlined, PlaySquareOutlined, QuestionOutlined, TagsOutlined, UserOutlined } from "@ant-design/icons";
+import Icon, { CalendarOutlined, ClockCircleOutlined, ColumnHeightOutlined, ColumnWidthOutlined, FileTextOutlined, IdcardOutlined, NumberOutlined, PlaySquareOutlined, QuestionOutlined, TagsOutlined, UserOutlined } from "@ant-design/icons";
 import Location from './assets/material_symbols/location_on_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Forest from './assets/material_symbols/forest_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import CalendarMonth from './assets/material_symbols/calendar_month_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -85,6 +85,12 @@ export const videoMetadataFields: MetadataFieldsType = {
   'altitude': {
     displayName: 'Altitude',
     icon: <Icon component={Altitude} />,
+    type: 'number',
+    inputType: 'number',
+  },
+  'num_individuals': {
+    displayName: 'Number of individuals',
+    icon: <NumberOutlined />,
     type: 'number',
     inputType: 'number',
   },
@@ -303,6 +309,13 @@ export const cropsMetadataFields: MetadataFieldsType = {
     type: 'select',
     valueEditorType: 'select',
     presetOptions: ['full body', 'face', 'butt', 'ear'],
+  },
+  'side': {
+    displayName: 'Side',
+    icon: <Icon component={FaceZone} />,
+    type: 'select',
+    valueEditorType: 'select',
+    presetOptions: ['left', 'right', 'front', 'back'],
   },
   'description': {
     displayName: 'Description',
