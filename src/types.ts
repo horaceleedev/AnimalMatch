@@ -39,6 +39,7 @@ export interface VideoRecord extends RecordModel {
   recording_date: string;
   utm_easting: number;
   utm_northing: number;
+  altitude: number;
   custom_tags: string[];
   assignees: string[];
   annotation_status: string;
