@@ -7,12 +7,12 @@ export function WebGPUBanner() {
 
   return (
     <Alert
-      type="error"
+      type="warning"
       banner
       message={
         <>
-          Your browser does not support <strong>WebGPU</strong>.
-          Consider switching to a compatible browser (e.g. latest Chrome, Edge, or Firefox), or enabling WebGPU in your browser settings.
+          Your browser is not using <strong>WebGPU</strong>, so AI inference will run significantly slower using CPU fallback.
+          Consider switching to a compatible browser (e.g. latest Chrome, Edge, or Firefox), or enabling WebGPU, if disabled, in your browser settings.
         </>
       }
       closable
