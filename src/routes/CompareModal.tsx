@@ -240,6 +240,7 @@ const CompareModal: FC = () => {
     leftPanel = (
       <VideoDetailView
         video={videoDetailProps.video}
+        timestamp={timestamp}
         individualsInVideo={videoDetailProps.individualsInVideo}
         uniqueValuesPerField={videosUniqueValuesPerField}
         uniqueLocations={uniqueVideoLocations}
@@ -288,6 +289,7 @@ const CompareModal: FC = () => {
       rightPanel = (
         <VideoDetailView key={compareVideoDetailProps.video.id}
           video={compareVideoDetailProps.video}
+          timestamp={timestamp}
           individualsInVideo={compareVideoDetailProps.individualsInVideo}
           uniqueValuesPerField={videosUniqueValuesPerField}
           uniqueLocations={uniqueVideoLocations}
