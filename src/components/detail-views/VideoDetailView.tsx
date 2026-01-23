@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Divider, Flex } from "antd";
 import { useNavigate } from "react-router-dom";
 
@@ -14,6 +14,7 @@ import "./VideoDetailView.scss";
 type VideoDetailViewProps = {
   video: Video,
   // videoMetadataFields: MetadataFieldsType,
+  timestamp?: number,
   individualsInVideo: Individual[],
   uniqueValuesPerField: Record<string, string[]>,
   uniqueLocations: LocationInfo[],
@@ -26,6 +27,7 @@ type VideoDetailViewProps = {
 
 const VideoDetailView: FC<VideoDetailViewProps> = ({
   video,
+  timestamp,
   individualsInVideo,
   uniqueValuesPerField,
   uniqueLocations,
@@ -35,6 +37,25 @@ const VideoDetailView: FC<VideoDetailViewProps> = ({
   openModal,
   updateVideo,
 }: VideoDetailViewProps) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Seek to timestamp when available
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid || timestamp === undefined) return;
+
+    const seek = () => {
+      vid.currentTime = timestamp;
+    };
+
+    // Seek to timstamp after metadata is loaded
+    if (vid.readyState >= 1) {
+      seek();
+    } else {
+      vid.addEventListener("loadedmetadata", seek, { once: true });
+    }
+  }, [timestamp]);
+
   // Temporary hack needed because map wasn't showing up properly
   const [showMap, setShowMap] = useState(false);
   useEffect(() => {
@@ -55,6 +76,7 @@ const VideoDetailView: FC<VideoDetailViewProps> = ({
     <>
       <Flex justify="space-between" vertical className="video-with-toolbar">
         <video
+          ref={videoRef}
           src={video.url}
           controls
           autoPlay
