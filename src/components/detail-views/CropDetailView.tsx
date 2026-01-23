@@ -34,6 +34,7 @@ const CropDetailView: React.FC<CropDetailViewProps> = ({
         metadataFields={cropsMetadataFields}
         uniqueValuesPerField={uniqueValuesPerField}
         videoLinkTemplate={videoLinkTemplate}
+        videoTimestamp={crop.timestamp}
         individualLinkTemplate={individualLinkTemplate}
         openModal={openModal}
         updateFunction={updateCrop}
