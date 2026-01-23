@@ -79,7 +79,7 @@ const VideoDetailView: FC<VideoDetailViewProps> = ({
           ref={videoRef}
           src={video.url}
           controls
-          autoPlay
+          autoPlay={timestamp === undefined}
         />
         <div className="video-toolbar">
           <Button type="primary" onClick={openAnnotationEditor}>
