@@ -1,5 +1,5 @@
 import { FC, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate, useOutletContext, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useOutletContext, useParams, useSearchParams } from "react-router-dom";
 import { differenceBy, intersection } from 'es-toolkit';
 import { Button, Flex, Input, Layout, Modal, Popover, Space, Tabs, Tooltip } from "antd";
 import type { TabsProps } from "antd";
@@ -41,6 +41,9 @@ const CompareModal: FC = () => {
   const navigate = useNavigate();
   const { videoId, individualId, cropId, compareId } = useParams();
   const routerLocation = useLocation();
+  const [searchParams] = useSearchParams();
+  const urlTimestamp = parseFloat(searchParams.get('t') || '');
+  const timestamp = Number.isFinite(urlTimestamp) ? urlTimestamp : undefined;
   const routeSplits = routerLocation.pathname.split('/');
   const isCompareView = routeSplits[2] === "compare";
   const compareType = recordTypeShortNameToLongName[routeSplits[5]];
