@@ -16,6 +16,7 @@ type RecordMetadataFormProps<T extends RecordModel> = {
   updateFunction: (id: string, data: Partial<T>) => Promise<T>;
   showIconInSelectionFields?: boolean;
   videoLinkTemplate?: string;
+  videoTimestamp?: number;
   individualLinkTemplate?: string;
   openModal?: (type: RecordType, id: string) => void;
 }
@@ -27,6 +28,7 @@ const RecordMetadataForm = <T extends RecordModel>({
   updateFunction,
   showIconInSelectionFields,
   videoLinkTemplate,
+  videoTimestamp,
   individualLinkTemplate,
   openModal,
 }: RecordMetadataFormProps<T>) => {
@@ -86,7 +88,7 @@ const RecordMetadataForm = <T extends RecordModel>({
               let customClassName = undefined;
               if (metadataField.renderType === 'video_link') {
                 size = 'large';
-                labelRender = (option) => <VideoLinkButton id={option.value as string} linkTemplate={videoLinkTemplate} openModal={openModal} />;
+                labelRender = (option) => <VideoLinkButton id={option.value as string} linkTemplate={videoLinkTemplate} openModal={openModal} timestamp={videoTimestamp} />;
               } else if (metadataField.renderType === 'individual_link') {
                 size = 'large';
                 labelRender = (option) => <IndividualLinkButton id={option.value as string} linkTemplate={individualLinkTemplate} openModal={openModal} />;
