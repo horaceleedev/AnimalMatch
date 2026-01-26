@@ -1,5 +1,5 @@
-import { Alert } from "antd";
 import { useState } from "react";
+import { Alert } from "antd";
 
 export function WebGPUBanner() {
   const [dismissed, setDismissed] = useState(false);
@@ -11,8 +11,9 @@ export function WebGPUBanner() {
       banner
       message={
         <>
-          Your browser is not using <strong>WebGPU</strong>, so AI inference will run significantly slower using CPU fallback.
-          Consider switching to a compatible browser (e.g. latest Chrome, Edge, or Firefox), or enabling WebGPU, if disabled, in your browser settings.
+          Your browser isn’t using <strong>WebGPU</strong>, so AI features may run slower than expected.
+          For better performance, switch to a supported browser (e.g. the latest version of Chrome, Edge, or Firefox)
+          or <a href="https://enablegpu.com" target="_blank" rel="noopener noreferrer">enable WebGPU in your browser settings</a>.
         </>
       }
       closable
