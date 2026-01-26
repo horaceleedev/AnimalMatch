@@ -7,7 +7,7 @@ import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } f
 import VideosGridView from '../grid-views/VideosGridView.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
 import { Individual, LocationInfo, RecordType, Video } from '../../types.ts';
-import BasicMapView from '../misc/BasicMapView.tsx';
+import BasicMapView from '../ui/BasicMapView.tsx';
 import RecordMetadataForm from './RecordMetadataForm.tsx';
 import CropsDashboardView from '../dashboards/CropsDashboardView.tsx';
 import "./IndividualDetailView.scss";

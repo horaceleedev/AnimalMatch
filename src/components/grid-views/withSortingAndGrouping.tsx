@@ -4,7 +4,7 @@ import { groupBy, orderBy } from "es-toolkit";
 import { Collapse, Space } from "antd";
 
 import { IndividualLinkButton, UserLabel, VideoLinkButton } from "../smart-components/LinkButtons";
-import AnnotationStatusLabel from "../misc/AnnotationStatusLabel";
+import AnnotationStatusLabel from "../ui/AnnotationStatusLabel";
 import { MetadataFieldsType, RecordType } from "../../types";
 
 interface BasicGridViewProps {

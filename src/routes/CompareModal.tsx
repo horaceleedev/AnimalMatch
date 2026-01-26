@@ -21,7 +21,7 @@ import VideosGridView from '../components/grid-views/VideosGridView.tsx';
 import IndividualsGridView from '../components/grid-views/IndividualsGridView.tsx';
 import IndividualsDashboardView from '../components/dashboards/IndividualsDashboardView.tsx';
 import CropsDashboardView from '../components/dashboards/CropsDashboardView.tsx';
-import RecordActionsButton from '../components/misc/RecordActionsButton.tsx';
+import RecordActionsButton from '../components/ui/RecordActionsButton.tsx';
 import { Individual, Video } from '../types.ts';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import "./CompareModal.scss";

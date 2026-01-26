@@ -14,7 +14,7 @@ import DashboardContent from '../components/dashboards/DashboardContent.tsx';
 import VideosGridView from "../components/grid-views/VideosGridView.tsx";
 import QueryOperationsButtons from "../components/dashboards/QueryOperationsButtons.tsx";
 import { useAuth, useVideoStore } from "../DataStores.tsx";
-import BasicMapView from '../components/misc/BasicMapView.tsx';
+import BasicMapView from '../components/ui/BasicMapView.tsx';
 import { useVideosDashboardSiderState, VideosDashboardSider } from '../components/dashboards/VideosDashboardSider.tsx';
 import { Video } from '../types.ts';
 import "./VideosDashboardPage.scss";

@@ -6,7 +6,7 @@ import { RecordModel } from "pocketbase";
 import useFormManager from "../../utils/useFormManager";
 import { MetadataFieldsType, RecordType } from "../../types";
 import { IndividualLinkButton, UserLabel, VideoLinkButton } from "../smart-components/LinkButtons";
-import AnnotationStatusLabel from "../misc/AnnotationStatusLabel";
+import AnnotationStatusLabel from "../ui/AnnotationStatusLabel";
 import "./RecordMetadataForm.scss";
 
 type RecordMetadataFormProps<T extends RecordModel> = {

@@ -9,7 +9,7 @@ import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght40
 import { useCropsStore } from "../DataStores.tsx";
 import CropDetailView from '../components/detail-views/CropDetailView.tsx';
 import InnerModal from './InnerModal.tsx';
-import RecordActionsButton from '../components/misc/RecordActionsButton.tsx';
+import RecordActionsButton from '../components/ui/RecordActionsButton.tsx';
 import { RecordDetailModalProps, RecordType } from '../types.ts';
 import "./CropDetailModal.scss";
 

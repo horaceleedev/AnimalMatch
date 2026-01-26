@@ -9,7 +9,7 @@ import ViewList from '../../assets/material_symbols/view_list_24dp_5F6368_FILL0_
 
 import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
-import BasicMapView from '../misc/BasicMapView.tsx';
+import BasicMapView from '../ui/BasicMapView.tsx';
 import { getUniqueLocationsFromIndividuals } from '../../utils/utils.ts';
 import { Individual, MetadataFieldsType, Video } from '../../types.ts';
 
