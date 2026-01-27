@@ -4,9 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "copy-ort": "node scripts/copy-ort-runtime.mjs",
+    "dev": "npm run copy-ort && vite",
+    "build": "npm run copy-ort && tsc -b && vite build",
     "lint": "eslint .",
+    "postinstall": "npm run copy-ort",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -22,6 +24,7 @@
     "leaflet": "^1.9.4",
     "mp4box": "^0.5.2",
     "nanoid": "^5.0.7",
+    "onnxruntime-web": "^1.23.2",
     "pocketbase": "^0.23.0",
     "proj4": "^2.12.1",
     "react": "^18.3.1",

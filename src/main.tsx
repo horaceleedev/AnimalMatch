@@ -22,6 +22,14 @@ import { ProtectedRoute } from './routes/ProtectedRoute.tsx';
 import { LoginPage } from './routes/LoginPage.tsx';
 import './index.css'
 
+import { probeAdapter } from './lib/embeddingModel';
+
+if ((import.meta as any).env?.DEV) {
+  (async () => {
+    await probeAdapter();
+  })();
+}
+
 const comparisonSubroutes = [
   {
     path: "compare/v/:videoId",
@@ -124,7 +132,7 @@ const router = createBrowserRouter([
           },
           {
             path: ":videoId/annotate",
-            element: <VideoAnnotatorModal />,
+            // element: <VideoAnnotatorModal />,
           },
           ...comparisonSubroutes,
         ],

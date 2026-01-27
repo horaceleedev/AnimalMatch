@@ -24,6 +24,9 @@ import CropsDashboardView from '../components/dashboards/CropsDashboardView.tsx'
 import RecordActionsButton from '../components/misc/RecordActionsButton.tsx';
 import { Individual, Video } from '../types.ts';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
+import { useIdentifyIndividual } from '../hooks/useIdentifyIndividual';
+import { useCompareIndividuals } from '../hooks/useCompareIndividuals';
+import { useRankIndividuals } from '../hooks/useRankIndividuals';
 import "./CompareModal.scss";
 
 const recordTypeShortNameToLongName: Record<string, string> = {
@@ -36,6 +39,8 @@ const recordTypeLongNameToShortName: Record<string, string> = {
   "videos": "v",
   "crops": "c",
 };
+
+const isFaceCrop = (crop?: { body_part?: string | null }) => crop?.body_part === "face";
 
 const CompareModal: FC = () => {
   const navigate = useNavigate();
@@ -109,6 +114,61 @@ const CompareModal: FC = () => {
       crop
     };
   }, [cropId, crops]);
+
+  const aiResult = useIdentifyIndividual(cropDetailProps?.crop ?? null, crops, individuals);
+  const aiPredictions = (!aiResult.isLoading && !aiResult.error)
+    ? { candidates: aiResult.candidates }
+    : undefined;
+  console.log('[CompareModal] crop AI hook', {
+    cropId,
+    hasCrop: !!cropDetailProps?.crop,
+    isLoading: aiResult.isLoading,
+    error: aiResult.error,
+    candidates: aiResult.candidates.length,
+  });
+
+  const individualCandidates = useMemo(() => {
+    if (!individualDetailProps) return individuals;
+    return differenceBy(
+      individuals,
+      [individualDetailProps.individual, ...individualDetailProps.seenTogetherIndividuals],
+      indiv => indiv.id
+    );
+  }, [individuals, individualDetailProps]);
+
+  const rankedIndividualsResult = useRankIndividuals(
+    individualDetailProps?.individual ?? null,
+    individualCandidates,
+    crops
+  );
+
+  const aiScoredIndividuals = useMemo(() => {
+    if (!individualDetailProps) return individuals;
+    const scores = rankedIndividualsResult.scoresById;
+    return individualCandidates.map(ind => ({
+      ...ind,
+      ai_match_best: scores.get(ind.id)?.bestScore ?? null,
+      ai_match_avg: scores.get(ind.id)?.avgTopK ?? null,
+    }));
+  }, [individualCandidates, individualDetailProps, rankedIndividualsResult.scoresById, individuals]);
+
+  const individualsMetadataWithAi = useMemo(() => {
+    return {
+      ...individualsMetadataFields,
+      ai_match_best: {
+        displayName: 'AI similarity',
+        type: 'number',
+        valueEditorType: 'number',
+        renderType: 'number',
+      },
+      ai_match_avg: {
+        displayName: 'AI similarity (avg)',
+        type: 'number',
+        valueEditorType: 'number',
+        renderType: 'number',
+      },
+    };
+  }, [individualsMetadataFields]);
 
 
   // Video/individual on right panel
@@ -198,6 +258,12 @@ const CompareModal: FC = () => {
     });
   };
 
+  const individualCompareResult = useCompareIndividuals(
+    individualDetailProps?.individual ?? null,
+    compareIndividualDetailProps?.individual ?? null,
+    crops
+  );
+
   const shortlistButton = (individual: Individual) => {
     const isShortlisted = shortlistedIndividualIds.includes(individual.id);
     return (
@@ -269,6 +335,7 @@ const CompareModal: FC = () => {
         videoLinkTemplate={leftPanelVideosLinkTemplate}
         individualLinkTemplate={leftPanelIndividualsLinkTemplate}
         updateCrop={updateCrop}
+        aiPredictions={aiPredictions}
       />
     )
   } else {
@@ -310,15 +377,19 @@ const CompareModal: FC = () => {
         />
       );
     } else if (compareCropDetailProps) {
-      rightPanel = (
-        <CropDetailView key={compareCropDetailProps.crop.id}
-          crop={compareCropDetailProps.crop}
-          uniqueValuesPerField={cropsUniqueValuesPerField}
-          videoLinkTemplate={rightPanelVideosLinkTemplate}
-          individualLinkTemplate={rightPanelIndividualsLinkTemplate}
-          updateCrop={updateCrop}
-        />
-      );
+      if (!isFaceCrop(cropDetailProps?.crop) || !isFaceCrop(compareCropDetailProps.crop)) {
+        rightPanel = <>Only face crops can be compared (face-to-face only).</>;
+      } else {
+        rightPanel = (
+          <CropDetailView key={compareCropDetailProps.crop.id}
+            crop={compareCropDetailProps.crop}
+            uniqueValuesPerField={cropsUniqueValuesPerField}
+            videoLinkTemplate={rightPanelVideosLinkTemplate}
+            individualLinkTemplate={rightPanelIndividualsLinkTemplate}
+            updateCrop={updateCrop}
+          />
+        );
+      }
     } else {
       rightPanel = <>Error: unknown {routeSplits[1].slice(0, -1)}</>
     }
@@ -376,24 +447,17 @@ const CompareModal: FC = () => {
               // </>
             }
             <IndividualsDashboardView
-              individuals={
-                individualDetailProps ?
-                differenceBy(
-                  individuals,
-                  [individualDetailProps?.individual, ...individualDetailProps?.seenTogetherIndividuals],
-                  indiv => indiv.id
-                )
-                :
-                individuals
-              }
+              individuals={individualDetailProps ? aiScoredIndividuals : individuals}
               videos={videos}
               uniqueValuesPerField={individualsUniqueValuesPerField}
-              individualsMetadataFields={individualsMetadataFields}
+              individualsMetadataFields={individualDetailProps ? individualsMetadataWithAi : individualsMetadataFields}
               onlyShowListView={true}
               linkTemplate={routerLocation.pathname + "/:individualId"}
               listViewButtons={individualDetailProps ? shortlistButton : undefined}
               defaultGroupFields={[]}
               defaultGroupOrders={[]}
+              defaultSortFields={individualDetailProps ? ['ai_match_best'] : []}
+              defaultSortOrders={individualDetailProps ? ['desc'] : []}
             />
           </>
           :
@@ -597,9 +661,32 @@ const CompareModal: FC = () => {
               </h3>
               {
                 (individualDetailProps && !compareId && compareType === "individuals") && 
-                <span>Note: the individual on the left and its co-occurrences have been omitted from the list below.</span>
+                <>
+                  <span>Note: the individual on the left and its co-occurrences have been omitted from the list below.</span>
+                  <br />
+                  <span>AI match scores show similarity to the left individual (higher = more likely the same animal).</span>
+                </>
               }
 
+              {
+                (individualDetailProps && compareIndividualDetailProps) &&
+                <div style={{ marginBottom: 12, padding: '8px 12px', borderRadius: 10, background: '#f7f7f7' }}>
+                  <Space>
+                    <span>Are these two individuals the same?</span>
+                    <span style={{ opacity: 0.7 }}>
+                      {
+                        individualCompareResult.isLoading ? 'Computing similarity…' :
+                        individualCompareResult.error ? 'Similarity unavailable' :
+                        individualCompareResult.bestScore !== null
+                          ? `Best ${individualCompareResult.bestScore.toFixed(3)} · Top${individualCompareResult.topScores.length} avg ${individualCompareResult.avgTopK?.toFixed(3)}`
+                          : 'No face crops to compare'
+                      }
+                    </span>
+                    <Button onClick={showSameIndividualConfirm} icon={<CheckOutlined />} type="primary">Same individual</Button>
+                    <Button onClick={showDifferentIndividualConfirm} icon={<CloseOutlined />} type="primary" danger>Different individual</Button>
+                  </Space>
+                </div>
+              }
               {rightPanel}
             </>
           }
@@ -642,22 +729,6 @@ const CompareModal: FC = () => {
           </Popover>
         }
       </Layout>
-      {
-        // Only show these buttons if the user is comparing two individuals
-        (individualDetailProps && compareIndividualDetailProps) &&
-        <Space style={{
-          position: 'absolute', bottom: -20, left: '50%', transform: 'translateX(-50%)',
-          boxShadow: "0px 1px 2px -2px rgba(0,0,0,0.16), 0px 3px 6px 0px rgba(0,0,0,0.12), 0px 5px 12px 4px rgba(0,0,0,0.09)",
-          padding: '8px 8px 8px 12px',
-          borderRadius: 10,
-          background: 'white',
-          zIndex: 1000,
-        }}>
-          <span>Are these two individuals the same?</span>
-          <Button onClick={showSameIndividualConfirm} icon={<CheckOutlined />} type="primary">Same individual</Button>
-          <Button onClick={showDifferentIndividualConfirm} icon={<CloseOutlined />} type="primary" danger>Different individual</Button>
-        </Space>
-      }
     </Modal>
   );
 };

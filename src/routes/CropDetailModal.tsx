@@ -6,11 +6,12 @@ import Icon from '@ant-design/icons';
 
 import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
-import { useCropsStore } from "../DataStores.tsx";
+import { useCropsStore, useIndividualsStore } from "../DataStores.tsx";
 import CropDetailView from '../components/detail-views/CropDetailView.tsx';
 import InnerModal from './InnerModal.tsx';
 import RecordActionsButton from '../components/misc/RecordActionsButton.tsx';
 import { RecordDetailModalProps, RecordType } from '../types.ts';
+import { useIdentifyIndividual } from '../hooks/useIdentifyIndividual';
 import "./CropDetailModal.scss";
 
 const CropDetailModal: React.FC<RecordDetailModalProps> = ({
@@ -43,7 +44,10 @@ const CropDetailModal: React.FC<RecordDetailModalProps> = ({
   const [crops, updateCrop, deleteCrop, uniqueValuesPerField] = useCropsStore(
     useShallow((state) => [state.processedRecords, state.update, state.delete, state.uniqueValuesPerField])
   );
+  const individuals = useIndividualsStore(state => state.processedRecords);
   const crop = crops.find(x => x.id === cropId);
+  const aiResult = useIdentifyIndividual(crop ?? null, crops, individuals);
+  const aiPredictions = (!aiResult.isLoading && !aiResult.error) ? { candidates: aiResult.candidates } : undefined;
 
   // TODO
   // add back button (to the left of the title)
@@ -78,6 +82,7 @@ const CropDetailModal: React.FC<RecordDetailModalProps> = ({
           uniqueValuesPerField={uniqueValuesPerField}
           updateCrop={updateCrop}
           openModal={(type, id) => setInnerModalProps({ type, id })}
+          aiPredictions={aiPredictions}
         />
         :
         "Crop not found"

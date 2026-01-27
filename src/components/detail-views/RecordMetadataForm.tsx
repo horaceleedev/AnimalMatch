@@ -18,6 +18,17 @@ type RecordMetadataFormProps<T extends RecordModel> = {
   videoLinkTemplate?: string;
   individualLinkTemplate?: string;
   openModal?: (type: RecordType, id: string) => void;
+  aiPredictions?: {
+    candidates: Array<{
+      id: string;
+      label: string;
+      score: number;
+      probability: number;
+      thumbnailUrl?: string;
+      bestMatchScore?: number;
+      avgScore?: number;
+    }>;
+  };
 }
 
 const RecordMetadataForm = <T extends RecordModel>({
@@ -29,6 +40,7 @@ const RecordMetadataForm = <T extends RecordModel>({
   videoLinkTemplate,
   individualLinkTemplate,
   openModal,
+  aiPredictions,
 }: RecordMetadataFormProps<T>) => {
   const {
     formData,
@@ -37,6 +49,37 @@ const RecordMetadataForm = <T extends RecordModel>({
     handleValuesChange,
     saveChanges,
   } = useFormManager(processedRecord, metadataFields, updateFunction);
+
+  // Build enhanced options for individual field with AI predictions
+  const getOptionsForField = (fieldKey: string) => {
+    const baseOptions = uniqueValuesPerField[fieldKey]?.map(val => ({ value: val, label: val })) || [];
+    
+    // Special handling for 'individual' field with AI predictions
+    if (fieldKey === 'individual' && aiPredictions?.candidates && aiPredictions.candidates.length > 0) {
+      const aiIds = new Set(aiPredictions.candidates.map(c => c.id));
+      const aiOptions = aiPredictions.candidates.slice(0, 5).map(candidate => {
+        // Show probability, and optionally best match score if available
+        const probStr = `${(candidate.probability * 100).toFixed(1)}%`;
+        const bestMatchInfo = candidate.bestMatchScore !== undefined 
+          ? ` [best: ${candidate.bestMatchScore.toFixed(3)}]`
+          : '';
+        
+        return {
+          value: candidate.id,
+          label: `${candidate.label} (${probStr}${bestMatchInfo})`,
+        };
+      });
+      
+      const dedupedBaseOptions = baseOptions.filter(opt => !aiIds.has(opt.value));
+      return [
+        ...aiOptions,
+        { value: '---separator---', label: '────────────────', disabled: true },
+        ...dedupedBaseOptions,
+      ];
+    }
+    
+    return baseOptions;
+  };
 
   return (
     <Form
@@ -85,7 +128,7 @@ const RecordMetadataForm = <T extends RecordModel>({
 
             inputElement = (
               <Select
-                options={uniqueValuesPerField[fieldValue].map(val => ({ value: val, label: val }))}
+                options={fieldValue === 'individual' ? getOptionsForField(fieldValue) : uniqueValuesPerField[fieldValue]?.map(val => ({ value: val, label: val })) || []}
                 disabled={disabled}
                 size={size}
                 optionRender={optionRender}

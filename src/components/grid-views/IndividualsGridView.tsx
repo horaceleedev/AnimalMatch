@@ -120,6 +120,12 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
                 description={
                   <>
                     Appears in {individual.videos.length} {individual.videos.length === 1 ? 'video' : 'videos'}
+                    {typeof (individual as any).ai_match_best === 'number' && (
+                      <Space size="small" style={{ marginLeft: 8 }}>
+                        <Tag color="blue">AI best {(individual as any).ai_match_best.toFixed(3)}</Tag>
+                        <Tag color="geekblue">AI avg {(individual as any).ai_match_avg?.toFixed(3)}</Tag>
+                      </Space>
+                    )}
                   </>
                 }
               />
