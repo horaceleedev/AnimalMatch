@@ -54,6 +54,10 @@ const VideoDetailView: FC<VideoDetailViewProps> = ({
     } else {
       vid.addEventListener("loadedmetadata", seek, { once: true });
     }
+
+    return () => {
+      vid.removeEventListener("loadedmetadata", seek);
+    };
   }, [timestamp]);
 
   // Temporary hack needed because map wasn't showing up properly
