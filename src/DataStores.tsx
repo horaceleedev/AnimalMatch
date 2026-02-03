@@ -54,6 +54,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState(pb.authStore.record as UserRecord | null);
+  const { notification } = App.useApp();
 
   useEffect(() => {
     return pb.authStore.onChange((_, record) => {
@@ -71,6 +72,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = useCallback(() => {
     pb.authStore.clear();
+  }, []);
+
+  useEffect(() => {
+    // Check if user token expired and log out if so
+    if (user && !pb.authStore.isValid) {
+      logout();
+      notification.info({
+        key: 'session-expired',
+        message: 'Session expired. Please log in again.',
+      });
+    }
   }, []);
 
   return (
