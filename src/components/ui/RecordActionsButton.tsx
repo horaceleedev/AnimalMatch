@@ -56,13 +56,9 @@ const RecordActionsButton: React.FC<RecordActionsButtonProps> = ({recordType, re
       duration: 0,
     });
     try {
-      if (recordType === "individual") {
-        await deleteFunction(recordId);
-      } else if (recordType === "crop") {
-        await deleteFunction(recordId);
-      }
+      await deleteFunction(recordId);
     } catch (e) {
-      let errorMessage = "Unable to delete crop.";
+      let errorMessage = `Unable to delete ${recordType}.`;
       if (e instanceof ClientResponseError) {
         errorMessage = e.message;
       }
