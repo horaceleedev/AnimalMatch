@@ -1,11 +1,10 @@
 import { FC, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { differenceBy, intersection } from 'es-toolkit';
-import { Button, Flex, Input, Layout, Modal, Popover, Space, Tabs, Tooltip } from "antd";
+import { Button, Flex, Layout, Modal, Popover, Space, Tabs, Tooltip } from "antd";
 import type { TabsProps } from "antd";
-const { TextArea } = Input;
 const { Content, Sider } = Layout;
-import Icon, { ArrowLeftOutlined, CheckOutlined, CloseOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
+import Icon, { ArrowLeftOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
 import { useShallow } from 'zustand/react/shallow';
 import classnames from 'classnames';
 
@@ -22,10 +21,10 @@ import IndividualsGridView from '../components/grid-views/IndividualsGridView.ts
 import IndividualsDashboardView from '../components/dashboards/IndividualsDashboardView.tsx';
 import CropsDashboardView from '../components/dashboards/CropsDashboardView.tsx';
 import RecordActionsButton from '../components/misc/RecordActionsButton.tsx';
+import IndividualMatchPrompt from '../components/compare/IndividualMatchPrompt.tsx';
 import { Individual, Video } from '../types.ts';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import { useIdentifyIndividual } from '../hooks/useIdentifyIndividual';
-import { useCompareIndividuals } from '../hooks/useCompareIndividuals';
 import { useRankIndividuals } from '../hooks/useRankIndividuals';
 import "./CompareModal.scss";
 
@@ -149,6 +148,7 @@ const CompareModal: FC = () => {
       ...ind,
       ai_match_best: scores.get(ind.id)?.bestScore ?? null,
       ai_match_avg: scores.get(ind.id)?.avgTopK ?? null,
+      ai_match_pairs: scores.get(ind.id)?.pairCount ?? null,
     }));
   }, [individualCandidates, individualDetailProps, rankedIndividualsResult.scoresById, individuals]);
 
@@ -222,47 +222,6 @@ const CompareModal: FC = () => {
     // when entering a VideoDetailView or IndividualDetailView (on the right panel)
     if (rightPanelRef.current) rightPanelRef.current.scrollTop = 0;
   }, [compareId]);
-
-  const showSameIndividualConfirm = () => {
-    // TODO:
-    // - check if age, sex match before merging
-    // - determine which individual to merge into the other
-    // - figure out what to do metadata when merging
-    Modal.confirm({
-      title: 'Do you want to merge these two individuals?',
-      content: 'This action cannot be undone.',
-      onOk: () => {
-        return new Promise((resolve, reject) => {
-          setTimeout(Math.random() > 0.5 ? resolve : reject, 1000);
-        }).catch(() => console.log('Oops errors!'));
-      },
-      onCancel: () => {},
-    });
-  };
-  const showDifferentIndividualConfirm = () => {
-    Modal.confirm({
-      title: 'Mark as different individuals',
-      icon: <></>,
-      content: <>
-        <TextArea
-          placeholder="Write an optional note to explain why these two individuals are different"
-          autoSize={{ minRows: 3, maxRows: 6 }}
-        />
-      </>,
-      onOk: () => {
-        return new Promise((resolve, reject) => {
-          setTimeout(Math.random() > 0.5 ? resolve : reject, 1000);
-        }).catch(() => console.log('Oops errors!'));
-      },
-      onCancel: () => {},
-    });
-  };
-
-  const individualCompareResult = useCompareIndividuals(
-    individualDetailProps?.individual ?? null,
-    compareIndividualDetailProps?.individual ?? null,
-    crops
-  );
 
   const shortlistButton = (individual: Individual) => {
     const isShortlisted = shortlistedIndividualIds.includes(individual.id);
@@ -377,19 +336,15 @@ const CompareModal: FC = () => {
         />
       );
     } else if (compareCropDetailProps) {
-      if (!isFaceCrop(cropDetailProps?.crop) || !isFaceCrop(compareCropDetailProps.crop)) {
-        rightPanel = <>Only face crops can be compared (face-to-face only).</>;
-      } else {
-        rightPanel = (
-          <CropDetailView key={compareCropDetailProps.crop.id}
-            crop={compareCropDetailProps.crop}
-            uniqueValuesPerField={cropsUniqueValuesPerField}
-            videoLinkTemplate={rightPanelVideosLinkTemplate}
-            individualLinkTemplate={rightPanelIndividualsLinkTemplate}
-            updateCrop={updateCrop}
-          />
-        );
-      }
+      rightPanel = (
+        <CropDetailView key={compareCropDetailProps.crop.id}
+          crop={compareCropDetailProps.crop}
+          uniqueValuesPerField={cropsUniqueValuesPerField}
+          videoLinkTemplate={rightPanelVideosLinkTemplate}
+          individualLinkTemplate={rightPanelIndividualsLinkTemplate}
+          updateCrop={updateCrop}
+        />
+      );
     } else {
       rightPanel = <>Error: unknown {routeSplits[1].slice(0, -1)}</>
     }
@@ -667,26 +622,12 @@ const CompareModal: FC = () => {
                   <span>AI match scores show similarity to the left individual (higher = more likely the same animal).</span>
                 </>
               }
-
               {
-                (individualDetailProps && compareIndividualDetailProps) &&
-                <div style={{ marginBottom: 12, padding: '8px 12px', borderRadius: 10, background: '#f7f7f7' }}>
-                  <Space>
-                    <span>Are these two individuals the same?</span>
-                    <span style={{ opacity: 0.7 }}>
-                      {
-                        individualCompareResult.isLoading ? 'Computing similarity…' :
-                        individualCompareResult.error ? 'Similarity unavailable' :
-                        individualCompareResult.bestScore !== null
-                          ? `Best ${individualCompareResult.bestScore.toFixed(3)} · Top${individualCompareResult.topScores.length} avg ${individualCompareResult.avgTopK?.toFixed(3)}`
-                          : 'No face crops to compare'
-                      }
-                    </span>
-                    <Button onClick={showSameIndividualConfirm} icon={<CheckOutlined />} type="primary">Same individual</Button>
-                    <Button onClick={showDifferentIndividualConfirm} icon={<CloseOutlined />} type="primary" danger>Different individual</Button>
-                  </Space>
-                </div>
+                (compareType === "crops" && cropDetailProps && compareCropDetailProps) &&
+                (!isFaceCrop(cropDetailProps.crop) || !isFaceCrop(compareCropDetailProps.crop)) &&
+                <span>Similarity is only available for face crops. Select two face crops to see AI similarity.</span>
               }
+
               {rightPanel}
             </>
           }
@@ -729,6 +670,11 @@ const CompareModal: FC = () => {
           </Popover>
         }
       </Layout>
+      <IndividualMatchPrompt
+        leftIndividual={individualDetailProps?.individual}
+        rightIndividual={compareIndividualDetailProps?.individual}
+        crops={crops}
+      />
     </Modal>
   );
 };

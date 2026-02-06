@@ -5,6 +5,7 @@ import { Button, Card, Flex, Select, Space, Tag, Tooltip } from 'antd';
 import { StarOutlined } from '@ant-design/icons';
 
 import { Individual, MetadataFieldsType, RecordType } from '../../types.ts';
+import SimilarityMatchTags from '../similarity/SimilarityMatchTags';
 import withSortingAndGrouping from './withSortingAndGrouping.tsx';
 import "./IndividualsGridView.scss";
 
@@ -122,8 +123,13 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
                     Appears in {individual.videos.length} {individual.videos.length === 1 ? 'video' : 'videos'}
                     {typeof (individual as any).ai_match_best === 'number' && (
                       <Space size="small" style={{ marginLeft: 8 }}>
-                        <Tag color="blue">AI best {(individual as any).ai_match_best.toFixed(3)}</Tag>
-                        <Tag color="geekblue">AI avg {(individual as any).ai_match_avg?.toFixed(3)}</Tag>
+                        <SimilarityMatchTags
+                          isLoading={false}
+                          error={null}
+                          bestScore={(individual as any).ai_match_best}
+                          avgTopK={(individual as any).ai_match_avg ?? null}
+                          pairCount={(individual as any).ai_match_pairs ?? null}
+                        />
                       </Space>
                     )}
                   </>
