@@ -22,6 +22,7 @@ import IndividualsDashboardView from '../components/dashboards/IndividualsDashbo
 import CropsDashboardView from '../components/dashboards/CropsDashboardView.tsx';
 import RecordActionsButton from '../components/misc/RecordActionsButton.tsx';
 import IndividualMatchPrompt from '../components/compare/IndividualMatchPrompt.tsx';
+import CropSimilarityBar from '../components/similarity/CropSimilarityBar.tsx';
 import { Individual, Video } from '../types.ts';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import { useIdentifyIndividual } from '../hooks/useIdentifyIndividual';
@@ -46,8 +47,21 @@ const CompareModal: FC = () => {
   const { videoId, individualId, cropId, compareId } = useParams();
   const routerLocation = useLocation();
   const routeSplits = routerLocation.pathname.split('/');
-  const isCompareView = routeSplits[2] === "compare";
-  const compareType = recordTypeShortNameToLongName[routeSplits[5]];
+  const isCompareView = routeSplits[2] === "compare" || routeSplits[3] === "compare";
+  const isRootCompare = routeSplits[2] === "compare";
+  const leftTypeShort = isRootCompare
+    ? routeSplits[3]
+    : recordTypeLongNameToShortName[routeSplits[1]];
+  const compareTypeShort = isRootCompare ? routeSplits[5] : routeSplits[4];
+  const compareType = recordTypeShortNameToLongName[compareTypeShort];
+  const leftRecordId = isRootCompare ? routeSplits[4] : routeSplits[2];
+  const compareListPath = compareId ? routeSplits.slice(0, -1).join('/') : routerLocation.pathname;
+  const compareBasePath = isRootCompare
+    ? `/${routeSplits[1]}/compare`
+    : `/${routeSplits[1]}/${routeSplits[2]}/compare`;
+  const topBackPath = isRootCompare
+    ? `/${routeSplits[1]}`
+    : `/${routeSplits[1]}/${routeSplits[2]}`;
   console.log(videoId, individualId, cropId, compareId, routerLocation, isCompareView, compareType)
   // Outlet context contains filtered videos from the parent dashboard view.
   const outletContext = useOutletContext<{
@@ -113,6 +127,21 @@ const CompareModal: FC = () => {
       crop
     };
   }, [cropId, crops]);
+  const leftCropIndividualId = useMemo(() => {
+    if (!cropDetailProps?.crop) return undefined;
+    if (cropDetailProps.crop.individual) return cropDetailProps.crop.individual;
+    const owner = individuals.find(ind =>
+      ind.crops?.some(crop => crop.id === cropDetailProps.crop.id)
+    );
+    return owner?.id;
+  }, [cropDetailProps, individuals]);
+  const leftPaneBackPath = useMemo(() => {
+    if (!isCompareView) return null;
+    if (leftCropIndividualId) {
+      return `${compareBasePath}/i/${leftCropIndividualId}/${compareTypeShort}${compareId ? `/${compareId}` : ""}`;
+    }
+    return null;
+  }, [compareBasePath, compareId, compareListPath, compareTypeShort, isCompareView, leftCropIndividualId]);
 
   const aiResult = useIdentifyIndividual(cropDetailProps?.crop ?? null, crops, individuals);
   const aiPredictions = (!aiResult.isLoading && !aiResult.error)
@@ -208,6 +237,21 @@ const CompareModal: FC = () => {
       crop: compareCrop,
     };
   }, [compareId, compareType, crops]);
+  const rightCropIndividualId = useMemo(() => {
+    if (!compareCropDetailProps?.crop) return undefined;
+    if (compareCropDetailProps.crop.individual) return compareCropDetailProps.crop.individual;
+    const owner = individuals.find(ind =>
+      ind.crops?.some(crop => crop.id === compareCropDetailProps.crop.id)
+    );
+    return owner?.id;
+  }, [compareCropDetailProps, individuals]);
+  const rightPaneBackPath = useMemo(() => {
+    if (!isCompareView || !compareId) return null;
+    if (compareTypeShort === 'c' && rightCropIndividualId) {
+      return `${compareBasePath}/${leftTypeShort}/${leftRecordId}/i/${rightCropIndividualId}`;
+    }
+    return compareListPath;
+  }, [compareBasePath, compareId, compareListPath, compareTypeShort, isCompareView, leftRecordId, leftTypeShort, rightCropIndividualId]);
   const [shortlistedIndividualIds, setShortlistedIndividualIds] = useState<string[]>([]);
 
   const leftPanelRef = useRef<HTMLDivElement>(null);
@@ -455,7 +499,7 @@ const CompareModal: FC = () => {
         isCompareView ?
         <Link to={
           // Back to the /videos/:videoId, /individuals/:individualId, or /crops/:cropId page
-          routeSplits.slice(0,2).join('/') + "/" + routeSplits[4]
+          topBackPath
         }>
           <Tooltip title={"Back to " + (
             (videoDetailProps && "video " + videoDetailProps.video.filename) ||
@@ -514,7 +558,7 @@ const CompareModal: FC = () => {
         <Link
           style={{marginRight: "32px"}}
           // Back to the /videos/:videoId, /individuals/:individualId, or /crops/:cropId page
-          to={routeSplits.slice(0,2).join('/') + "/" + routeSplits[4]}
+          to={topBackPath}
         >
           <Tooltip title="Close comparison view">
             <Button type="text" icon={<Icon component={RightPanelClose} />} />
@@ -550,11 +594,24 @@ const CompareModal: FC = () => {
           {
             isCompareView &&
             <h3 style={{marginTop: 5}}>
-              {
-                (videoDetailProps && videoDetailProps.video.filename) ||
-                (individualDetailProps && individualDetailProps.individual.name) ||
-                (cropDetailProps && "Crop")
-              }
+              {/* TODO: Consider splitting CompareModal by record type to reduce branching.
+                 Also consider a "change left" picker that shows the list in-place without routing,
+                 and only updates the URL once a new left selection is chosen. */}
+              <Space>
+                {
+                  leftPaneBackPath &&
+                  <Link to={leftPaneBackPath}>
+                    <Tooltip title={`Back to ${compareType}`}>
+                      <Button icon={<ArrowLeftOutlined />} type="text"></Button>
+                    </Tooltip>
+                  </Link>
+                }
+                {
+                  (videoDetailProps && videoDetailProps.video.filename) ||
+                  (individualDetailProps && individualDetailProps.individual.name) ||
+                  (cropDetailProps && "Crop")
+                }
+              </Space>
             </h3>
           }
           {leftPanel}
@@ -575,7 +632,7 @@ const CompareModal: FC = () => {
                 {
                   (compareVideoDetailProps || compareIndividualDetailProps || compareCropDetailProps) ?
                   <Space>
-                    <Link to={routeSplits.slice(0,6).join('/')}>
+                    <Link to={rightPaneBackPath ?? compareListPath}>
                       <Tooltip title={`Back to ${compareType}`}>
                         <Button icon={<ArrowLeftOutlined />} type="text"></Button>
                       </Tooltip>
@@ -675,6 +732,11 @@ const CompareModal: FC = () => {
         rightIndividual={compareIndividualDetailProps?.individual}
         crops={crops}
       />
+      {
+        (compareType === "crops" && cropDetailProps && compareCropDetailProps) &&
+        isFaceCrop(cropDetailProps.crop) && isFaceCrop(compareCropDetailProps.crop) &&
+        <CropSimilarityBar leftCrop={cropDetailProps.crop} rightCrop={compareCropDetailProps.crop} />
+      }
     </Modal>
   );
 };
