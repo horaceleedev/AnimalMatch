@@ -229,7 +229,7 @@ export function useIdentifyIndividual(
 
         if (!cancelled) {
           setResult({
-            candidates: topCandidates,
+            candidates,
             isLoading: false,
             error: null,
           });
