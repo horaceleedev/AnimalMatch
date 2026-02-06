@@ -26,3 +26,6 @@ src/assets/onnxruntime
 *.njsproj
 *.sln
 *.sw?
+
+# onnx model files
+public/models/
