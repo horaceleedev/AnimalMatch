@@ -20,6 +20,7 @@ import VideoAnnotatorModal from './routes/VideoAnnotatorModal.tsx';
 import { AuthProvider } from './DataStores.tsx';
 import { ProtectedRoute } from './routes/ProtectedRoute.tsx';
 import { LoginPage } from './routes/LoginPage.tsx';
+import UploadPage from './routes/UploadPage.tsx';
 import './index.css'
 
 const comparisonSubroutes = [
@@ -100,6 +101,10 @@ const router = createBrowserRouter([
         index: true,
         loader: () => redirect("/videos"),
         // loader: () => redirect("/timeline"), // (temporarily changed)
+      },
+      {
+        path: "upload",
+        element: <UploadPage />,
       },
       {
         path: "crops",
