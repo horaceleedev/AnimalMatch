@@ -87,8 +87,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } else if (pb.authStore.isValid) {
       // Refresh auth token to double check if it's valid (e.g. in case it was revoked
       // server-side or when switching to another pocketbase instance)
-      pb.collection('users').authRefresh().catch(() => {
-        logout(true);
+      pb.collection('users').authRefresh().catch((e) => {
+        if (e.isAbort) return; // ignore error due to auto-cancellation
+        console.error('Auth refresh failed:', e);
+        if (e.status >= 400 && e.status < 500) {
+          // A 4xx error likely means the token is invalid, so log out
+          logout(true);
+        }
       });
     }
   }, []);
