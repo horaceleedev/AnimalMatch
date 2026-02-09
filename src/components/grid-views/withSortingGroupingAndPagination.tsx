@@ -1,7 +1,7 @@
-import { ComponentType, useMemo } from "react";
+import { ComponentType, useMemo, useState } from "react";
 import { RecordModel } from "pocketbase";
 import { groupBy, orderBy } from "es-toolkit";
-import { Collapse, Space } from "antd";
+import { Collapse, Space, Pagination } from "antd";
 
 import { IndividualLinkButton, UserLabel, VideoLinkButton } from "../smart-components/LinkButtons";
 import AnnotationStatusLabel from "../ui/AnnotationStatusLabel";
@@ -21,10 +21,7 @@ interface SortingGroupingOptions<T> {
   onSelectGroup?: (groupRecords: T[]) => void;
 };
 
-const withSortingAndGrouping = <
-  P extends BasicGridViewProps,
-  T extends RecordModel,
->(
+const withSortingAndGrouping = <P extends BasicGridViewProps, T extends RecordModel>(
   BasicGridView: ComponentType<P>,
   opts: {
     processedRecordsProp: keyof P & string; // e.g. 'individuals', 'videos', 'crops'
@@ -35,8 +32,8 @@ const withSortingAndGrouping = <
     if (!(opts.processedRecordsProp in props)) {
       throw new Error(`Missing prop ${opts.processedRecordsProp} in withSortingAndGrouping`);
     }
-    const processedRecords = (props[opts.processedRecordsProp] as unknown) as T[];
-    const metadataFields = (props[opts.metadataFieldsProp] as unknown) as MetadataFieldsType;
+    const processedRecords = props[opts.processedRecordsProp] as T[];
+    const metadataFields = props[opts.metadataFieldsProp] as MetadataFieldsType;
 
     const sortFields = props.sortFields ?? [];
     const sortOrders = props.sortOrders ?? [] as SortOrder[];
@@ -143,4 +140,69 @@ const withSortingAndGrouping = <
   };
 };
 
-export default withSortingAndGrouping;
+
+const withPagination = <P extends BasicGridViewProps, T extends RecordModel>(
+  BasicGridView: ComponentType<P>,
+  {
+    processedRecordsProp,
+    pageSize = 50,
+  }: {
+    processedRecordsProp: keyof P & string; // e.g. 'individuals', 'videos', 'crops'
+    pageSize?: number;
+  },
+) => {
+  return (props: P) => {
+    if (!(processedRecordsProp in props)) {
+      throw new Error(`Missing prop ${processedRecordsProp} in withSortingAndGrouping`);
+    }
+
+    const [currentPageNum, setcurrentPageNum] = useState(1); // 1-based index for Pagination component
+    const processedRecords = props[processedRecordsProp] as T[];
+
+    const startIndex = (currentPageNum - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedRecords = processedRecords.slice(startIndex, endIndex);
+
+    return (
+      <div>
+        <BasicGridView {...props} {...{ [processedRecordsProp]: paginatedRecords }} />
+        {
+          // Only show pagination buttons if there is more than one page of records
+          (processedRecords.length > pageSize) && 
+          <Pagination
+            simple
+            current={currentPageNum}
+            onChange={(page: number) => setcurrentPageNum(page)}
+            total={processedRecords.length}
+            showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} items`}
+            pageSize={pageSize}
+            showSizeChanger={false}
+            align="center"
+            style={{ marginTop: 16 }}
+          />
+        }
+      </div>
+    );
+  };
+};
+
+
+// Combined HOC
+const withSortingGroupingAndPagination = <P extends BasicGridViewProps, T extends RecordModel>(
+  BasicGridView: ComponentType<P>,
+  opts: {
+    processedRecordsProp: keyof P & string; // e.g. 'individuals', 'videos', 'crops'
+    metadataFieldsProp: keyof P & string;
+    pageSize?: number;
+  },
+) => {
+  return withSortingAndGrouping<P, T>(
+    withPagination<P, T>(
+      BasicGridView,
+      { processedRecordsProp: opts.processedRecordsProp, pageSize: opts.pageSize }
+    ),
+    { processedRecordsProp: opts.processedRecordsProp, metadataFieldsProp: opts.metadataFieldsProp }
+  );
+};
+
+export default withSortingGroupingAndPagination;

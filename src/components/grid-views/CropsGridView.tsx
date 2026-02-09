@@ -4,7 +4,7 @@ import { Card, Collapse, Flex, Space, Tag, Tooltip, Typography } from "antd";
 import { groupBy, orderBy } from "es-toolkit";
 
 import type { Crop, MetadataFieldsType, RecordType } from "../../types.ts";
-import withSortingAndGrouping from './withSortingAndGrouping.tsx';
+import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
 import "./CropsGridView.scss"
 
 interface BasicCropsGridViewProps {
@@ -74,7 +74,7 @@ const BasicCropsGridView: React.FC<BasicCropsGridViewProps> = ({
   );
 };
 
-const CropsGridView = withSortingAndGrouping< BasicCropsGridViewProps, Crop>(
+const CropsGridView = withSortingGroupingAndPagination< BasicCropsGridViewProps, Crop>(
   BasicCropsGridView,
   { processedRecordsProp: 'crops', metadataFieldsProp: 'cropsMetadataFields' }
 );
