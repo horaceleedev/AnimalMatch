@@ -130,6 +130,12 @@ const withSortingAndGrouping = <P extends BasicGridViewProps, T extends RecordMo
               children: (
                 <BasicGridView {...basicGridViewProps} onSelectRecord={onSelectGroupRecord} />
               ),
+              styles: {
+                body: {
+                  maxHeight: "calc(100vh - 64px - 46px - 50px)", // viewport height - app header height - collapse header height - some margin
+                  overflowY: "scroll",
+                }
+              }
             },
           ]}
           // expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} />}
