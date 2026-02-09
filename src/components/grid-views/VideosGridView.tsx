@@ -136,6 +136,9 @@ const BasicVideosGridView: FC<BasicVideosGridViewProps> = ({
   );
 };
 
-const VideosGridView = withSortingAndGrouping<BasicVideosGridViewProps, Video>(BasicVideosGridView);
+const VideosGridView = withSortingAndGrouping<BasicVideosGridViewProps, Video>(
+  BasicVideosGridView,
+  { processedRecordsProp: 'videos', metadataFieldsProp: 'videoMetadataFields' }
+);
 
 export default VideosGridView;

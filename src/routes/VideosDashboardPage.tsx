@@ -132,17 +132,12 @@ const VideosDashboardPage: React.FC = () => {
           {
             (view === 'grid') ? 
               <VideosGridView
-                processedRecords={videosFiltered}
-                metadataFields={videoMetadataFields}
-                processedRecordsPropName="videos"
-                basicGridViewProps={{
-                  videos: videosFiltered,
-                  videoMetadataFields,
-                  isListView: false,
-                }}
-                sortFields={sortFields} 
-                sortOrders={sortOrders} 
-                groupFields={groupFields} 
+                videos={videosFiltered}
+                videoMetadataFields={videoMetadataFields}
+                isListView={false}
+                sortFields={sortFields}
+                sortOrders={sortOrders}
+                groupFields={groupFields}
                 groupOrders={groupOrders}
                 onSelectGroup={onSelectGroup}
               />
@@ -161,14 +156,9 @@ const VideosDashboardPage: React.FC = () => {
               <Splitter>
                 <Splitter.Panel defaultSize="40%" min="20%" max="70%" style={{height: 600, overflow: 'scroll', paddingRight: 12}}>
                   <VideosGridView
-                    processedRecords={videosFiltered}
-                    metadataFields={videoMetadataFields}
-                    processedRecordsPropName="videos"
-                    basicGridViewProps={{
-                      videos: videosFiltered,
-                      videoMetadataFields,
-                      isListView: true,
-                    }}
+                    videos={videosFiltered}
+                    videoMetadataFields={videoMetadataFields}
+                    isListView={true}
                     sortFields={sortFields}
                     sortOrders={sortOrders}
                     groupFields={groupFields}

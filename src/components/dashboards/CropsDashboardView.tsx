@@ -80,16 +80,11 @@ const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
       {
         (view === 'grid') ? 
         <CropsGridView
-          processedRecords={filteredCrops}
-          metadataFields={cropsMetadataFields}
-          processedRecordsPropName="crops"
-          basicGridViewProps={{
-            crops: filteredCrops,
-            cropsMetadataFields: cropsMetadataFields,
-            linkTemplate: linkTemplate,
-            // buttons: gridViewButtons
-            openModal: openModal,
-          }}
+          crops={filteredCrops}
+          cropsMetadataFields={cropsMetadataFields}
+          linkTemplate={linkTemplate}
+          // buttons={gridViewButtons}
+          openModal={openModal}
           sortFields={sortFields}
           sortOrders={sortOrders}
           groupFields={groupFields}

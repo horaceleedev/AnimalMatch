@@ -131,6 +131,9 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
   );
 };
 
-const IndividualsGridView = withSortingAndGrouping<BasicIndividualsGridViewProps, Individual>(BasicIndividualsGridView);
+const IndividualsGridView = withSortingAndGrouping<BasicIndividualsGridViewProps, Individual>(
+  BasicIndividualsGridView,
+  { processedRecordsProp: 'individuals', metadataFieldsProp: 'individualsMetadataFields' }
+);
 
 export default IndividualsGridView;

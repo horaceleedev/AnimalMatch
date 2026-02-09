@@ -74,6 +74,9 @@ const BasicCropsGridView: React.FC<BasicCropsGridViewProps> = ({
   );
 };
 
-const CropsGridView = withSortingAndGrouping<BasicCropsGridViewProps, Crop>(BasicCropsGridView);
+const CropsGridView = withSortingAndGrouping< BasicCropsGridViewProps, Crop>(
+  BasicCropsGridView,
+  { processedRecordsProp: 'crops', metadataFieldsProp: 'cropsMetadataFields' }
+);
 
 export default CropsGridView;

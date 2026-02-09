@@ -11,31 +11,38 @@ interface BasicGridViewProps {
   openModal?: (type: RecordType, id: string) => void
 };
 
-interface OuterProps<T> {
-  processedRecords: T[];
-  metadataFields: MetadataFieldsType;
-  processedRecordsPropName: string; // e.g. 'individuals', 'videos', 'crops'
-  sortFields: string[];
-  sortOrders: ("asc" | "desc")[];
-  groupFields: string[];
-  groupOrders: ("asc" | "desc")[];
+type SortOrder = "asc" | "desc";
+
+interface SortingGroupingOptions<T> {
+  sortFields?: string[];
+  sortOrders?: SortOrder[];
+  groupFields?: string[];
+  groupOrders?: SortOrder[];
   onSelectGroup?: (groupRecords: T[]) => void;
 };
 
-const withSortingAndGrouping = <P extends BasicGridViewProps, T extends RecordModel>(
-  BasicGridView: ComponentType<P>
+const withSortingAndGrouping = <
+  P extends BasicGridViewProps,
+  T extends RecordModel,
+>(
+  BasicGridView: ComponentType<P>,
+  opts: {
+    processedRecordsProp: keyof P & string; // e.g. 'individuals', 'videos', 'crops'
+    metadataFieldsProp: keyof P & string;
+  },
 ) => {
-  return ({
-    processedRecords,
-    metadataFields,
-    processedRecordsPropName,
-    sortFields,
-    sortOrders,
-    groupFields,
-    groupOrders,
-    basicGridViewProps,
-    onSelectGroup,
-  }: OuterProps<T> & { basicGridViewProps: P }) => {
+  return (props: P & SortingGroupingOptions<T>) => {
+    if (!(opts.processedRecordsProp in props)) {
+      throw new Error(`Missing prop ${opts.processedRecordsProp} in withSortingAndGrouping`);
+    }
+    const processedRecords = (props[opts.processedRecordsProp] as unknown) as T[];
+    const metadataFields = (props[opts.metadataFieldsProp] as unknown) as MetadataFieldsType;
+
+    const sortFields = props.sortFields ?? [];
+    const sortOrders = props.sortOrders ?? [] as SortOrder[];
+    const groupFields = props.groupFields ?? [];
+    const groupOrders = props.groupOrders ?? [] as SortOrder[];
+
     const recordsSorted = useMemo(
       () => orderBy(processedRecords, sortFields, sortOrders),
       [processedRecords, sortFields, sortOrders],
@@ -44,19 +51,23 @@ const withSortingAndGrouping = <P extends BasicGridViewProps, T extends RecordMo
     // TODO check if the below works when groupFields.length === 0
     const groupedRecords: [any, T[]][] = useMemo(
       () => orderBy(
-        Object.entries(groupBy<T, any>(recordsSorted, record => record[groupFields[0]])),
+        Object.entries(groupBy<T, any>(recordsSorted, (record) => record[groupFields[0]])),
         [([groupValue, _]) => groupValue],
         [groupOrders[0]],
       ),
       [recordsSorted, groupFields, groupOrders],
     );
-
+    
     if (groupFields.length === 0) {
-      return <BasicGridView {...basicGridViewProps} {...{[processedRecordsPropName]: recordsSorted}} />;
+      const basicProps = {
+        ...props,
+        [opts.processedRecordsProp]: recordsSorted, // override with sorted records
+      } as P;
+      return <BasicGridView {...basicProps} />;
     }
     return groupedRecords.map(([groupValue, groupRecords]) => {
       const onSelectGroupRecord = () => {
-        onSelectGroup?.(groupRecords);
+        props.onSelectGroup?.(groupRecords);
       };
       let renderedGroupValue = groupValue;
       const renderType = metadataFields[groupFields[0]].renderType;
@@ -66,7 +77,7 @@ const withSortingAndGrouping = <P extends BasicGridViewProps, T extends RecordMo
             id={groupValue as string}
             // TODO pass linkTemplate in
             // linkTemplate={videoLinkTemplate}
-            openModal={basicGridViewProps.openModal}
+            openModal={props.openModal}
           />
         );
       } else if (renderType === 'individual_link') {
@@ -75,7 +86,7 @@ const withSortingAndGrouping = <P extends BasicGridViewProps, T extends RecordMo
             id={groupValue as string}
             // TODO pass linkTemplate in
             // linkTemplate={individualLinkTemplate}
-            openModal={basicGridViewProps.openModal}
+            openModal={props.openModal}
           />
         );
       } else if (renderType === 'user_label') {
@@ -91,13 +102,18 @@ const withSortingAndGrouping = <P extends BasicGridViewProps, T extends RecordMo
         renderedGroupValue = <AnnotationStatusLabel status={groupValue as string} />;
       }
 
+      const basicGridViewProps = {
+        ...props,
+        [opts.processedRecordsProp]: groupRecords, // override with group records
+      } as P;
+
       return (
         <Collapse
           key={groupValue}
           collapsible="header"
           defaultActiveKey={['1']}
           style={{
-            marginBottom: 12
+            marginBottom: 12,
           }}
           items={[
             {
@@ -115,7 +131,7 @@ const withSortingAndGrouping = <P extends BasicGridViewProps, T extends RecordMo
                 </Space>
               ),
               children: (
-                <BasicGridView {...basicGridViewProps} {...{[processedRecordsPropName]: groupRecords}} onSelectRecord={onSelectGroupRecord} />
+                <BasicGridView {...basicGridViewProps} onSelectRecord={onSelectGroupRecord} />
               ),
             },
           ]}
