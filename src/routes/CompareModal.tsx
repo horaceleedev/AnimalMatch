@@ -23,6 +23,7 @@ import CropsDashboardView from '../components/dashboards/CropsDashboardView.tsx'
 import RecordActionsButton from '../components/misc/RecordActionsButton.tsx';
 import IndividualMatchPrompt from '../components/compare/IndividualMatchPrompt.tsx';
 import CropSimilarityBar from '../components/similarity/CropSimilarityBar.tsx';
+import CropToIndividualSimilarityBar from '../components/similarity/CropToIndividualSimilarityBar.tsx';
 import { Individual, Video } from '../types.ts';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import { useIdentifyIndividual } from '../hooks/useIdentifyIndividual';
@@ -736,6 +737,24 @@ const CompareModal: FC = () => {
         (compareType === "crops" && cropDetailProps && compareCropDetailProps) &&
         isFaceCrop(cropDetailProps.crop) && isFaceCrop(compareCropDetailProps.crop) &&
         <CropSimilarityBar leftCrop={cropDetailProps.crop} rightCrop={compareCropDetailProps.crop} />
+      }
+      {
+        isFaceCrop(cropDetailProps?.crop) && compareIndividualDetailProps?.individual &&
+        <CropToIndividualSimilarityBar
+          crop={cropDetailProps?.crop}
+          individual={compareIndividualDetailProps?.individual}
+          crops={crops}
+          individuals={individuals}
+        />
+      }
+      {
+        isFaceCrop(compareCropDetailProps?.crop) && individualDetailProps?.individual &&
+        <CropToIndividualSimilarityBar
+          crop={compareCropDetailProps?.crop}
+          individual={individualDetailProps?.individual}
+          crops={crops}
+          individuals={individuals}
+        />
       }
     </Modal>
   );
