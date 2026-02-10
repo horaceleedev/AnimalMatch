@@ -132,7 +132,7 @@ const router = createBrowserRouter([
           },
           {
             path: ":videoId/annotate",
-            // element: <VideoAnnotatorModal />,
+            element: <VideoAnnotatorModal />,
           },
           ...comparisonSubroutes,
         ],
