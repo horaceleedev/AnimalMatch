@@ -5,6 +5,8 @@ import { useShallow } from 'zustand/react/shallow'
 
 import { useCropsStore, useIndividualsStore, useDisconnectedMessage, useVideoStore, useAuth, useUsersStore } from "./DataStores.tsx";
 import AppHeader from "./components/AppHeader.tsx";
+import { useWebGPU } from './hooks/useWebGPU.ts';
+import WebGPUBanner from './components/ui/WebGPUBanner.tsx';
 import "./App.scss"
 
 const App: React.FC = () => {
@@ -25,6 +27,8 @@ const App: React.FC = () => {
     useShallow((state) => [state.fetch, state.subscribe, state.unsubscribe])
   );
   useDisconnectedMessage();
+  const webgpu = useWebGPU();
+  console.log("WebGPU supported:", webgpu);
 
   // App initialization
   useEffect(() => {
@@ -60,6 +64,7 @@ const App: React.FC = () => {
 
   return (
     <Layout className="app-layout">
+      {webgpu === false && <WebGPUBanner />}
       <AppHeader currentMenuPage={currentMenuPage} user={user} logout={logout} />
       <Outlet />
     </Layout>

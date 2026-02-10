@@ -6,7 +6,7 @@ import { StarOutlined } from '@ant-design/icons';
 
 import { Individual, MetadataFieldsType, RecordType } from '../../types.ts';
 import SimilarityMatchTags from '../similarity/SimilarityMatchTags';
-import withSortingAndGrouping from './withSortingAndGrouping.tsx';
+import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
 import "./IndividualsGridView.scss";
 
 const imgStyle: React.CSSProperties = {
@@ -143,6 +143,9 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
   );
 };
 
-const IndividualsGridView = withSortingAndGrouping<BasicIndividualsGridViewProps, Individual>(BasicIndividualsGridView);
+const IndividualsGridView = withSortingGroupingAndPagination<BasicIndividualsGridViewProps, Individual>(
+  BasicIndividualsGridView,
+  { processedRecordsProp: 'individuals', metadataFieldsProp: 'individualsMetadataFields' }
+);
 
 export default IndividualsGridView;

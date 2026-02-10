@@ -9,7 +9,7 @@ import ViewList from '../../assets/material_symbols/view_list_24dp_5F6368_FILL0_
 
 import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
-import BasicMapView from '../misc/BasicMapView.tsx';
+import BasicMapView from '../ui/BasicMapView.tsx';
 import { getUniqueLocationsFromIndividuals } from '../../utils/utils.ts';
 import { Individual, MetadataFieldsType, Video } from '../../types.ts';
 
@@ -107,15 +107,10 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
       {
         (view === 'list') ? 
         <IndividualsGridView
-          processedRecords={filteredIndividuals}
-          metadataFields={individualsMetadataFields}
-          processedRecordsPropName="individuals"
-          basicGridViewProps={{
-            individuals: filteredIndividuals,
-            individualsMetadataFields: individualsMetadataFields,
-            linkTemplate: linkTemplate,
-            buttons: listViewButtons,
-          }}
+          individuals={filteredIndividuals}
+          individualsMetadataFields={individualsMetadataFields}
+          linkTemplate={linkTemplate}
+          buttons={listViewButtons}
           sortFields={sortFields}
           sortOrders={sortOrders}
           groupFields={groupFields}
@@ -130,15 +125,10 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
           <Splitter>
             <Splitter.Panel defaultSize="40%" min="20%" max="70%" style={{height: 600, overflow: 'scroll', paddingRight: 12}}>
               <IndividualsGridView
-                processedRecords={filteredIndividuals}
-                metadataFields={individualsMetadataFields}
-                processedRecordsPropName="individuals"
-                basicGridViewProps={{
-                  individuals: filteredIndividuals,
-                  individualsMetadataFields: individualsMetadataFields,
-                  linkTemplate: linkTemplate,
-                  buttons: listViewButtons,
-                }}
+                individuals={filteredIndividuals}
+                individualsMetadataFields={individualsMetadataFields}
+                linkTemplate={linkTemplate}
+                buttons={listViewButtons}
                 sortFields={sortFields}
                 sortOrders={sortOrders}
                 groupFields={groupFields}

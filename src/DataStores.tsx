@@ -54,6 +54,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState(pb.authStore.record as UserRecord | null);
+  const { notification } = App.useApp();
 
   useEffect(() => {
     return pb.authStore.onChange((_, record) => {
@@ -69,8 +70,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await pb.collection("users").authWithPassword(usernameOrEmail, password);
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback((showSessionExpiredMessage: boolean = false) => {
     pb.authStore.clear();
+    if (showSessionExpiredMessage) {
+      notification.info({
+        key: 'session-expired',
+        message: 'Session expired. Please log in again.',
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    // Check if user token expired and log out if so
+    if (user && !pb.authStore.isValid) {
+      logout(true);
+    } else if (pb.authStore.isValid) {
+      // Refresh auth token to double check if it's valid (e.g. in case it was revoked
+      // server-side or when switching to another pocketbase instance)
+      pb.collection('users').authRefresh().catch((e) => {
+        if (e.isAbort) return; // ignore error due to auto-cancellation
+        console.error('Auth refresh failed:', e);
+        if (e.status >= 400 && e.status < 500) {
+          // A 4xx error likely means the token is invalid, so log out
+          logout(true);
+        }
+      });
+    }
   }, []);
 
   return (

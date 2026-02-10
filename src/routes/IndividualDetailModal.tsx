@@ -11,7 +11,7 @@ import IndividualDetailView from '../components/detail-views/IndividualDetailVie
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import { RecordDetailModalProps, RecordType } from '../types.ts';
 import InnerModal from './InnerModal.tsx';
-import RecordActionsButton from '../components/misc/RecordActionsButton.tsx';
+import RecordActionsButton from '../components/ui/RecordActionsButton.tsx';
 import "./IndividualDetailModal.scss";
 
 

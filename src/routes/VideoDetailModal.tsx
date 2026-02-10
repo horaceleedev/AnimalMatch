@@ -10,7 +10,7 @@ import { useIndividualsStoreWithCrops, useVideosStoreWithUsers } from "../DataSt
 import VideoDetailView from '../components/detail-views/VideoDetailView.tsx';
 import { RecordDetailModalProps, RecordType } from '../types.ts';
 import InnerModal from './InnerModal.tsx';
-import RecordActionsButton from '../components/misc/RecordActionsButton.tsx';
+import RecordActionsButton from '../components/ui/RecordActionsButton.tsx';
 import "./VideoDetailModal.scss";
 
 const VideoDetailModal: React.FC<RecordDetailModalProps> = ({

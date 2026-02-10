@@ -7,7 +7,7 @@ import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } f
 import VideosGridView from '../grid-views/VideosGridView.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
 import { Individual, LocationInfo, RecordType, Video } from '../../types.ts';
-import BasicMapView from '../misc/BasicMapView.tsx';
+import BasicMapView from '../ui/BasicMapView.tsx';
 import RecordMetadataForm from './RecordMetadataForm.tsx';
 import CropsDashboardView from '../dashboards/CropsDashboardView.tsx';
 import "./IndividualDetailView.scss";
@@ -176,20 +176,11 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                 {
                   videosWithIndividual.length > 0 ?
                   <VideosGridView
-                    processedRecords={videosWithIndividual}
-                    metadataFields={videoMetadataFields}
-                    processedRecordsPropName="videos"
-                    basicGridViewProps={{
-                      videos: videosWithIndividual,
-                      videoMetadataFields: videoMetadataFields,
-                      isListView: false,
-                      linkTemplate: videosLinkTemplate,
-                      openModal: openModal,
-                    }}
-                    sortFields={[]}
-                    sortOrders={[]}
-                    groupFields={[]}
-                    groupOrders={[]}
+                    videos={videosWithIndividual}
+                    videoMetadataFields={videoMetadataFields}
+                    isListView={false}
+                    linkTemplate={videosLinkTemplate}
+                    openModal={openModal}
                   />
                   :
                   <p>No videos with this individual</p>
@@ -206,19 +197,10 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                 {
                   (seenTogetherIndividuals.length > 0) ?
                   <IndividualsGridView
-                    processedRecords={seenTogetherIndividuals}
-                    metadataFields={individualsMetadataFields}
-                    processedRecordsPropName="individuals"
-                    basicGridViewProps={{
-                      individuals: seenTogetherIndividuals,
-                      individualsMetadataFields: individualsMetadataFields,
-                      linkTemplate: individualsLinkTemplate,
-                      openModal: openModal,
-                    }}
-                    sortFields={[]}
-                    sortOrders={[]}
-                    groupFields={[]}
-                    groupOrders={[]}
+                    individuals={seenTogetherIndividuals}
+                    individualsMetadataFields={individualsMetadataFields}
+                    linkTemplate={individualsLinkTemplate}
+                    openModal={openModal}
                   />
                   :
                   <p>No other individuals seen together</p>

@@ -3,7 +3,7 @@ import { generatePath, useNavigate } from "react-router-dom";
 import { Button, Divider, Flex } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 
-import BasicMapView from '../misc/BasicMapView.tsx';
+import BasicMapView from '../ui/BasicMapView.tsx';
 import { Individual, LocationInfo, RecordType, Video } from '../../types.ts';
 import { individualsMetadataFields, videoMetadataFields } from '../../metadata.tsx';
 import IndividualsGridView from "../grid-views/IndividualsGridView.tsx";
@@ -116,16 +116,11 @@ const VideoDetailView: FC<VideoDetailViewProps> = ({
         <p>No individuals annotated in this video yet.</p>
       ) : (
         <IndividualsGridView
-          processedRecords={individualsInVideo}
-          metadataFields={individualsMetadataFields}
-          processedRecordsPropName="individuals"
-          basicGridViewProps={{
-            individuals: individualsInVideo,
-            individualsMetadataFields: individualsMetadataFields,
-            linkTemplate: individualsLinkTemplate,
-            allowEditingAgeAndSex: true,
-            openModal: openModal,
-          }}
+          individuals={individualsInVideo}
+          individualsMetadataFields={individualsMetadataFields}
+          linkTemplate={individualsLinkTemplate}
+          allowEditingAgeAndSex={true}
+          openModal={openModal}
           sortFields={[]}
           sortOrders={[]}
           groupFields={[]}

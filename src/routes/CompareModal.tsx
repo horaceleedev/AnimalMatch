@@ -20,7 +20,7 @@ import VideosGridView from '../components/grid-views/VideosGridView.tsx';
 import IndividualsGridView from '../components/grid-views/IndividualsGridView.tsx';
 import IndividualsDashboardView from '../components/dashboards/IndividualsDashboardView.tsx';
 import CropsDashboardView from '../components/dashboards/CropsDashboardView.tsx';
-import RecordActionsButton from '../components/misc/RecordActionsButton.tsx';
+import RecordActionsButton from '../components/ui/RecordActionsButton.tsx';
 import IndividualMatchPrompt from '../components/compare/IndividualMatchPrompt.tsx';
 import CropSimilarityBar from '../components/similarity/CropSimilarityBar.tsx';
 import CropToIndividualSimilarityBar from '../components/similarity/CropToIndividualSimilarityBar.tsx';
@@ -414,15 +414,10 @@ const CompareModal: FC = () => {
         {
           (compareType === 'videos') ?
           <VideosGridView
-            processedRecords={videos}
-            metadataFields={videoMetadataFields}
-            processedRecordsPropName="videos"
-            basicGridViewProps={{
-              videos,
-              videoMetadataFields,
-              isListView: true,
-              linkTemplate: routerLocation.pathname + "/:videoId",
-            }}
+            videos={videos}
+            videoMetadataFields={videoMetadataFields}
+            isListView={true}
+            linkTemplate={routerLocation.pathname + "/:videoId"}
             sortFields={[]}
             sortOrders={[]}
             groupFields={[]}
@@ -695,15 +690,10 @@ const CompareModal: FC = () => {
           (shortlistedIndividualIds.length > 0) &&
           <Popover placement="topRight" title="Shortlist" content={
             <IndividualsGridView
-              processedRecords={individuals.filter(x => shortlistedIndividualIds.includes(x.id))}
-              metadataFields={individualsMetadataFields}
-              processedRecordsPropName="individuals"
-              basicGridViewProps={{
-                individuals: individuals.filter(x => shortlistedIndividualIds.includes(x.id)),
-                individualsMetadataFields: individualsMetadataFields,
-                linkTemplate: routeSplits.slice(0,6).join('/') + "/:individualId",
-                buttons: shortlistButton,
-              }}
+              individuals={individuals.filter(x => shortlistedIndividualIds.includes(x.id))}
+              individualsMetadataFields={individualsMetadataFields}
+              linkTemplate={routeSplits.slice(0,6).join('/') + "/:individualId"}
+              buttons={shortlistButton}
               sortFields={[]} sortOrders={[]} groupFields={[]} groupOrders={[]}
             />
           } arrow={false} overlayInnerStyle={{maxHeight: 'calc(88vh - 180px)', width: 450, overflow: 'scroll'}}>
