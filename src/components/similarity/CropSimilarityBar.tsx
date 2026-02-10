@@ -7,12 +7,28 @@ import SimilarityMatchTags from './SimilarityMatchTags';
 type CropSimilarityBarProps = {
   leftCrop?: Crop | null;
   rightCrop?: Crop | null;
+  inline?: boolean;
 };
 
-const CropSimilarityBar: FC<CropSimilarityBarProps> = ({ leftCrop, rightCrop }) => {
+const CropSimilarityBar: FC<CropSimilarityBarProps> = ({ leftCrop, rightCrop, inline = false }) => {
   if (!leftCrop || !rightCrop) return null;
 
   const compareResult = useCompareCrops(leftCrop, rightCrop);
+
+  const content = (
+    <Space size={6}>
+      <span>Crop similarity</span>
+      <SimilarityMatchTags
+        isLoading={compareResult.isLoading}
+        error={compareResult.error}
+        bestScore={compareResult.bestScore}
+        avgTopK={compareResult.avgTopK}
+        pairCount={compareResult.pairCount}
+      />
+    </Space>
+  );
+
+  if (inline) return content;
 
   return (
     <Space
@@ -30,14 +46,7 @@ const CropSimilarityBar: FC<CropSimilarityBarProps> = ({ leftCrop, rightCrop }) 
         zIndex: 1000,
       }}
     >
-      <span>Crop similarity</span>
-      <SimilarityMatchTags
-        isLoading={compareResult.isLoading}
-        error={compareResult.error}
-        bestScore={compareResult.bestScore}
-        avgTopK={compareResult.avgTopK}
-        pairCount={compareResult.pairCount}
-      />
+      {content}
     </Space>
   );
 };

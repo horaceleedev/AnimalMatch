@@ -35,15 +35,18 @@ const SimilarityMatchTags: FC<SimilarityMatchTagsProps> = ({
   const avgTooltip = safePairCount !== null
     ? `Average of top matches from ${safePairCount} face-pair comparisons`
     : 'Average of top matches across face-pair comparisons';
+  const showAvg = avgTopK !== null && (safePairCount === null || safePairCount > 1);
 
   return (
     <>
       <Tooltip title={bestTooltip}>
         <Tag color="blue">AI best {bestScore.toFixed(3)}</Tag>
       </Tooltip>
-      <Tooltip title={avgTooltip}>
-        <Tag color="geekblue">AI avg {avgTopK?.toFixed(3)}</Tag>
-      </Tooltip>
+      {showAvg && (
+        <Tooltip title={avgTooltip}>
+          <Tag color="geekblue">AI avg {avgTopK?.toFixed(3)}</Tag>
+        </Tooltip>
+      )}
     </>
   );
 };

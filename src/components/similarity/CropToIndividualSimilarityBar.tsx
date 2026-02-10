@@ -9,6 +9,7 @@ type CropToIndividualSimilarityBarProps = {
   individual?: Individual | null;
   crops: Crop[];
   individuals: Individual[];
+  inline?: boolean;
 };
 
 const CropToIndividualSimilarityBar: FC<CropToIndividualSimilarityBarProps> = ({
@@ -16,6 +17,7 @@ const CropToIndividualSimilarityBar: FC<CropToIndividualSimilarityBarProps> = ({
   individual,
   crops,
   individuals,
+  inline = false,
 }) => {
   if (!crop || !individual) return null;
 
@@ -25,6 +27,21 @@ const CropToIndividualSimilarityBar: FC<CropToIndividualSimilarityBarProps> = ({
     crops,
     individuals
   );
+
+  const content = (
+    <Space size={6}>
+      <span>Crop ↔ individual similarity</span>
+      <SimilarityMatchTags
+        isLoading={compareResult.isLoading}
+        error={compareResult.error}
+        bestScore={compareResult.bestScore}
+        avgTopK={compareResult.avgTopK}
+        pairCount={compareResult.pairCount}
+      />
+    </Space>
+  );
+
+  if (inline) return content;
 
   return (
     <Space
@@ -42,14 +59,7 @@ const CropToIndividualSimilarityBar: FC<CropToIndividualSimilarityBarProps> = ({
         zIndex: 1000,
       }}
     >
-      <span>Crop ↔ individual similarity</span>
-      <SimilarityMatchTags
-        isLoading={compareResult.isLoading}
-        error={compareResult.error}
-        bestScore={compareResult.bestScore}
-        avgTopK={compareResult.avgTopK}
-        pairCount={compareResult.pairCount}
-      />
+      {content}
     </Space>
   );
 };

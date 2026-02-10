@@ -33,6 +33,7 @@ type IdentificationResult = {
   error: string | null;
 };
 
+// TODO: Move embedding cache to a shared (DB-backed) cache for persistence and cross-session reuse.
 const embeddingCache = new Map<string, Float32Array>();
 
 function makeEmbeddingCacheKey(modelUrl: string, imageUrl: string): string {

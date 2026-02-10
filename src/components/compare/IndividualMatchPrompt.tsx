@@ -11,12 +11,14 @@ type IndividualMatchPromptProps = {
   leftIndividual?: Individual | null;
   rightIndividual?: Individual | null;
   crops: Crop[];
+  inline?: boolean;
 };
 
 const IndividualMatchPrompt: FC<IndividualMatchPromptProps> = ({
   leftIndividual,
   rightIndividual,
   crops,
+  inline = false,
 }) => {
   if (!leftIndividual || !rightIndividual) return null;
 
@@ -64,21 +66,8 @@ const IndividualMatchPrompt: FC<IndividualMatchPromptProps> = ({
     });
   };
 
-  return (
-    <Space
-      style={{
-        position: 'absolute',
-        bottom: -20,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        boxShadow:
-          '0px 1px 2px -2px rgba(0,0,0,0.16), 0px 3px 6px 0px rgba(0,0,0,0.12), 0px 5px 12px 4px rgba(0,0,0,0.09)',
-        padding: '8px 12px',
-        borderRadius: 10,
-        background: 'white',
-        zIndex: 1000,
-      }}
-    >
+  const content = (
+    <Space>
       <span>Are these two individuals the same?</span>
       <Space size={6}>
         <SimilarityMatchTags
@@ -95,6 +84,27 @@ const IndividualMatchPrompt: FC<IndividualMatchPromptProps> = ({
       <Button onClick={showDifferentIndividualConfirm} icon={<CloseOutlined />} type="primary" danger>
         Different individual
       </Button>
+    </Space>
+  );
+
+  if (inline) return content;
+
+  return (
+    <Space
+      style={{
+        position: 'absolute',
+        bottom: -20,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        boxShadow:
+          '0px 1px 2px -2px rgba(0,0,0,0.16), 0px 3px 6px 0px rgba(0,0,0,0.12), 0px 5px 12px 4px rgba(0,0,0,0.09)',
+        padding: '8px 12px',
+        borderRadius: 10,
+        background: 'white',
+        zIndex: 1000,
+      }}
+    >
+      {content}
     </Space>
   );
 };

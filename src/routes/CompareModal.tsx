@@ -728,33 +728,61 @@ const CompareModal: FC = () => {
           </Popover>
         }
       </Layout>
-      <IndividualMatchPrompt
-        leftIndividual={individualDetailProps?.individual}
-        rightIndividual={compareIndividualDetailProps?.individual}
-        crops={crops}
-      />
       {
-        (compareType === "crops" && cropDetailProps && compareCropDetailProps) &&
-        isFaceCrop(cropDetailProps.crop) && isFaceCrop(compareCropDetailProps.crop) &&
-        <CropSimilarityBar leftCrop={cropDetailProps.crop} rightCrop={compareCropDetailProps.crop} />
-      }
-      {
-        isFaceCrop(cropDetailProps?.crop) && compareIndividualDetailProps?.individual &&
-        <CropToIndividualSimilarityBar
-          crop={cropDetailProps?.crop}
-          individual={compareIndividualDetailProps?.individual}
-          crops={crops}
-          individuals={individuals}
-        />
-      }
-      {
-        isFaceCrop(compareCropDetailProps?.crop) && individualDetailProps?.individual &&
-        <CropToIndividualSimilarityBar
-          crop={compareCropDetailProps?.crop}
-          individual={individualDetailProps?.individual}
-          crops={crops}
-          individuals={individuals}
-        />
+        (
+          (compareType === "crops" && cropDetailProps && compareCropDetailProps && isFaceCrop(cropDetailProps.crop) && isFaceCrop(compareCropDetailProps.crop)) ||
+          (isFaceCrop(cropDetailProps?.crop) && compareIndividualDetailProps?.individual) ||
+          (isFaceCrop(compareCropDetailProps?.crop) && individualDetailProps?.individual) ||
+          (individualDetailProps && compareIndividualDetailProps)
+        ) &&
+        <Space
+          direction="vertical"
+          size={8}
+          style={{
+            position: 'absolute',
+            bottom: -20,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            boxShadow:
+              '0px 1px 2px -2px rgba(0,0,0,0.16), 0px 3px 6px 0px rgba(0,0,0,0.12), 0px 5px 12px 4px rgba(0,0,0,0.09)',
+            padding: '8px 12px',
+            borderRadius: 10,
+            background: 'white',
+            zIndex: 1000,
+          }}
+        >
+          <IndividualMatchPrompt
+            leftIndividual={individualDetailProps?.individual}
+            rightIndividual={compareIndividualDetailProps?.individual}
+            crops={crops}
+            inline
+          />
+          {
+            (compareType === "crops" && cropDetailProps && compareCropDetailProps) &&
+            isFaceCrop(cropDetailProps.crop) && isFaceCrop(compareCropDetailProps.crop) &&
+            <CropSimilarityBar leftCrop={cropDetailProps.crop} rightCrop={compareCropDetailProps.crop} inline />
+          }
+          {
+            isFaceCrop(cropDetailProps?.crop) && compareIndividualDetailProps?.individual &&
+            <CropToIndividualSimilarityBar
+              crop={cropDetailProps?.crop}
+              individual={compareIndividualDetailProps?.individual}
+              crops={crops}
+              individuals={individuals}
+              inline
+            />
+          }
+          {
+            isFaceCrop(compareCropDetailProps?.crop) && individualDetailProps?.individual &&
+            <CropToIndividualSimilarityBar
+              crop={compareCropDetailProps?.crop}
+              individual={individualDetailProps?.individual}
+              crops={crops}
+              individuals={individuals}
+              inline
+            />
+          }
+        </Space>
       }
     </Modal>
   );
