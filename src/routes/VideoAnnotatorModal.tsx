@@ -8,7 +8,7 @@ import { useVideoStore, useIndividualsStoreWithCrops, useAuth } from "../DataSto
 import VideoAnnotator from '../components/VideoAnnotator/VideoAnnotator.tsx';
 import InnerModal from './InnerModal.tsx';
 import AnnotationStatusLabel from '../components/ui/AnnotationStatusLabel.tsx';
-import PrevNextVideoButtons from '../components/ui/PrevNextVideoButtons.tsx';
+import { PrevNextVideoButtons } from '../components/ui/PrevNextButtons.tsx';
 import { Individual, RecordType, Video } from '../types.ts';
 
 const VideoAnnotatorModal: React.FC = () => {
@@ -84,9 +84,9 @@ const VideoAnnotatorModal: React.FC = () => {
         <Flex align="center" gap="middle">
           {video.filename}
           <PrevNextVideoButtons
-            video={video}
-            videoLinkTemplate="/videos/:videoId/annotate"
-            videos={navigationVideos}
+            record={video}
+            recordLinkTemplate="/videos/:videoId/annotate"
+            records={navigationVideos}
             flexProps={{ gap: "small" }}
           />
           <Tooltip title="Annotation status">

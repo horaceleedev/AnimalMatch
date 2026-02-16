@@ -7,7 +7,7 @@ import { Individual, LocationInfo, RecordType, Video } from '../../types.ts';
 import { individualsMetadataFields, videoMetadataFields } from '../../metadata.tsx';
 import IndividualsGridView from "../grid-views/IndividualsGridView.tsx";
 import RecordMetadataForm from "./RecordMetadataForm.tsx";
-import PrevNextVideoButtons from "../ui/PrevNextVideoButtons.tsx";
+import { PrevNextVideoButtons } from "../ui/PrevNextButtons.tsx";
 
 import "./VideoDetailView.scss";
 
@@ -63,7 +63,7 @@ const VideoDetailView: FC<VideoDetailViewProps> = ({
           <Button type="primary" onClick={openAnnotationEditor}>
             Annotate individuals
           </Button>
-          <PrevNextVideoButtons video={video} videoLinkTemplate={videoLinkTemplate} videos={navigationVideos} />
+          <PrevNextVideoButtons record={video} recordLinkTemplate={videoLinkTemplate} records={navigationVideos} />
         </div>
       </Flex>
       <Divider />
