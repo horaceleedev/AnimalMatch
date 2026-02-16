@@ -83,7 +83,12 @@ const VideoAnnotatorModal: React.FC = () => {
       title={
         <Flex align="center" gap="middle">
           {video.filename}
-          <PrevNextVideoButtons video={video} videoLinkTemplate="/videos/:videoId/annotate" videos={navigationVideos} />
+          <PrevNextVideoButtons
+            video={video}
+            videoLinkTemplate="/videos/:videoId/annotate"
+            videos={navigationVideos}
+            flexProps={{ gap: "small" }}
+          />
           <Tooltip title="Annotation status">
             <Select
               value={video.annotation_status}

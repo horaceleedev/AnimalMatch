@@ -1,18 +1,22 @@
 import { FC, memo } from "react";
 import { Video } from "../../types";
 import { generatePath, useNavigate } from "react-router-dom";
-import { Button, Flex } from "antd";
+import { Button, Flex, Tooltip } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 
 const PrevNextVideoButtons: FC<{
   video: Video,
   videoLinkTemplate?: string,
   videos?: Video[],
+  flexProps?: React.ComponentProps<typeof Flex>,
 }> = memo(
   ({
     video,
     videoLinkTemplate = "/videos/:videoId",
     videos = [],
+    flexProps = {
+      gap: "middle",
+    },
   }) => {
     const navigate = useNavigate();
     const videoIndex = videos.findIndex(v => v.id === video.id);
@@ -32,20 +36,24 @@ const PrevNextVideoButtons: FC<{
     }
 
     return (
-      <Flex gap="middle" justify="start">
-        <Button
-          aria-label="Previous video"
-          shape="circle" icon={<LeftOutlined />}
-          disabled={!prevVideoId}
-          onClick={navigateToVideo(prevVideoId)}
-        />
-        <Button
-          aria-label="Next video"
-          shape="circle"
-          icon={<RightOutlined />}
-          disabled={!nextVideoId}
-          onClick={navigateToVideo(nextVideoId)}
-        />
+      <Flex {...flexProps}>
+        <Tooltip title="Previous video">
+          <Button
+            aria-label="Previous video"
+            shape="circle" icon={<LeftOutlined />}
+            disabled={!prevVideoId}
+            onClick={navigateToVideo(prevVideoId)}
+          />
+        </Tooltip>
+        <Tooltip title="Next video">
+          <Button
+            aria-label="Next video"
+            shape="circle"
+            icon={<RightOutlined />}
+            disabled={!nextVideoId}
+            onClick={navigateToVideo(nextVideoId)}
+          />
+        </Tooltip>
       </Flex>
     );
   }
