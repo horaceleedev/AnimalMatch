@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { Button, Flex, Modal, Select, Space, Tooltip } from "antd";
 import { intersection } from 'es-toolkit';
 import { useShallow } from 'zustand/react/shallow';
@@ -8,12 +8,19 @@ import { useVideoStore, useIndividualsStoreWithCrops, useAuth } from "../DataSto
 import VideoAnnotator from '../components/VideoAnnotator/VideoAnnotator.tsx';
 import InnerModal from './InnerModal.tsx';
 import AnnotationStatusLabel from '../components/ui/AnnotationStatusLabel.tsx';
-import { Individual, RecordType } from '../types.ts';
+import PrevNextVideoButtons from '../components/ui/PrevNextVideoButtons.tsx';
+import { Individual, RecordType, Video } from '../types.ts';
 
 const VideoAnnotatorModal: React.FC = () => {
   const navigate = useNavigate();
   const { videoId } = useParams<"videoId">();
   console.log(videoId)
+  
+  // Get videos for navigation (previous/next video) from outlet context (passed from VideosDashboardPage)
+  const outletContext = useOutletContext<{
+    videos?: Video[],
+  }>();
+  const navigationVideos = outletContext?.videos || [];
 
   const [isModalOpen, setIsModalOpen] = useState(true);
   const handleDismiss = () => {
@@ -76,6 +83,7 @@ const VideoAnnotatorModal: React.FC = () => {
       title={
         <Flex align="center" gap="middle">
           {video.filename}
+          <PrevNextVideoButtons video={video} videoLinkTemplate="/videos/:videoId/annotate" videos={navigationVideos} />
           <Tooltip title="Annotation status">
             <Select
               value={video.annotation_status}
