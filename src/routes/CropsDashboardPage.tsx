@@ -6,7 +6,8 @@ import { useAuth, useCropsStore } from "../DataStores.tsx";
 import { cropsMetadataFields } from '../metadata.tsx';
 import DashboardContent from '../components/dashboards/DashboardContent.tsx';
 import CropsDashboardView from '../components/dashboards/CropsDashboardView.tsx';
-import { CropsDashboardSider, useCropsDashboardSiderState } from '../components/dashboards/CropsDashboardSider.tsx';
+import { CropsDashboardSider } from '../components/dashboards/CropsDashboardSider.tsx';
+import { useCropsDashboardSiderState } from "../components/dashboards/useCropsDashboardSiderState.tsx";
 
 const CropsDashboardPage: React.FC = () => {
   const crops = useCropsStore((state) => state.processedRecords);
