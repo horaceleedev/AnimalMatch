@@ -176,20 +176,11 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                 {
                   videosWithIndividual.length > 0 ?
                   <VideosGridView
-                    processedRecords={videosWithIndividual}
-                    metadataFields={videoMetadataFields}
-                    processedRecordsPropName="videos"
-                    basicGridViewProps={{
-                      videos: videosWithIndividual,
-                      videoMetadataFields: videoMetadataFields,
-                      isListView: false,
-                      linkTemplate: videosLinkTemplate,
-                      openModal: openModal,
-                    }}
-                    sortFields={[]}
-                    sortOrders={[]}
-                    groupFields={[]}
-                    groupOrders={[]}
+                    videos={videosWithIndividual}
+                    videoMetadataFields={videoMetadataFields}
+                    isListView={false}
+                    linkTemplate={videosLinkTemplate}
+                    openModal={openModal}
                   />
                   :
                   <p>No videos with this individual</p>
@@ -206,19 +197,10 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                 {
                   (seenTogetherIndividuals.length > 0) ?
                   <IndividualsGridView
-                    processedRecords={seenTogetherIndividuals}
-                    metadataFields={individualsMetadataFields}
-                    processedRecordsPropName="individuals"
-                    basicGridViewProps={{
-                      individuals: seenTogetherIndividuals,
-                      individualsMetadataFields: individualsMetadataFields,
-                      linkTemplate: individualsLinkTemplate,
-                      openModal: openModal,
-                    }}
-                    sortFields={[]}
-                    sortOrders={[]}
-                    groupFields={[]}
-                    groupOrders={[]}
+                    individuals={seenTogetherIndividuals}
+                    individualsMetadataFields={individualsMetadataFields}
+                    linkTemplate={individualsLinkTemplate}
+                    openModal={openModal}
                   />
                   :
                   <p>No other individuals seen together</p>

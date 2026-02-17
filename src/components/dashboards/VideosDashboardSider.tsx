@@ -26,7 +26,7 @@ export const useVideosDashboardSiderState = (videos: Video[], videoMetadataField
       }
       return acc;
     }, {}),
-  }), [videos, user]);
+  }), [videos, user, videoMetadataFields]);
   const videosFiltered = useMemo(() => 
     videosBySiderKey[selectedSiderKey],
     [videosBySiderKey, selectedSiderKey]
@@ -55,11 +55,7 @@ export const VideosDashboardSider: FC<VideosDashboardSiderProps> = ({
   return (
     <Sider
       className="dashboard-sider"
-      style={
-        {
-          /* background: colorBgContainer */
-        }
-      }
+      style={{ /* background: colorBgContainer */ }}
       width={220}
     >
       <h3>Videos</h3>

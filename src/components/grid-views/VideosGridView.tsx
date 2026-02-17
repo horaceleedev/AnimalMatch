@@ -4,7 +4,7 @@ import { Card, Flex, Tag, Tooltip, Typography } from "antd";
 
 import type { RecordType, Video } from "../../types.ts";
 import type { MetadataFieldsType } from "../../types.ts";
-import withSortingAndGrouping from './withSortingAndGrouping.tsx';
+import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
 import "./VideosGridView.scss"
 import { useSelectionStore } from "../../hooks/useSelectionStore.ts";
 
@@ -147,6 +147,9 @@ const BasicVideosGridView: FC<BasicVideosGridViewProps> = ({
   );
 };
 
-const VideosGridView = withSortingAndGrouping<BasicVideosGridViewProps, Video>(BasicVideosGridView);
+const VideosGridView = withSortingGroupingAndPagination<BasicVideosGridViewProps, Video>(
+  BasicVideosGridView,
+  { processedRecordsProp: 'videos', metadataFieldsProp: 'videoMetadataFields' }
+);
 
 export default VideosGridView;
