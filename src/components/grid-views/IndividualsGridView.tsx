@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { generatePath, Link } from 'react-router-dom';
-import { Button, Card, Flex, Select, Space, Tag, Tooltip } from 'antd';
+import { Button, Card, Flex, Select, Skeleton, Space, Tag, Tooltip } from 'antd';
 
 import { StarOutlined } from '@ant-design/icons';
 
-import { Individual, MetadataFieldsType, RecordType } from '../../types.ts';
+import { Crop, Individual, MetadataFieldsType, RecordType } from '../../types.ts';
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
 import "./IndividualsGridView.scss";
 
@@ -21,6 +21,27 @@ interface BasicIndividualsGridViewProps {
   buttons?: (individual: Individual) => JSX.Element;
   allowEditingAgeAndSex?: boolean;
   openModal?: (type: RecordType, id: string) => void;
+};
+
+const CropImage: React.FC<{ crop: Crop }> = ({ crop }) => {
+  const [loaded, setLoaded] = useState(false);
+  const individualCropWidth = Math.round((crop.width / crop.height) * 150);
+
+  return (
+    <div style={{height: 150, width: individualCropWidth}}>
+    {!loaded && (
+      <Skeleton.Node active style={{height: 150, width: individualCropWidth}}>
+        <span />
+      </Skeleton.Node>
+    )}
+    <img
+      key={crop.id}
+      src={crop.imageUrl}
+      onLoad={() => setTimeout(() => setLoaded(true), 5000)}
+      style={{display: loaded ? "block" : "none", height: 150, width: individualCropWidth}}
+    />
+    </div>
+  );
 };
 
 const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
