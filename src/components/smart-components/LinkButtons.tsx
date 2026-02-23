@@ -14,6 +14,8 @@ export const IndividualLinkButton: React.FC<LinkButtonProps> = ({ id, linkTempla
   // TODO see if there is an efficient implementation without loading all individuals
   const { individuals } = useIndividualsStoreWithCrops();
   const individual = individuals.find(i => i.id === id);
+  const faceCrop = individual?.crops.find(crop => crop.body_part === 'face' && crop.imageUrl);
+  const thumbnailUrl = (faceCrop ?? individual?.crops.find(crop => crop.imageUrl))?.imageUrl;
 
   return (
     <Link
@@ -32,7 +34,7 @@ export const IndividualLinkButton: React.FC<LinkButtonProps> = ({ id, linkTempla
         styles={{ body: { padding: 0 } }}
       >
         <Flex gap="small" align="center">
-          <img src={individual?.crops[0]?.imageUrl} height={26} style={{margin: 3, borderRadius: 5}} />
+          <img src={thumbnailUrl} height={26} style={{margin: 3, borderRadius: 5}} />
           <Typography.Title level={5} style={{margin: 0, fontSize: 12}}>{individual?.name}</Typography.Title>
         </Flex>
       </Card>

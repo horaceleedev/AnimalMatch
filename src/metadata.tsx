@@ -319,7 +319,6 @@ export const cropsMetadataFields: MetadataFieldsType = {
     type: 'select',
     valueEditorType: 'select',
     renderType: 'individual_link',
-    isUneditable: true,
   },
   'body_part': {
     displayName: 'Body part',

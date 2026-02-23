@@ -1,4 +1,4 @@
-import { Button, DatePicker, Form, Input, InputNumber, Select, Tag } from "antd";
+import { Button, DatePicker, Form, Input, InputNumber, Select, Space, Tag } from "antd";
 import type { DefaultOptionType, LabelInValueType } from "rc-select/lib/Select";
 import TextArea from 'antd/es/input/TextArea';
 import { RecordModel } from "pocketbase";
@@ -7,6 +7,8 @@ import useFormManager from "../../utils/useFormManager";
 import { MetadataFieldsType, RecordType } from "../../types";
 import { IndividualLinkButton, UserLabel, VideoLinkButton } from "../smart-components/LinkButtons";
 import AnnotationStatusLabel from "../ui/AnnotationStatusLabel";
+import IndividualSelectOption from "../similarity/IndividualSelectOption";
+import { useIndividualsStoreWithCrops } from "../../DataStores";
 import "./RecordMetadataForm.scss";
 
 type RecordMetadataFormProps<T extends RecordModel> = {
@@ -18,6 +20,17 @@ type RecordMetadataFormProps<T extends RecordModel> = {
   videoLinkTemplate?: string;
   individualLinkTemplate?: string;
   openModal?: (type: RecordType, id: string) => void;
+  aiPredictions?: {
+    candidates: Array<{
+      id: string;
+      label: string;
+      score: number;
+      probability: number;
+      thumbnailUrl?: string;
+      bestMatchScore?: number;
+      avgScore?: number;
+    }>;
+  };
 }
 
 const RecordMetadataForm = <T extends RecordModel>({
@@ -29,7 +42,9 @@ const RecordMetadataForm = <T extends RecordModel>({
   videoLinkTemplate,
   individualLinkTemplate,
   openModal,
+  aiPredictions,
 }: RecordMetadataFormProps<T>) => {
+  const { individuals } = useIndividualsStoreWithCrops();
   const {
     formData,
     hasUnsavedChanges,
@@ -37,6 +52,79 @@ const RecordMetadataForm = <T extends RecordModel>({
     handleValuesChange,
     saveChanges,
   } = useFormManager(processedRecord, metadataFields, updateFunction);
+
+  const getIndividualThumbnail = (individualId: string) => {
+    const individual = individuals.find(indiv => indiv.id === individualId);
+    if (!individual) return undefined;
+    const faceCrop = individual.crops.find(crop => crop.body_part === 'face' && crop.imageUrl);
+    return (faceCrop ?? individual.crops.find(crop => crop.imageUrl))?.imageUrl;
+  };
+
+  // Build enhanced options for individual field with AI predictions
+  const getOptionsForField = (fieldKey: string) => {
+    const baseOptions = uniqueValuesPerField[fieldKey]?.map(val => ({
+      value: val,
+      label: val,
+      thumbnailUrl: fieldKey === 'individual' ? getIndividualThumbnail(val) : undefined,
+    })) || [];
+    
+    // Special handling for 'individual' field with AI predictions
+    if (fieldKey === 'individual' && aiPredictions?.candidates && aiPredictions.candidates.length > 0) {
+      const aiById = new Map(aiPredictions.candidates.map(candidate => [candidate.id, candidate]));
+      const withAi = baseOptions.map(option => {
+        const candidate = aiById.get(option.value);
+        const score =
+          candidate?.bestMatchScore ??
+          candidate?.avgScore ??
+          candidate?.score ??
+          candidate?.probability ??
+          null;
+
+        return {
+          value: option.value,
+          label: candidate?.label ?? option.label,
+          ai: Boolean(candidate),
+          score,
+          thumbnailUrl: candidate?.thumbnailUrl ?? option.thumbnailUrl,
+        };
+      });
+
+      const missingAiOptions = aiPredictions.candidates
+        .filter(candidate => !baseOptions.some(opt => opt.value === candidate.id))
+        .map(candidate => ({
+          value: candidate.id,
+          label: candidate.label,
+          ai: true,
+          score:
+            candidate.bestMatchScore ??
+            candidate.avgScore ??
+            candidate.score ??
+            candidate.probability ??
+            null,
+          thumbnailUrl: candidate.thumbnailUrl ?? getIndividualThumbnail(candidate.id),
+        }));
+
+      return [...withAi, ...missingAiOptions].sort((a: any, b: any) => {
+        const aScore = typeof a.score === 'number' ? a.score : -Infinity;
+        const bScore = typeof b.score === 'number' ? b.score : -Infinity;
+        if (aScore !== bScore) return bScore - aScore;
+        return String(a.label).localeCompare(String(b.label));
+      });
+    }
+    
+    return baseOptions;
+  };
+
+  const renderIndividualOption = (option: DefaultOptionType) => {
+    const data = option.data as any;
+    return (
+      <IndividualSelectOption
+        label={data?.label ?? String(option.label ?? '')}
+        score={data?.score}
+        thumbnailUrl={data?.thumbnailUrl}
+      />
+    );
+  };
 
   return (
     <Form
@@ -82,10 +170,13 @@ const RecordMetadataForm = <T extends RecordModel>({
               optionRender = (option: DefaultOptionType) => <AnnotationStatusLabel status={option.value as string} />;
               labelRender = (option) => <AnnotationStatusLabel status={option.value as string} />;
             }
+            if (fieldValue === 'individual') {
+              optionRender = renderIndividualOption;
+            }
 
             inputElement = (
               <Select
-                options={uniqueValuesPerField[fieldValue].map(val => ({ value: val, label: val }))}
+                options={fieldValue === 'individual' ? getOptionsForField(fieldValue) : uniqueValuesPerField[fieldValue]?.map(val => ({ value: val, label: val })) || []}
                 disabled={disabled}
                 size={size}
                 optionRender={optionRender}

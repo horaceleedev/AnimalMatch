@@ -370,6 +370,21 @@ export const useVideosStoreWithUsers = () => {
   return { videos, updateVideo, deleteVideo, videosUniqueValuesPerField, uniqueVideoLocations };
 };
 
+// --- Crops store with list of individuals included in cropsUniqueValuesPerField['individual'] ---
+export const useCropsStoreWithIndividuals = () => {
+  const [crops, updateCrop, deleteCrop, _cropsUniqueValuesPerField] = useCropsStore(
+    useShallow((state) => [state.processedRecords, state.update, state.delete, state.uniqueValuesPerField])
+  );
+  const individuals = useIndividualsStore(state => state.processedRecords);
+
+  const cropsUniqueValuesPerField = useMemo(() => ({
+    ..._cropsUniqueValuesPerField,
+    'individual': individuals.map(ind => ind.id), // replace with list of all individual ids
+  }), [_cropsUniqueValuesPerField, individuals]);
+
+  return { crops, updateCrop, deleteCrop, cropsUniqueValuesPerField };
+};
+
 
 // --- Individuals store with crops included ---
 export const useIndividualsStoreWithCrops = () => {

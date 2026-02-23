@@ -42,21 +42,31 @@ interface IndividualsDashboardViewProps {
   listViewButtons?: (individual: Individual) => JSX.Element;
   defaultGroupFields?: string[];
   defaultGroupOrders?: ("asc" | "desc")[];
+  defaultSortFields?: string[];
+  defaultSortOrders?: ("asc" | "desc")[];
 }
 const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
   individuals, videos, uniqueValuesPerField, individualsMetadataFields,
   onlyShowListView, linkTemplate, listViewButtons,
   defaultGroupFields, defaultGroupOrders,
+  defaultSortFields, defaultSortOrders,
 }: IndividualsDashboardViewProps) => {
   const [view, setView] = useState(viewsTabsItems[0].key);
 
   if (!defaultGroupFields) defaultGroupFields = [];
   if (!defaultGroupOrders) defaultGroupOrders = [];
-  const [sortFields, setSortFields] = useState<string[]>([]);
-  const [sortOrders, setSortOrders] = useState<("asc" | "desc")[]>([]);
+  const [sortFields, setSortFields] = useState<string[]>(defaultSortFields ?? []);
+  const [sortOrders, setSortOrders] = useState<("asc" | "desc")[]>(defaultSortOrders ?? []);
   const [groupFields, setGroupFields] = useState<string[]>(defaultGroupFields);
   const [groupOrders, setGroupOrders] = useState<("asc" | "desc")[]>(defaultGroupOrders);
   const [query, _setQuery] = useState(initialQuery);
+
+  useEffect(() => {
+    if ((defaultSortFields?.length ?? 0) > 0 && sortFields.length === 0) {
+      setSortFields(defaultSortFields ?? []);
+      setSortOrders(defaultSortOrders ?? []);
+    }
+  }, [defaultSortFields, defaultSortOrders, sortFields.length]);
 
   const setQuery = (newQuery: RuleGroupType) => {
     if (newQuery.rules.length > 1) {

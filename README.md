@@ -13,7 +13,7 @@ This frontend web app is implemented with React and TypeScript + SASS + HTML. He
 
 ### Start development server
 1. Make sure you have completed the prerequisite steps above, and `cd`'ed into this directory if you haven't already done so
-2. Start the development server using `npm run dev`. Once the server is running, open `localhost:5173` in your browser to access the development version of the frontend
+2. Start the development server using `npm run dev`. This will copy the required ONNX Runtime web files into `src/assets/onnxruntime`. Once the server is running, open `localhost:5173` in your browser to access the development version of the frontend.
 
 For now you might need to comment out the video annotation route ([lines 125-128](https://github.com/horaceleedev/AnimalMatch/blob/d6a739edaba43a068124cd8c73ba0b876a6cb32c/src/main.tsx#L125-L128) in main.tsx) in order for the frontend to work.
 

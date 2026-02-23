@@ -12,6 +12,17 @@ type CropDetailViewProps = {
   individualLinkTemplate?: string;
   openModal?: (type: RecordType , id: string) => void;
   updateCrop: (id: string, data: Partial<Crop>) => Promise<Crop>;
+  aiPredictions?: {
+    candidates: Array<{
+      id: string;
+      label: string;
+      score: number;
+      probability: number;
+      thumbnailUrl?: string;
+      bestMatchScore?: number;
+      avgScore?: number;
+    }>;
+  };
 }
 
 const CropDetailView: React.FC<CropDetailViewProps> = ({
@@ -21,6 +32,7 @@ const CropDetailView: React.FC<CropDetailViewProps> = ({
   individualLinkTemplate,
   openModal,
   updateCrop,
+  aiPredictions,
 }: CropDetailViewProps) => {
   return (
     <>
@@ -36,6 +48,7 @@ const CropDetailView: React.FC<CropDetailViewProps> = ({
         openModal={openModal}
         updateFunction={updateCrop}
         showIconInSelectionFields={false}
+        aiPredictions={aiPredictions}
       />
     </>
   );

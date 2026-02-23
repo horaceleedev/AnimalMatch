@@ -38,7 +38,7 @@ const FieldSelector: React.FC<FieldSelectorProps> = ({
     <Space>{option.data.icon} {option.label}</Space>
   );
   const labelRender = (option) => (
-    <Space>{metadataFields[option.value].icon} {option.label}</Space>
+    <Space>{metadataFields[option.value]?.icon} {option.label}</Space>
   )
   
   return <Select
@@ -129,6 +129,9 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
   groupFields, setGroupFields, groupOrders, setGroupOrders,
   query, setQuery
 }: QueryOperationsButtonsProps) => {
+  const getFieldLabel = (fieldValue?: string) =>
+    (fieldValue && metadataFields[fieldValue]?.displayName) ? metadataFields[fieldValue].displayName : (fieldValue ?? 'field');
+
   const handleSortFieldSelect = (val: string) => {
     setSortFields([val]);
     if (sortOrders.length > 0) {
@@ -178,7 +181,7 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
         </Space>
       } trigger="click" arrow={false} placement="bottomLeft" >
         <Button type="text" icon={<Icon component={SwapVert} />} color={(sortFields.length > 0) ? "primary" : "default"} variant={(sortFields.length > 0) ? "filled" : "text"}>
-          {(sortFields.length > 0) ? `Sorted by ${metadataFields[sortFields[0]].displayName}` : "Sort"}
+          {(sortFields.length > 0) ? `Sorted by ${getFieldLabel(sortFields[0])}` : "Sort"}
         </Button>
       </Popover>
 
@@ -207,7 +210,7 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
           color={(query.rules.length > 0) ? "primary" : "default"}
           variant={(query.rules.length > 0) ? "filled" : "text"}
         >
-          {(query.rules.length > 0) ? `Filtered by ${metadataFields[query.rules[0].field].displayName}` : "Filter"}
+          {(query.rules.length > 0) ? `Filtered by ${getFieldLabel(query.rules[0]?.field)}` : "Filter"}
         </Button>
       </Popover>
 
@@ -229,7 +232,7 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
         </Space>
       } trigger="click" arrow={false} placement="bottomLeft" >
         <Button type="text" icon={<GroupOutlined />} color={(groupFields.length > 0) ? "primary" : "default"} variant={(groupFields.length > 0) ? "filled" : "text"}>
-          {(groupFields.length > 0) ? `Grouped by ${metadataFields[groupFields[0]].displayName}` : "Group"}
+          {(groupFields.length > 0) ? `Grouped by ${getFieldLabel(groupFields[0])}` : "Group"}
         </Button>
       </Popover>
     </Space>
