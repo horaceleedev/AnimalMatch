@@ -88,13 +88,7 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
             <Card hoverable bordered={true} size="small" cover={
               <div style={{display: 'flex', overflow: 'scroll', height: 150, columnGap: 5, borderRadius: 5}}>
                 {
-                  individual.crops.map(crop => (
-                    <img
-                      key={crop.id}
-                      src={crop.imageUrl}
-                      style={{display: 'inline-block', height: 150, borderRadius: 5}}
-                    />
-                  ))
+                  individual.crops.map(crop => (<CropImage crop={crop} />))
                 }
               </div>
             }>
@@ -103,7 +97,7 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
                   <Space>
                     <span>{individual.name}</span>
                     {
-                      allowEditingAgeAndSex ? 
+                      allowEditingAgeAndSex ?
                       <>
                         <Select
                           options={individualsMetadataFields['age'].presetOptions!.map(val => ({ value: val, label: val }))}
