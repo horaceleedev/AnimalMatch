@@ -37,7 +37,7 @@ const CropImage: React.FC<{ crop: Crop }> = ({ crop }) => {
     <img
       key={crop.id}
       src={crop.imageUrl}
-      onLoad={() => setTimeout(() => setLoaded(true), 5000)}
+      onLoad={() => setLoaded(true)}
       style={{display: loaded ? "block" : "none", height: 150, width: individualCropWidth}}
     />
     </div>
