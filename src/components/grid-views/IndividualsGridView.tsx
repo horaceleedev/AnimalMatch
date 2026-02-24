@@ -35,7 +35,6 @@ const CropImage: React.FC<{ crop: Crop }> = ({ crop }) => {
       </Skeleton.Node>
     )}
     <img
-      key={crop.id}
       src={crop.imageUrl}
       onLoad={() => setLoaded(true)}
       style={{display: loaded ? "block" : "none", height: 150, width: individualCropWidth}}
@@ -88,7 +87,7 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
             <Card hoverable bordered={true} size="small" cover={
               <div style={{display: 'flex', overflow: 'scroll', height: 150, columnGap: 5, borderRadius: 5}}>
                 {
-                  individual.crops.map(crop => (<CropImage crop={crop} />))
+                  individual.crops.map(crop => (<CropImage crop={crop} key={crop.id} />))
                 }
               </div>
             }>
