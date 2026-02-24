@@ -13,16 +13,6 @@ const imgStyle: React.CSSProperties = {
   width: 200,
 };
 
-interface BasicIndividualsGridViewProps {
-  individuals: Individual[];
-  individualsMetadataFields: MetadataFieldsType;
-  isListView?: boolean;
-  linkTemplate?: string;
-  buttons?: (individual: Individual) => JSX.Element;
-  allowEditingAgeAndSex?: boolean;
-  openModal?: (type: RecordType, id: string) => void;
-};
-
 const CropWithSkeleton: React.FC<{ crop: Crop }> = ({ crop }) => {
   const [loaded, setLoaded] = useState(false);
   const scaledCropWidth = crop.height > 0
@@ -42,6 +32,16 @@ const CropWithSkeleton: React.FC<{ crop: Crop }> = ({ crop }) => {
       />
     </div>
   );
+};
+
+interface BasicIndividualsGridViewProps {
+  individuals: Individual[];
+  individualsMetadataFields: MetadataFieldsType;
+  isListView?: boolean;
+  linkTemplate?: string;
+  buttons?: (individual: Individual) => JSX.Element;
+  allowEditingAgeAndSex?: boolean;
+  openModal?: (type: RecordType, id: string) => void;
 };
 
 const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
