@@ -23,22 +23,23 @@ interface BasicIndividualsGridViewProps {
   openModal?: (type: RecordType, id: string) => void;
 };
 
-const CropImage: React.FC<{ crop: Crop }> = ({ crop }) => {
+const CropWithSkeleton: React.FC<{ crop: Crop }> = ({ crop }) => {
   const [loaded, setLoaded] = useState(false);
-  const individualCropWidth = Math.round((crop.width / crop.height) * 150);
+  const scaledCropWidth = crop.height > 0
+    ? Math.round((crop.width / crop.height) * 150)
+    : 150; // fallback
 
   return (
-    <div style={{height: 150, width: individualCropWidth}}>
-    {!loaded && (
-      <Skeleton.Node active style={{height: 150, width: individualCropWidth}}>
-        <span />
-      </Skeleton.Node>
-    )}
-    <img
-      src={crop.imageUrl}
-      onLoad={() => setLoaded(true)}
-      style={{display: loaded ? "block" : "none", height: 150, width: individualCropWidth}}
-    />
+    <div>
+      {!loaded && (
+        <Skeleton.Node active style={{height: 150, width: scaledCropWidth}} />
+      )}
+      <img
+        src={crop.imageUrl}
+        onLoad={() => setLoaded(true)}
+        onError={() => setLoaded(true)}
+        style={{display: loaded ? "block" : "none", height: 150, borderRadius: 5}}
+      />
     </div>
   );
 };
@@ -87,7 +88,7 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
             <Card hoverable bordered={true} size="small" cover={
               <div style={{display: 'flex', overflow: 'scroll', height: 150, columnGap: 5, borderRadius: 5}}>
                 {
-                  individual.crops.map(crop => (<CropImage crop={crop} key={crop.id} />))
+                  individual.crops.map(crop => (<CropWithSkeleton crop={crop} key={crop.id} />))
                 }
               </div>
             }>
