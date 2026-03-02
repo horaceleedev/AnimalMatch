@@ -47,7 +47,7 @@ const BasicVideosGridView: FC<BasicVideosGridViewProps> = ({
     return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />;
   }
   return (
-    <div className={isListView ? "videos-list " : "videos-grid"}>
+    <div className={isListView ? "videos-list" : "videos-grid"}>
       {videos.map((video: Video) => (
         // Old version:
         // <Link key={video.id} to={"/videos/" + video.id}>
