@@ -3,6 +3,7 @@ import { generatePath, Link } from 'react-router-dom';
 import { Card, Empty, Select, Skeleton, Space, Tag, Tooltip } from 'antd';
 
 import { Crop, Individual, MetadataFieldsType, RecordType } from '../../types.ts';
+import { useIndividualsStore } from '../../DataStores.tsx';
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
 import "./IndividualsGridView.scss";
 
@@ -45,7 +46,9 @@ interface BasicIndividualsGridViewProps {
 const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
   individuals, individualsMetadataFields, isListView, linkTemplate = "/individuals/:individualId", buttons, allowEditingAgeAndSex, openModal,
 }: BasicIndividualsGridViewProps) => {
-  if (individuals.length === 0) {
+  const isFetched = useIndividualsStore((state) => state.isFetched);
+
+  if (isFetched && individuals.length === 0) {
     return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />;
   }
   return (
