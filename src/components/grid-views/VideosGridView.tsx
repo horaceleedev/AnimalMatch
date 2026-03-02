@@ -1,6 +1,6 @@
 import { FC, MouseEvent, useCallback } from "react";
 import { generatePath, Link } from "react-router-dom";
-import { Card, Flex, Tag, Tooltip, Typography } from "antd";
+import { Card, Empty, Flex, Tag, Tooltip, Typography } from "antd";
 
 import type { RecordType, Video } from "../../types.ts";
 import type { MetadataFieldsType } from "../../types.ts";
@@ -43,6 +43,9 @@ const BasicVideosGridView: FC<BasicVideosGridViewProps> = ({
     [openModal, onSelectRecord]
   );
 
+  if (videos.length === 0) {
+    return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />;
+  }
   return (
     <div className={isListView ? "videos-list " : "videos-grid"}>
       {videos.map((video: Video) => (
