@@ -1,69 +1,15 @@
 import { FC, useEffect, useMemo, useState } from "react";
-import { generatePath, useNavigate } from "react-router-dom";
 import { Button, Divider, Flex } from "antd";
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
 import BasicMapView from '../ui/BasicMapView.tsx';
 import { Individual, LocationInfo, RecordType, Video } from '../../types.ts';
 import { individualsMetadataFields, videoMetadataFields } from '../../metadata.tsx';
 import IndividualsGridView from "../grid-views/IndividualsGridView.tsx";
 import RecordMetadataForm from "./RecordMetadataForm.tsx";
+import { PrevNextVideoButtons } from "../ui/PrevNextButtons.tsx";
 
 import "./VideoDetailView.scss";
-
-const VideoToolbar: FC<{
-  video: Video,
-  videoLinkTemplate?: string,
-  videos?: Video[],
-}> = ({
-  video,
-  videoLinkTemplate = "/videos/:videoId",
-  videos = [],
-}) => {
-  const navigate = useNavigate();
-  const videoIndex = videos.findIndex(v => v.id === video.id);
-  let nextVideoId = '';
-  let prevVideoId = '';
-  if (videoIndex < videos.length - 1) {
-    // If not the last video
-    nextVideoId = videos[videoIndex + 1].id;
-  }
-  if (videoIndex > 0) {
-    // If not the first video
-    prevVideoId = videos[videoIndex - 1].id;
-  }
-
-  function openAnnotationEditor() {
-    navigate("annotate");
-  }
-
-  function navigateToVideo(videoId: string) {
-    return () => navigate(generatePath(videoLinkTemplate, { videoId }));
-  }
-
-  return (
-    <div className="video-toolbar">
-      <Button type="primary" onClick={openAnnotationEditor}>
-        Annotate individuals
-      </Button>
-      <Flex gap="middle" justify="start">
-        <Button
-          aria-label="Previous video"
-          shape="circle" icon={<LeftOutlined />}
-          disabled={!prevVideoId}
-          onClick={navigateToVideo(prevVideoId)}
-        />
-        <Button
-          aria-label="Next video"
-          shape="circle"
-          icon={<RightOutlined />}
-          disabled={!nextVideoId}
-          onClick={navigateToVideo(nextVideoId)}
-        />
-      </Flex>
-    </div>
-  );
-}
 
 type VideoDetailViewProps = {
   video: Video,
@@ -95,6 +41,11 @@ const VideoDetailView: FC<VideoDetailViewProps> = ({
     setShowMap(true);
   }, []);
 
+  const navigate = useNavigate();
+  function openAnnotationEditor() {
+    navigate("annotate");
+  };
+
   const highlightLocationIds = useMemo(
     () => new Set([JSON.stringify([video.lat, video.long])]),
     [video]
@@ -108,7 +59,12 @@ const VideoDetailView: FC<VideoDetailViewProps> = ({
           controls
           autoPlay
         />
-        <VideoToolbar video={video} videoLinkTemplate={videoLinkTemplate} videos={navigationVideos} />
+        <div className="video-toolbar">
+          <Button type="primary" onClick={openAnnotationEditor}>
+            Annotate individuals
+          </Button>
+          <PrevNextVideoButtons record={video} recordLinkTemplate={videoLinkTemplate} records={navigationVideos} />
+        </div>
       </Flex>
       <Divider />
       <h3>Individuals</h3>
