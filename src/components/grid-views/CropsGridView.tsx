@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { generatePath, Link } from "react-router-dom";
-import { Card, Flex, Skeleton, Space, Tag, Tooltip, Typography } from "antd";
+import { Card, Flex, Space, Tag, Tooltip, Typography } from "antd";
 
 import type { Crop, MetadataFieldsType, RecordType } from "../../types.ts";
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
+import CropWithSkeleton from './CropWithSkeleton.tsx';
 import "./CropsGridView.scss"
 
 interface BasicCropsGridViewProps {
@@ -11,27 +12,6 @@ interface BasicCropsGridViewProps {
   cropsMetadataFields: MetadataFieldsType;
   linkTemplate?: string;
   openModal?: (type: RecordType , id: string) => void;
-};
-
-const CropWithSkeleton: React.FC<{ crop: Crop }> = ({ crop }) => {
-  const [loaded, setLoaded] = useState(false);
-  const scaledCropWidth = crop.height > 0
-    ? Math.round((crop.width / crop.height) * 180)
-    : 180; // fallback
-
-  return (
-    <div>
-      {!loaded && (
-        <Skeleton.Node active style={{height: 180, width: scaledCropWidth}} />
-      )}
-      <img
-        src={crop.imageUrl}
-        onLoad={() => setLoaded(true)}
-        onError={() => setLoaded(true)}
-        style={{display: loaded ? "block" : "none"}}
-      />
-    </div>
-  );
 };
 
 // Basic crops grid view (without grouping and sorting)
@@ -57,7 +37,7 @@ const BasicCropsGridView: React.FC<BasicCropsGridViewProps> = ({
               styles={{ body: { padding: 0 } }}
             >
               <Flex vertical justify="space-between">
-                <CropWithSkeleton crop={crop} />
+                <CropWithSkeleton crop={crop} imageHeight={180} />
                 <Flex vertical style={{ padding: '8px 12px 12px 12px', width: '100%' }}>
                   <Space wrap size={4}>
                     {
