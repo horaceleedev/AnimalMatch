@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import proj4 from "proj4";
-import PocketBase, { ClientResponseError, RecordModel } from 'pocketbase';
+import PocketBase, { ClientResponseError, RecordFullListOptions, RecordModel } from 'pocketbase';
 import dayjs from 'dayjs';
 import { App } from 'antd';
 
@@ -142,9 +142,9 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
     fetch: async () => {
       let records: TRecord[] = [];
       try {
-        records = await pb.collection(collectionName).getFullList<TRecord>({
-          sort: sortField,
-        });
+        const options: RecordFullListOptions = {};
+        if (sortField) options['sort'] = sortField;
+        records = await pb.collection(collectionName).getFullList<TRecord>(options);
       } catch (e) {
         handlePocketBaseError(e);
         return;
