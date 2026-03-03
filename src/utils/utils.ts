@@ -40,7 +40,7 @@ export const getUniqueLocationsFromIndividuals = (individuals: Individual[], all
     } as LocationInfo;
   });
   return uniqueLocations;
-}
+};
 
 export const getUniqueValuesPerField = (metadataFields: MetadataFieldsType, processedRecords: Record<string, any>[]) => {
   let uniqueValuesPerField: Record<string, string[]> = {}; // an object where each key is a field name and its associated value is a list of unique values for that field
@@ -66,4 +66,33 @@ export const getUniqueValuesPerField = (metadataFields: MetadataFieldsType, proc
     }
   });
   return uniqueValuesPerField;
-}
+};
+
+export const float32ArrayToBase64 = (arr: Float32Array) => {
+  // Create a Uint8Array view of the Float32Array's underlying buffer
+  const bytes = new Uint8Array(arr.buffer);
+
+  // Convert bytes to binary string
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+
+  // Encode binary string to base64
+  return btoa(binary);
+};
+
+export const base64ToFloat32Array = (b64: string) => {
+  // Decode base64 to binary string
+  const binary = atob(b64);
+
+  // Create a Uint8Array with the right length
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  // Interpret the bytes as 32‑bit floats (little‑endian)
+  return new Float32Array(bytes.buffer);
+};

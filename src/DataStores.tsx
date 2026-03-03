@@ -7,9 +7,9 @@ import PocketBase, { ClientResponseError, RecordModel } from 'pocketbase';
 import dayjs from 'dayjs';
 import { App } from 'antd';
 
-import type { Video, VideoRecord, LocationInfo, Individual, IndividualRecord, CropRecord, Crop, UserRecord, User } from "./types.ts";
+import type { Video, VideoRecord, LocationInfo, Individual, IndividualRecord, CropRecord, Crop, UserRecord, User, Embedding, EmbeddingRecord } from "./types.ts";
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from "./metadata.tsx";
-import { getUniqueLocationsFromVideos, getUniqueValuesPerField } from './utils/utils.ts';
+import { base64ToFloat32Array, getUniqueLocationsFromVideos, getUniqueValuesPerField } from './utils/utils.ts';
 
 const pb = new PocketBase('http://127.0.0.1:8090');
 
@@ -352,6 +352,24 @@ export const useCropsStore = createRealtimeCollectionStore<CropRecord, Crop>({
   },
   // For now ignore the imageUrl key
   ignoredUpdateKeys: ['imageUrl'],
+});
+
+
+// --- Embeddings store ---
+const modelName = 'MiewID'; // TODO get the model name from somewhere else later
+export const useEmbeddingsStore = createRealtimeCollectionStore<EmbeddingRecord, Embedding>({
+  collectionName: `crops_emb_${modelName}`,
+  processRecords: (records) => {
+    const processedRecords: Embedding[] = records.map((record: EmbeddingRecord) => ({
+      ...record,
+      embedding: base64ToFloat32Array(record.embedding_base64), // decode embedding from base64 string to Float32Array
+    }));
+    console.log('Processed embeddings', processedRecords);
+
+    return { processedRecords, uniqueValuesPerField: {} };
+  },
+  // ignore the decoded embedding when updating/creating records, since the backend only accepts the base64 string
+  ignoredUpdateKeys: ['embedding'],
 });
 
 

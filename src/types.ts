@@ -95,6 +95,19 @@ export interface Crop extends CropRecord {
   imageUrl: string;
 };
 
+export interface EmbeddingRecord extends RecordModel {
+  collectionId: string;
+  collectionName: string;
+  created: string;
+  updated: string;
+  id: string;
+  crop: string; // reference to crop id
+  embedding_base64: string; // base64 encoded embedding vector
+};
+export interface Embedding extends EmbeddingRecord {
+  embedding: Float32Array; // decoded embedding vector
+};
+
 export type MetadataFieldsType = Record<string, {
   displayName: string;
   icon?: JSX.Element;

@@ -3,7 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { Layout, App as AntApp } from 'antd';
 import { useShallow } from 'zustand/react/shallow'
 
-import { useCropsStore, useIndividualsStore, useDisconnectedMessage, useVideoStore, useAuth, useUsersStore } from "./DataStores.tsx";
+import { useCropsStore, useIndividualsStore, useDisconnectedMessage, useVideoStore, useAuth, useUsersStore, useEmbeddingsStore } from "./DataStores.tsx";
 import AppHeader from "./components/AppHeader.tsx";
 import { useWebGPU } from './hooks/useWebGPU.ts';
 import WebGPUBanner from './components/ui/WebGPUBanner.tsx';
@@ -26,6 +26,9 @@ const App: React.FC = () => {
   const [fetchCrops, subscribeToCrops, unsubscribeFromCrops] = useCropsStore(
     useShallow((state) => [state.fetch, state.subscribe, state.unsubscribe])
   );
+  const [fetchEmbeddings, subscribeToEmbeddings, unsubscribeFromEmbeddings] = useEmbeddingsStore(
+    useShallow((state) => [state.fetch, state.subscribe, state.unsubscribe])
+  );
   useDisconnectedMessage();
   const webgpu = useWebGPU();
   console.log("WebGPU supported:", webgpu);
@@ -38,7 +41,7 @@ const App: React.FC = () => {
       content: 'Loading...',
       duration: 0,
     });
-    Promise.all([fetchUsers(), fetchVideos(), fetchIndividuals(), fetchCrops()]).then(() => {
+    Promise.all([fetchUsers(), fetchVideos(), fetchIndividuals(), fetchCrops(), fetchEmbeddings()]).then(() => {
       message.destroy(key);
     }).catch((e) => {
       message.error({
@@ -51,11 +54,13 @@ const App: React.FC = () => {
     subscribeToVideos();
     subscribeToIndividuals();
     subscribeToCrops();
+    subscribeToEmbeddings();
     return () => {
       unsubscribeFromUsers();
       unsubscribeFromVideos();
       unsubscribeFromIndividuals();
       unsubscribeFromCrops();
+      unsubscribeFromEmbeddings();
     };
   }, []);
 
