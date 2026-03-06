@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { Tabs, type TabsProps } from "antd";
 import Icon, { AppstoreOutlined } from "@ant-design/icons";
-import { RuleGroupType } from 'react-querybuilder';
+import { RuleGroupType, type RuleType } from 'react-querybuilder';
 
 import Table from '../../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
@@ -27,6 +27,11 @@ const viewsTabsItems: TabsProps['items'] = [
   // },
 ];
 const initialQuery: RuleGroupType = { combinator: 'and', rules: [] };
+const getFirstRule = (query: RuleGroupType): RuleType | undefined => {
+  const firstRule = query.rules[0];
+  if (!firstRule || 'rules' in firstRule) return undefined;
+  return firstRule;
+};
 
 interface CropsDashboardViewProps {
   crops: Crop[];
@@ -56,12 +61,21 @@ const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
   const [query, _setQuery] = useState(initialQuery);
 
   const setQuery = (newQuery: RuleGroupType) => {
-    alert('Not implemented');
+    if (newQuery.rules.length > 1) {
+      alert('Max 1 filter supported at the moment');
+      return;
+    }
+    if (newQuery.rules.length > 0 && !getFirstRule(newQuery)) {
+      alert('Groups not supported at the moment');
+      return;
+    }
+    _setQuery(newQuery);
   };
   const filteredCrops = useMemo(() => {
+    const firstRule = getFirstRule(query);
     return crops.filter((crop) => {
-      if (query.rules.length == 0) return true;
-      return crop[query.rules[0].field] == query.rules[0].value;
+      if (!firstRule) return true;
+      return crop[firstRule.field as keyof Crop] == firstRule.value;
     });
   }, [crops, query]);
 

@@ -63,7 +63,7 @@ const BasicMapView = ({uniqueLocations, highlightLocationIds, style}: BasicMapVi
             key={locationInfo.id}
             position={[locationInfo.lat, locationInfo.long]}
             eventHandlers={{
-              click: (e) => {
+              click: () => {
                 // TODO implement filtering based on clicked marker (i.e. only show videos belonging to the clicked marker)
                 // console.log(e)
               }

@@ -1,17 +1,10 @@
 import React, { useState } from 'react';
 import { generatePath, Link } from 'react-router-dom';
-import { Button, Card, Flex, Select, Skeleton, Space, Tag, Tooltip } from 'antd';
-
-import { StarOutlined } from '@ant-design/icons';
+import { Card, Select, Skeleton, Space, Tag, Tooltip } from 'antd';
 
 import { Crop, Individual, MetadataFieldsType, RecordType } from '../../types.ts';
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
 import "./IndividualsGridView.scss";
-
-const imgStyle: React.CSSProperties = {
-  display: 'block',
-  width: 200,
-};
 
 const CropWithSkeleton: React.FC<{ crop: Crop }> = ({ crop }) => {
   const [loaded, setLoaded] = useState(false);

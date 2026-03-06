@@ -12,10 +12,8 @@ import ErrorPage from "./routes/ErrorPage.tsx";
 import VideosDashboardPage from "./routes/VideosDashboardPage.tsx";
 import IndividualsDashboardPage from "./routes/IndividualsDashboardPage.tsx";
 import CropsDashboardPage from './routes/CropsDashboardPage.tsx';
-import VideoDetailModal from "./routes/VideoDetailModal.tsx";
-import IndividualDetailModal from './routes/IndividualDetailModal.tsx';
-import CropDetailModal from './routes/CropDetailModal.tsx';
 import CompareModal from './routes/CompareModal.tsx';
+// @ts-ignore
 import VideoAnnotatorModal from './routes/VideoAnnotatorModal.tsx';
 import { AuthProvider } from './DataStores.tsx';
 import { ProtectedRoute } from './routes/ProtectedRoute.tsx';

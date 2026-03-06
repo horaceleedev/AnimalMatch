@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react'
-import { Link, useNavigate, useOutletContext, useParams } from "react-router-dom";
-import { Button, Flex, Modal, Select, Space, Tooltip } from "antd";
-import { intersection } from 'es-toolkit';
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
+import { Flex, Modal, Select, Tooltip } from "antd";
 import { useShallow } from 'zustand/react/shallow';
 
 import { useVideoStore, useIndividualsStoreWithCrops, useAuth } from "../DataStores.tsx";
+// @ts-ignore
 import VideoAnnotator from '../components/VideoAnnotator/VideoAnnotator.tsx';
 import InnerModal from './InnerModal.tsx';
 import AnnotationStatusLabel from '../components/ui/AnnotationStatusLabel.tsx';
@@ -119,7 +119,7 @@ const VideoAnnotatorModal: React.FC = () => {
         createIndividual={createIndividual}
         deleteIndividual={deleteIndividual}
         createCrop={createCrop}
-        openModal={(type, id) => setInnerModalProps({ type, id })}
+        openModal={(type: RecordType, id: string) => setInnerModalProps({ type, id })}
       />
       <InnerModal {...innerModalProps} exitModal={() => setInnerModalProps({ type: undefined, id: undefined })} />
     </Modal>

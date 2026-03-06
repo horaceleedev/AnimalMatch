@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Splitter, Tabs, type TabsProps } from "antd";
 import Icon from "@ant-design/icons";
-import { formatQuery, RuleGroupType } from 'react-querybuilder';
+import { RuleGroupType, type RuleType } from 'react-querybuilder';
 
 import Table from '../../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Map from '../../assets/material_symbols/map_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -31,6 +31,11 @@ const viewsTabsItems: TabsProps['items'] = [
   },
 ];
 const initialQuery: RuleGroupType = { combinator: 'and', rules: [] };
+const getFirstRule = (query: RuleGroupType): RuleType | undefined => {
+  const firstRule = query.rules[0];
+  if (!firstRule || 'rules' in firstRule) return undefined;
+  return firstRule;
+};
 
 interface IndividualsDashboardViewProps {
   individuals: Individual[];
@@ -63,18 +68,17 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
       alert('Max 1 filter supported at the moment');
       return;
     }
-    if (newQuery.rules.length > 0) {
-      if (newQuery.rules[0].combinator) {
-        alert('Groups not supported at the moment');
-        return;
-      }
+    if (newQuery.rules.length > 0 && !getFirstRule(newQuery)) {
+      alert('Groups not supported at the moment');
+      return;
     }
     _setQuery(newQuery);
   };
   const filteredIndividuals = useMemo(() => {
+    const firstRule = getFirstRule(query);
     return individuals.filter((individual) => {
-      if (query.rules.length == 0) return true;
-      return individual[query.rules[0].field] == query.rules[0].value;
+      if (!firstRule) return true;
+      return individual[firstRule.field as keyof Individual] == firstRule.value;
     });
   }, [individuals,  query]);
 

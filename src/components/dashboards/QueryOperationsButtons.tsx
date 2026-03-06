@@ -3,10 +3,11 @@ import { Button, Input, Popover, Select, Space } from "antd";
 import { QueryBuilderDnD } from '@react-querybuilder/dnd';
 import * as ReactDnD from 'react-dnd';
 import * as ReactDndHtml5Backend from 'react-dnd-html5-backend';
-import type { Field, RuleGroupType } from 'react-querybuilder';
+import type { SelectProps } from 'antd';
+import type { Field, RuleGroupType, RuleType, ValueEditorType } from 'react-querybuilder';
 import { QueryBuilder } from 'react-querybuilder';
 // import { fields } from './fields';
-import 'react-querybuilder/dist/query-builder.scss';
+import 'react-querybuilder/dist/query-builder.css';
 import { QueryBuilderAntD } from '@react-querybuilder/antd';
 
 import Icon, { CloseOutlined, FilterOutlined, GroupOutlined } from "@ant-design/icons";
@@ -34,12 +35,14 @@ const FieldSelector: React.FC<FieldSelectorProps> = ({
     [metadataFields]
   );
 
-  const optionRender = (option) => (
+  const optionRender: SelectProps['optionRender'] = (option) => (
     <Space>{option.data.icon} {option.label}</Space>
   );
-  const labelRender = (option) => (
-    <Space>{metadataFields[option.value].icon} {option.label}</Space>
-  )
+  const labelRender: SelectProps['labelRender'] = (option) => {
+    const fieldKey = String(option.value);
+    const icon = metadataFields[fieldKey]?.icon;
+    return <Space>{icon} {option.label}</Space>;
+  };
   
   return <Select
     showSearch
@@ -73,7 +76,9 @@ const CustomQueryBuilder = ({metadataFields, uniqueValuesPerField, query, setQue
         icon: field.icon,
         datatype: field.type,
         inputType: field.inputType,
-        valueEditorType: field.valueEditorType,
+      }
+      if (field.valueEditorType) {
+        output.valueEditorType = field.valueEditorType as ValueEditorType;
       }
       if (field.inputType === 'text') {
         output.defaultOperator = 'contains';
@@ -129,6 +134,11 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
   groupFields, setGroupFields, groupOrders, setGroupOrders,
   query, setQuery
 }: QueryOperationsButtonsProps) => {
+  const firstFilterRule = useMemo(
+    () => query.rules.find((rule): rule is RuleType => !('rules' in rule)),
+    [query.rules]
+  );
+
   const handleSortFieldSelect = (val: string) => {
     setSortFields([val]);
     if (sortOrders.length > 0) {
@@ -204,10 +214,10 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
           {(groupFields.length > 0) ? `Grouped by ${metadataFields[groupFields[0]].displayName}` : "Group"}
         </Button> */}
         <Button type="text" icon={<FilterOutlined />}
-          color={(query.rules.length > 0) ? "primary" : "default"}
-          variant={(query.rules.length > 0) ? "filled" : "text"}
+          color={firstFilterRule ? "primary" : "default"}
+          variant={firstFilterRule ? "filled" : "text"}
         >
-          {(query.rules.length > 0) ? `Filtered by ${metadataFields[query.rules[0].field].displayName}` : "Filter"}
+          {firstFilterRule ? `Filtered by ${metadataFields[firstFilterRule.field]?.displayName ?? firstFilterRule.field}` : "Filter"}
         </Button>
       </Popover>
 
