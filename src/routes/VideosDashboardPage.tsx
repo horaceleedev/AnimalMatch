@@ -159,7 +159,7 @@ const VideosDashboardPage: React.FC = () => {
       >
         <VideosDashboardSider
           selectedSiderKey={selectedSiderKey}
-          setSelectedSiderKey={setSelectedSiderKey}
+          onSelectSiderKey={(key: string) => setSelectedSiderKey(key)}
           videosBySiderKey={videosBySiderKey}
           videoMetadataFields={videosDashboardMetadataFields}
           uniqueValuesPerField={uniqueValuesPerField}
