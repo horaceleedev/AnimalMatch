@@ -34,6 +34,7 @@
     "react-router-dom": "^6.26.2",
     "react-scroll-sync": "^1.0.2",
     "react-sticky-box": "^2.0.5",
+    "sift": "^16.0.0",
     "use-immer": "^0.10.0",
     "zustand": "^5.0.0-rc.2"
   },

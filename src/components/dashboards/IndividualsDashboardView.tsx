@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Splitter, Tabs, type TabsProps } from "antd";
 import Icon from "@ant-design/icons";
-import { formatQuery, RuleGroupType } from 'react-querybuilder';
+import { RuleGroupType } from 'react-querybuilder';
 
 import Table from '../../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Map from '../../assets/material_symbols/map_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -11,6 +11,7 @@ import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
 import BasicMapView from '../ui/BasicMapView.tsx';
 import { getUniqueLocationsFromIndividuals } from '../../utils/utils.ts';
+import { filterByQuery } from '../../lib/filtering/filterEngine.ts';
 import { Individual, MetadataFieldsType, Video } from '../../types.ts';
 
 const viewsTabsItems: TabsProps['items'] = [
@@ -59,24 +60,11 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
   const [query, _setQuery] = useState(initialQuery);
 
   const setQuery = (newQuery: RuleGroupType) => {
-    if (newQuery.rules.length > 1) {
-      alert('Max 1 filter supported at the moment');
-      return;
-    }
-    if (newQuery.rules.length > 0) {
-      if (newQuery.rules[0].combinator) {
-        alert('Groups not supported at the moment');
-        return;
-      }
-    }
     _setQuery(newQuery);
   };
   const filteredIndividuals = useMemo(() => {
-    return individuals.filter((individual) => {
-      if (query.rules.length == 0) return true;
-      return individual[query.rules[0].field] == query.rules[0].value;
-    });
-  }, [individuals,  query]);
+    return filterByQuery(individuals, query);
+  }, [individuals, query]);
 
   const uniqueLocations = useMemo(() => {
     return getUniqueLocationsFromIndividuals(filteredIndividuals, videos);

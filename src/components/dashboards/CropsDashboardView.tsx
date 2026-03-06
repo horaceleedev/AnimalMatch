@@ -8,6 +8,7 @@ import Table from '../../assets/material_symbols/table_24dp_5F6368_FILL0_wght400
 import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import CropsGridView from '../grid-views/CropsGridView.tsx';
 import { Crop, MetadataFieldsType, RecordType } from '../../types.ts';
+import { filterByQuery } from '../../lib/filtering/filterEngine.ts';
 
 const viewsTabsItems: TabsProps['items'] = [
   {
@@ -56,13 +57,10 @@ const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
   const [query, _setQuery] = useState(initialQuery);
 
   const setQuery = (newQuery: RuleGroupType) => {
-    alert('Not implemented');
+    _setQuery(newQuery);
   };
   const filteredCrops = useMemo(() => {
-    return crops.filter((crop) => {
-      if (query.rules.length == 0) return true;
-      return crop[query.rules[0].field] == query.rules[0].value;
-    });
+    return filterByQuery(crops, query);
   }, [crops, query]);
 
   return (

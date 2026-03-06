@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react'
 import { Button, Input, Popover, Select, Space } from "antd";
+import type { SelectProps } from 'antd';
 import { QueryBuilderDnD } from '@react-querybuilder/dnd';
 import * as ReactDnD from 'react-dnd';
 import * as ReactDndHtml5Backend from 'react-dnd-html5-backend';
-import type { Field, RuleGroupType } from 'react-querybuilder';
+import type { RuleGroupType } from 'react-querybuilder';
 import { QueryBuilder } from 'react-querybuilder';
 // import { fields } from './fields';
 import 'react-querybuilder/dist/query-builder.scss';
@@ -13,6 +14,7 @@ import Icon, { CloseOutlined, FilterOutlined, GroupOutlined } from "@ant-design/
 import SwapVert from '../../assets/material_symbols/swap_vert_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
 import type { MetadataFieldsType } from "../../types.ts";
+import { buildQueryBuilderFields } from '../../lib/filtering/filterBuilderConfig.ts';
 import "./QueryOperationsButtons.scss";
 
 type FieldSelectorProps = {
@@ -20,13 +22,19 @@ type FieldSelectorProps = {
   value: string;
   onChange: (x: string) => void;
 };
+type FieldOption = {
+  value: string;
+  label: string;
+  icon?: React.ReactNode;
+};
+type FieldSelectProps = SelectProps<string, FieldOption>;
 
 const FieldSelector: React.FC<FieldSelectorProps> = ({
   metadataFields,
   value, onChange,
 }: FieldSelectorProps) => {
   const fieldOptions = useMemo(
-    () => Object.entries(metadataFields).map(([fieldValue, field]) => ({
+    (): FieldOption[] => Object.entries(metadataFields).map(([fieldValue, field]) => ({
       value: fieldValue,
       label: field.displayName,
       icon: field.icon,
@@ -34,12 +42,13 @@ const FieldSelector: React.FC<FieldSelectorProps> = ({
     [metadataFields]
   );
 
-  const optionRender = (option) => (
+  const optionRender: NonNullable<FieldSelectProps['optionRender']> = (option) => (
     <Space>{option.data.icon} {option.label}</Space>
   );
-  const labelRender = (option) => (
-    <Space>{metadataFields[option.value].icon} {option.label}</Space>
-  )
+  const labelRender: NonNullable<FieldSelectProps['labelRender']> = (option) => {
+    const fieldValue = String(option.value);
+    return <Space>{metadataFields[fieldValue]?.icon} {option.label}</Space>;
+  };
   
   return <Select
     showSearch
@@ -63,30 +72,12 @@ type CustomQueryBuilderProps = {
   query: RuleGroupType;
   setQuery: (x: RuleGroupType) => void;
 };
+
 const CustomQueryBuilder = ({metadataFields, uniqueValuesPerField, query, setQuery}: CustomQueryBuilderProps) => {
-  const fields = useMemo(() => {
-    if (Object.keys(uniqueValuesPerField).length === 0) return [];
-    return Object.entries(metadataFields).map(([fieldValue, field]) => {
-      let output: Field = {
-        name: fieldValue,
-        label: field.displayName,
-        icon: field.icon,
-        datatype: field.type,
-        inputType: field.inputType,
-        valueEditorType: field.valueEditorType,
-      }
-      if (field.inputType === 'text') {
-        output.defaultOperator = 'contains';
-      }
-      if (field.valueEditorType === 'select' || field.valueEditorType === 'multiselect') {
-        output.values = uniqueValuesPerField[fieldValue].map(x => ({name: x, value: x}));
-      }
-      if (field.type === 'rich_text') {
-        output.datatype = 'text';
-      }
-      return output
-    })
-  }, [metadataFields, uniqueValuesPerField]);
+  const fields = useMemo(
+    () => buildQueryBuilderFields(metadataFields, uniqueValuesPerField),
+    [metadataFields, uniqueValuesPerField]
+  );
 
   console.log(query);
 
@@ -129,6 +120,15 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
   groupFields, setGroupFields, groupOrders, setGroupOrders,
   query, setQuery
 }: QueryOperationsButtonsProps) => {
+  const filterLabel = useMemo(() => {
+    if (query.rules.length === 0) return "Filter";
+    const firstRule = query.rules[0] as { field?: string } | undefined;
+    if (firstRule?.field && metadataFields[firstRule.field]) {
+      return `Filtered by ${metadataFields[firstRule.field].displayName}`;
+    }
+    return "Filtered";
+  }, [query.rules, metadataFields]);
+
   const handleSortFieldSelect = (val: string) => {
     setSortFields([val]);
     if (sortOrders.length > 0) {
@@ -207,7 +207,7 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
           color={(query.rules.length > 0) ? "primary" : "default"}
           variant={(query.rules.length > 0) ? "filled" : "text"}
         >
-          {(query.rules.length > 0) ? `Filtered by ${metadataFields[query.rules[0].field].displayName}` : "Filter"}
+          {filterLabel}
         </Button>
       </Popover>
 

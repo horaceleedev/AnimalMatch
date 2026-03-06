@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { matchPath, Outlet, useLocation } from "react-router-dom";
-import { Layout, Splitter, Tabs, theme } from "antd";
+import { Layout, Splitter, Tabs } from "antd";
 import type { TabsProps } from 'antd';
-import Icon, { AppstoreOutlined } from "@ant-design/icons";
+import Icon, { AppstoreOutlined, NumberOutlined } from "@ant-design/icons";
 import { RevoGrid } from '@revolist/react-datagrid';
 import { RuleGroupType } from 'react-querybuilder';
 
@@ -13,10 +13,11 @@ import { gridEditors, tableColumns, videoMetadataFields } from "../metadata.tsx"
 import DashboardContent from '../components/dashboards/DashboardContent.tsx';
 import VideosGridView from "../components/grid-views/VideosGridView.tsx";
 import QueryOperationsButtons from "../components/dashboards/QueryOperationsButtons.tsx";
-import { useAuth, useVideoStore } from "../DataStores.tsx";
+import { useAuth, useIndividualsStore, useVideoStore } from "../DataStores.tsx";
 import BasicMapView from '../components/ui/BasicMapView.tsx';
 import { useVideosDashboardSiderState, VideosDashboardSider } from '../components/dashboards/VideosDashboardSider.tsx';
-import { Video } from '../types.ts';
+import { MetadataFieldsType, Video } from '../types.ts';
+import { filterByQuery } from '../lib/filtering/filterEngine.ts';
 import "./VideosDashboardPage.scss";
 
 /**
@@ -61,10 +62,20 @@ const viewsTabsItems: TabsProps['items'] = [
   },
 ];
 const initialQuery: RuleGroupType = { combinator: 'and', rules: [] };
+type VideoWithLinkedCount = Video & { linked_individual_count: number };
+const linkedIndividualCountMetadataField: MetadataFieldsType[string] = {
+  displayName: 'Linked individual count',
+  icon: <NumberOutlined />,
+  type: 'number',
+  inputType: 'number',
+  isInternal: true,
+  isUneditable: true,
+};
 
 const VideosDashboardPage: React.FC = () => {
   const [view, setView] = useState(viewsTabsItems[0].key);
   const videos = useVideoStore((state) => state.processedRecords);
+  const individuals = useIndividualsStore((state) => state.processedRecords);
   const uniqueLocations = useVideoStore((state) => state.extra.uniqueLocations);
   const uniqueValuesPerField = useVideoStore((state) => state.uniqueValuesPerField);
 
@@ -75,17 +86,53 @@ const VideosDashboardPage: React.FC = () => {
   const [groupFields, setGroupFields] = useState<string[]>([]);
   const [groupOrders, setGroupOrders] = useState<("asc" | "desc")[]>([]);
   const [query, _setQuery] = useState(initialQuery);
-  const setQuery = () => {
-    alert('Not implemented');
-  }
+  const setQuery = (newQuery: RuleGroupType) => {
+    _setQuery(newQuery);
+  };
 
-  const [selectedSiderKey, setSelectedSiderKey, videosBySiderKey, videosFiltered] = useVideosDashboardSiderState(videos, videoMetadataFields, user);
+  const linkedCountByVideoId = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const individual of individuals) {
+      const uniqueVideoIds = new Set(individual.videos);
+      for (const videoId of uniqueVideoIds) {
+        counts[videoId] = (counts[videoId] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }, [individuals]);
+
+  const videosWithLinkedIndividualCount: VideoWithLinkedCount[] = useMemo(
+    () =>
+      videos.map(video => ({
+        ...video,
+        linked_individual_count: linkedCountByVideoId[video.id] ?? 0,
+      })),
+    [videos, linkedCountByVideoId]
+  );
+
+  const videosDashboardMetadataFields = useMemo<MetadataFieldsType>(
+    () => ({
+      ...videoMetadataFields,
+      linked_individual_count: linkedIndividualCountMetadataField,
+    }),
+    []
+  );
+
+  const [selectedSiderKey, setSelectedSiderKey, videosBySiderKey, videosFiltered] = useVideosDashboardSiderState(
+    videosWithLinkedIndividualCount,
+    videosDashboardMetadataFields,
+    user
+  );
+  const videosFilteredByQuery = useMemo(
+    () => filterByQuery(videosFiltered, query),
+    [videosFiltered, query]
+  );
 
   /*
     Keep a copy of filteredVideos, which only updates when navigating back to the dashboard
     or changing the sider selection.
   */
-  const [outletVideos, setOutletVideos] = useOutletVideosState(videosFiltered);
+  const [outletVideos, setOutletVideos] = useOutletVideosState(videosFilteredByQuery);
   const outletContext = useMemo(() => ({
     videos: outletVideos,
   }), [outletVideos]);
@@ -96,15 +143,13 @@ const VideosDashboardPage: React.FC = () => {
   };
   // Update outlet videos after selecting a sider key
   useEffect(() => {
-    setOutletVideos(videosBySiderKey[selectedSiderKey]);
-  }, [selectedSiderKey]);
+    setOutletVideos(videosFilteredByQuery);
+  }, [selectedSiderKey, videosFilteredByQuery]);
 
   const highlightLocationIds = useMemo(
-    () => new Set(videosFiltered.map(video => JSON.stringify([video.lat, video.long]))),
-    [videosFiltered]
+    () => new Set(videosFilteredByQuery.map(video => JSON.stringify([video.lat, video.long]))),
+    [videosFilteredByQuery]
   );
-
-  const { colorBgContainer } = theme.useToken().token;
 
   return (
     <>
@@ -116,12 +161,12 @@ const VideosDashboardPage: React.FC = () => {
           selectedSiderKey={selectedSiderKey}
           setSelectedSiderKey={setSelectedSiderKey}
           videosBySiderKey={videosBySiderKey}
-          videoMetadataFields={videoMetadataFields}
+          videoMetadataFields={videosDashboardMetadataFields}
           uniqueValuesPerField={uniqueValuesPerField}
         />
         <DashboardContent>
           <QueryOperationsButtons
-            metadataFields={videoMetadataFields} uniqueValuesPerField={uniqueValuesPerField}
+            metadataFields={videosDashboardMetadataFields} uniqueValuesPerField={uniqueValuesPerField}
             sortFields={sortFields} setSortFields={setSortFields} sortOrders={sortOrders} setSortOrders={setSortOrders}
             groupFields={groupFields} setGroupFields={setGroupFields} groupOrders={groupOrders} setGroupOrders={setGroupOrders}
             query={query} setQuery={setQuery}
@@ -132,8 +177,8 @@ const VideosDashboardPage: React.FC = () => {
           {
             (view === 'grid') ? 
               <VideosGridView
-                videos={videosFiltered}
-                videoMetadataFields={videoMetadataFields}
+                videos={videosFilteredByQuery}
+                videoMetadataFields={videosDashboardMetadataFields}
                 isListView={false}
                 sortFields={sortFields}
                 sortOrders={sortOrders}
@@ -149,15 +194,15 @@ const VideosDashboardPage: React.FC = () => {
                   (sortFields.length > 0 || groupFields.length > 0) &&
                   "Note: the sorting/grouping options you have selected are not applied to this table view at the moment"
                 }
-                <RevoGrid columns={tableColumns} source={videosFiltered} rowHeaders={true} resize={true} autoSizeColumn={true} range={true} readonly={true} editors={gridEditors} />
+                <RevoGrid columns={tableColumns} source={videosFilteredByQuery} rowHeaders={true} resize={true} autoSizeColumn={true} range={true} readonly={true} editors={gridEditors} />
               </>
               :
               (uniqueLocations.length > 0) &&
               <Splitter>
                 <Splitter.Panel defaultSize="40%" min="20%" max="70%" style={{height: 600, overflow: 'scroll', paddingRight: 12}}>
                   <VideosGridView
-                    videos={videosFiltered}
-                    videoMetadataFields={videoMetadataFields}
+                    videos={videosFilteredByQuery}
+                    videoMetadataFields={videosDashboardMetadataFields}
                     isListView={true}
                     sortFields={sortFields}
                     sortOrders={sortOrders}
