@@ -4,6 +4,8 @@ import type { MetadataFieldsType } from '../../types';
 type FieldCategory = 'text' | 'number' | 'date' | 'boolean' | 'enum' | 'tags';
 type QueryBuilderOperator = { value: string; label: string };
 
+const MULTI_VALUE_OPERATORS = new Set(['in', 'notIn']); // Operators rather than fields that require multi-value input
+
 const TEXT_OPERATORS: QueryBuilderOperator[] = [
   { label: 'is', value: '=' },
   { label: 'is not', value: '!=' },
@@ -107,18 +109,22 @@ export const buildQueryBuilderFields = (
 ): Field[] =>
   Object.entries(metadataFields).map(([fieldValue, field]) => {
     const category = metadataTypeToCategory(field.type);
+    const valueEditorType =
+      category === 'enum' && field.valueEditorType === 'select'
+        ? ((operator: string) => (MULTI_VALUE_OPERATORS.has(operator) ? 'multiselect' : 'select')) as Field['valueEditorType']
+        : (field.valueEditorType as Field['valueEditorType']);
     const output: Field = {
       name: fieldValue,
       label: field.displayName,
       icon: field.icon,
       datatype: field.type === 'rich_text' ? 'text' : field.type,
       inputType: field.inputType,
-      valueEditorType: field.valueEditorType as Field['valueEditorType'],
+      valueEditorType,
       defaultOperator: defaultOperatorByCategory[category],
       operators: operatorsByCategory[category],
     };
 
-    if (field.valueEditorType === 'select' || field.valueEditorType === 'multiselect') {
+    if (field.type === 'select' || field.type === 'multiselect') {
       output.values = (uniqueValuesPerField[fieldValue] ?? []).map(x => ({ name: x, value: x }));
     }
 
