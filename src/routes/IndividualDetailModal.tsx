@@ -3,6 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Flex, Modal } from "antd";
 import { intersection } from 'es-toolkit';
 
+// import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
+
 import { useIndividualsStoreWithCrops, useVideoStore } from "../DataStores.tsx";
 import IndividualDetailView from '../components/detail-views/IndividualDetailView.tsx';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';

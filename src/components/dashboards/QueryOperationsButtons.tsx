@@ -135,6 +135,7 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
   query, setQuery
 }: QueryOperationsButtonsProps) => {
   const firstFilterRule = useMemo(
+    // Find the first rule in the query that is not a nested group
     () => query.rules.find((rule): rule is RuleType => !('rules' in rule)),
     [query.rules]
   );

@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { useNavigate, useParams } from "react-router-dom";
 import { Flex, Modal } from "antd";
 
+// import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
+
 import { useIndividualsStoreWithCrops, useVideosStoreWithUsers } from "../DataStores.tsx";
 import VideoDetailView from '../components/detail-views/VideoDetailView.tsx';
 import { RecordDetailModalProps, RecordType } from '../types.ts';

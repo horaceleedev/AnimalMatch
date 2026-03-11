@@ -29,7 +29,7 @@ const viewsTabsItems: TabsProps['items'] = [
 const initialQuery: RuleGroupType = { combinator: 'and', rules: [] };
 const getFirstRule = (query: RuleGroupType): RuleType | undefined => {
   const firstRule = query.rules[0];
-  if (!firstRule || 'rules' in firstRule) return undefined;
+  if (!firstRule || 'rules' in firstRule) return undefined; // if the first rule is missing or is a nested rule group
   return firstRule;
 };
 
@@ -42,7 +42,7 @@ interface CropsDashboardViewProps {
   // gridViewButtons?: (crop: Crop) => JSX.Element;
   defaultGroupFields?: string[];
   defaultGroupOrders?: ("asc" | "desc")[];
-  openModal?: (type: RecordType , id: string) => void;
+  openModal?: (type: RecordType, id: string) => void;
 }
 const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
   crops, uniqueValuesPerField, cropsMetadataFields,

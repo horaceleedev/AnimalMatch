@@ -33,7 +33,7 @@ const viewsTabsItems: TabsProps['items'] = [
 const initialQuery: RuleGroupType = { combinator: 'and', rules: [] };
 const getFirstRule = (query: RuleGroupType): RuleType | undefined => {
   const firstRule = query.rules[0];
-  if (!firstRule || 'rules' in firstRule) return undefined;
+  if (!firstRule || 'rules' in firstRule) return undefined; // if the first rule is missing or is a nested rule group
   return firstRule;
 };
 
@@ -80,7 +80,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
       if (!firstRule) return true;
       return individual[firstRule.field as keyof Individual] == firstRule.value;
     });
-  }, [individuals,  query]);
+  }, [individuals, query]);
 
   const uniqueLocations = useMemo(() => {
     return getUniqueLocationsFromIndividuals(filteredIndividuals, videos);

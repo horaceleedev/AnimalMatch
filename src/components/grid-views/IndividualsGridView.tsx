@@ -6,6 +6,11 @@ import { Crop, Individual, MetadataFieldsType, RecordType } from '../../types.ts
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
 import "./IndividualsGridView.scss";
 
+// const imgStyle: React.CSSProperties = {
+//   display: 'block',
+//   width: 200,
+// };
+
 const CropWithSkeleton: React.FC<{ crop: Crop }> = ({ crop }) => {
   const [loaded, setLoaded] = useState(false);
   const scaledCropWidth = crop.height > 0

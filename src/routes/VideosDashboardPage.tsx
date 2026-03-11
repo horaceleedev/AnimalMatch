@@ -100,6 +100,8 @@ const VideosDashboardPage: React.FC = () => {
     [videosFiltered]
   );
 
+  // const { colorBgContainer } = theme.useToken().token;
+
   return (
     <>
       <Layout
