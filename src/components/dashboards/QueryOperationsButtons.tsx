@@ -4,7 +4,7 @@ import { QueryBuilderDnD } from '@react-querybuilder/dnd';
 import * as ReactDnD from 'react-dnd';
 import * as ReactDndHtml5Backend from 'react-dnd-html5-backend';
 import type { SelectProps } from 'antd';
-import type { Field, RuleGroupType, RuleType, ValueEditorType } from 'react-querybuilder';
+import type { Field, RuleGroupType, RuleType } from 'react-querybuilder';
 import { QueryBuilder } from 'react-querybuilder';
 // import { fields } from './fields';
 import 'react-querybuilder/dist/query-builder.css';
@@ -78,7 +78,7 @@ const CustomQueryBuilder = ({metadataFields, uniqueValuesPerField, query, setQue
         inputType: field.inputType,
       }
       if (field.valueEditorType) {
-        output.valueEditorType = field.valueEditorType as ValueEditorType;
+        output.valueEditorType = field.valueEditorType;
       }
       if (field.inputType === 'text') {
         output.defaultOperator = 'contains';
