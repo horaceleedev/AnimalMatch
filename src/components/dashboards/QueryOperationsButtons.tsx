@@ -76,9 +76,7 @@ const CustomQueryBuilder = ({metadataFields, uniqueValuesPerField, query, setQue
         icon: field.icon,
         datatype: field.type,
         inputType: field.inputType,
-      }
-      if (field.valueEditorType) {
-        output.valueEditorType = field.valueEditorType;
+        valueEditorType: field.valueEditorType,
       }
       if (field.inputType === 'text') {
         output.defaultOperator = 'contains';
