@@ -228,11 +228,13 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
 }: QueryOperationsButtonsProps) => {
   const filterLabel = useMemo(() => {
     if (query.rules.length === 0) return "Filter";
-    const firstRule = query.rules[0] as { field?: string } | undefined;
-    if (firstRule?.field && metadataFields[firstRule.field]) {
-      return `Filtered by ${metadataFields[firstRule.field].displayName}`;
+    if (query.rules.length === 1) {
+      const firstRule = query.rules[0] as { field?: string } | undefined;
+      if (firstRule?.field && metadataFields[firstRule.field]) {
+        return `Filtered by ${metadataFields[firstRule.field].displayName}`;
+      }
     }
-    return "Filtered";
+    return `${query.rules.length} filters`;
   }, [query.rules, metadataFields]);
 
   const handleSortFieldSelect = (val: string) => {
