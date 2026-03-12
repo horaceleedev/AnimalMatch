@@ -11,7 +11,7 @@ import 'react-querybuilder/dist/query-builder.scss';
 import { AntDValueEditor, QueryBuilderAntD } from '@react-querybuilder/antd';
 import type { DefaultOptionType, LabelInValueType } from 'rc-select/lib/Select';
 
-import Icon, { CloseCircleOutlined, CloseOutlined, FilterOutlined, GroupOutlined } from "@ant-design/icons";
+import Icon, { ClearOutlined, CloseCircleOutlined, CloseOutlined, FilterOutlined, GroupOutlined } from "@ant-design/icons";
 import SwapVert from '../../assets/material_symbols/swap_vert_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
 import type { MetadataFieldsType } from "../../types.ts";
@@ -262,6 +262,9 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
     setGroupFields([]);
     setGroupOrders([]);
   };
+  const clearFilters = () => {
+    setQuery({ combinator: 'and', rules: [] });
+  };
 
   return (
     <Space size="small" style={{ marginBottom: 10 }}>
@@ -291,7 +294,17 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
       </Popover>
 
       {/* Filter button and popover */}
-      <Popover title="Filter" content={
+      <Popover title={
+        <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+          <span>Filter</span>
+          {
+            query.rules.length > 0 &&
+              <Button size="small" icon={<ClearOutlined />} onClick={clearFilters}>
+                Clear all
+              </Button>
+          }
+        </Space>
+      } content={
         <Space>
           <CustomQueryBuilder metadataFields={metadataFields} uniqueValuesPerField={uniqueValuesPerField} query={query} setQuery={setQuery} />
           {/* <FieldSelector metadataFields={metadataFields} value={groupFields[0]} onChange={handleGroupFieldSelect} />
