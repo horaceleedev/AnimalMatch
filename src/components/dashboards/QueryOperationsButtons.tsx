@@ -4,17 +4,20 @@ import type { SelectProps } from 'antd';
 import { QueryBuilderDnD } from '@react-querybuilder/dnd';
 import * as ReactDnD from 'react-dnd';
 import * as ReactDndHtml5Backend from 'react-dnd-html5-backend';
-import type { RuleGroupType } from 'react-querybuilder';
+import type { RuleGroupType, ValueEditorProps } from 'react-querybuilder';
 import { QueryBuilder } from 'react-querybuilder';
 // import { fields } from './fields';
 import 'react-querybuilder/dist/query-builder.scss';
-import { QueryBuilderAntD } from '@react-querybuilder/antd';
+import { AntDValueEditor, QueryBuilderAntD } from '@react-querybuilder/antd';
+import type { DefaultOptionType, LabelInValueType } from 'rc-select/lib/Select';
 
-import Icon, { CloseOutlined, FilterOutlined, GroupOutlined } from "@ant-design/icons";
+import Icon, { CloseCircleOutlined, CloseOutlined, FilterOutlined, GroupOutlined } from "@ant-design/icons";
 import SwapVert from '../../assets/material_symbols/swap_vert_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
 import type { MetadataFieldsType } from "../../types.ts";
 import { buildQueryBuilderFields } from '../../lib/filtering/filterBuilderConfig.ts';
+import { IndividualLinkButton, UserLabel, VideoLinkButton } from '../smart-components/LinkButtons.tsx';
+import AnnotationStatusLabel from '../ui/AnnotationStatusLabel.tsx';
 import "./QueryOperationsButtons.scss";
 
 type FieldSelectorProps = {
@@ -73,13 +76,115 @@ type CustomQueryBuilderProps = {
   setQuery: (x: RuleGroupType) => void;
 };
 
+type QueryBuilderFieldData = {
+  renderType?: MetadataFieldsType[string]['renderType'];
+};
+
+const normalizeMultiSelectValue = (value: ValueEditorProps['value']) => {
+  if (Array.isArray(value)) return value.map(String);
+  if (typeof value === 'string') {
+    if (value.length === 0) return [];
+    return value.split(',').map(part => part.trim()).filter(Boolean);
+  }
+  return [];
+};
+
+const renderDropdownOption = (
+  renderType: NonNullable<MetadataFieldsType[string]['renderType']>,
+  option: DefaultOptionType
+) => {
+  const id = String(option.value ?? '');
+
+  if (renderType === 'video_link') {
+    return <VideoLinkButton id={id} disableNavigation />;
+  }
+  if (renderType === 'individual_link') {
+    return <IndividualLinkButton id={id} disableNavigation />;
+  }
+  if (renderType === 'user_label') {
+    return <UserLabel id={id} />;
+  }
+
+  return <AnnotationStatusLabel status={id} />;
+};
+
+const renderSelectedValue = (
+  renderType: NonNullable<MetadataFieldsType[string]['renderType']>,
+  option: DefaultOptionType | LabelInValueType
+) => renderDropdownOption(renderType, option as DefaultOptionType);
+
+const RenderAwareValueEditor = (props: ValueEditorProps) => {
+  const renderType = (props.fieldData as QueryBuilderFieldData | undefined)?.renderType;
+
+  if (!renderType || (props.type !== 'select' && props.type !== 'multiselect')) {
+    return <AntDValueEditor {...props} />;
+  }
+
+  if (props.operator === 'null' || props.operator === 'notNull') {
+    return null;
+  }
+
+  const normalizedOptions = (props.values ?? []).map(option => ({
+    value: String(option.value),
+    label: option.label ?? option.name ?? option.value,
+  }));
+  const labelRender: NonNullable<SelectProps['labelRender']> = option =>
+    renderSelectedValue(renderType, option);
+  const tagRender: NonNullable<SelectProps['tagRender']> = ({ value, closable, onClose }) => (
+    <span
+      onMouseDown={event => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+      style={{ display: 'inline-flex', alignItems: 'flex-start', marginInlineEnd: 4 }}
+    >
+      {renderSelectedValue(renderType, { value })}
+      {
+        closable ?
+          <CloseCircleOutlined
+            onMouseDown={event => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+            onClick={onClose}
+            style={{ cursor: 'pointer', marginInlineStart: 4, marginTop: 4 }}
+          />
+        :
+          null
+      }
+    </span>
+  );
+
+  return (
+    <span title={props.title} className={props.className}>
+      <Select
+        className="render-aware-select"
+        mode={props.type === 'multiselect' ? 'multiple' : undefined}
+        popupMatchSelectWidth={false}
+        disabled={props.disabled}
+        value={props.type === 'multiselect' ? normalizeMultiSelectValue(props.value) : props.value}
+        onChange={nextValue => {
+          if (props.type === 'multiselect') {
+            const values = Array.isArray(nextValue) ? nextValue.map(String) : [];
+            props.handleOnChange(props.listsAsArrays ? values : values.join(','));
+            return;
+          }
+          props.handleOnChange(nextValue);
+        }}
+        options={normalizedOptions}
+        optionRender={option => renderDropdownOption(renderType, option.data)}
+        labelRender={labelRender}
+        tagRender={props.type === 'multiselect' ? tagRender : undefined}
+      />
+    </span>
+  );
+};
+
 const CustomQueryBuilder = ({metadataFields, uniqueValuesPerField, query, setQuery}: CustomQueryBuilderProps) => {
   const fields = useMemo(
     () => buildQueryBuilderFields(metadataFields, uniqueValuesPerField),
     [metadataFields, uniqueValuesPerField]
   );
-
-  console.log(query);
 
   return (
     <QueryBuilderDnD dnd={{ ...ReactDnD, ...ReactDndHtml5Backend }}>
@@ -92,6 +197,7 @@ const CustomQueryBuilder = ({metadataFields, uniqueValuesPerField, query, setQue
           listsAsArrays
           parseNumbers="strict-limited"
           showCombinatorsBetweenRules
+          controlElements={{ valueEditor: RenderAwareValueEditor }}
         />
       </QueryBuilderAntD>
     </QueryBuilderDnD>

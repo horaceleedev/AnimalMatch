@@ -119,6 +119,7 @@ export const buildQueryBuilderFields = (
       icon: field.icon,
       datatype: field.type === 'rich_text' ? 'text' : field.type,
       inputType: field.inputType,
+      renderType: field.renderType,
       valueEditorType,
       defaultOperator: defaultOperatorByCategory[category],
       operators: operatorsByCategory[category],
