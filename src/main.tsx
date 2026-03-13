@@ -13,7 +13,6 @@ import VideosDashboardPage from "./routes/VideosDashboardPage.tsx";
 import IndividualsDashboardPage from "./routes/IndividualsDashboardPage.tsx";
 import CropsDashboardPage from './routes/CropsDashboardPage.tsx';
 import CompareModal from './routes/CompareModal.tsx';
-// @ts-ignore
 import VideoAnnotatorModal from './routes/VideoAnnotatorModal.tsx';
 import { AuthProvider } from './DataStores.tsx';
 import { ProtectedRoute } from './routes/ProtectedRoute.tsx';
