@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { matchPath, Outlet, useLocation } from "react-router-dom";
-import { Layout, Splitter, Tabs, theme } from "antd";
+import { Layout, Splitter, Tabs } from "antd";
 import type { TabsProps } from 'antd';
 import Icon, { AppstoreOutlined } from "@ant-design/icons";
 import { RevoGrid } from '@revolist/react-datagrid';
@@ -100,7 +100,7 @@ const VideosDashboardPage: React.FC = () => {
     [videosFiltered]
   );
 
-  const { colorBgContainer } = theme.useToken().token;
+  // const { colorBgContainer } = theme.useToken().token;
 
   return (
     <>

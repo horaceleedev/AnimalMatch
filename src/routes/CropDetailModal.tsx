@@ -1,10 +1,9 @@
 import React, { useState } from 'react'
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useShallow } from 'zustand/react/shallow';
 import { Flex, Modal } from "antd";
-import Icon from '@ant-design/icons';
 
-import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
+// import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
 import { useCropsStore } from "../DataStores.tsx";
 import CropDetailView from '../components/detail-views/CropDetailView.tsx';

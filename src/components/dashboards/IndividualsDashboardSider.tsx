@@ -6,7 +6,7 @@ const { Sider } = Layout;
 import { MetadataFieldsType, UserRecord, Individual } from "../../types";
 import "./DashboardSider.scss";
 
-export const useIndividualsDashboardSiderState = (individuals: Individual[], individualsMetadataFields: MetadataFieldsType, user: UserRecord | null) => {
+export const useIndividualsDashboardSiderState = (individuals: Individual[], _individualsMetadataFields: MetadataFieldsType, user: UserRecord | null) => {
   const [selectedSiderKey, setSelectedSiderKey] = useState("all-individuals");
   const individualsBySiderKey: Record<string, Individual[]> = useMemo(() => ({
     "all-individuals": individuals,
@@ -46,7 +46,7 @@ interface IndividualsDashboardSiderProps {
   uniqueValuesPerField: Record<string, string[]>;
 }
 export const IndividualsDashboardSider: FC<IndividualsDashboardSiderProps> = ({
-  selectedSiderKey, setSelectedSiderKey, individualsBySiderKey, individualsMetadataFields, uniqueValuesPerField,
+  selectedSiderKey, setSelectedSiderKey, individualsBySiderKey, individualsMetadataFields: _individualsMetadataFields, uniqueValuesPerField,
 }) => {
   return (
     <Sider className="dashboard-sider" style={{ /* background: colorBgContainer */ }} width={220}>
