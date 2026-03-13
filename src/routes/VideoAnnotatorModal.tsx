@@ -7,7 +7,7 @@ import { useVideoStore, useIndividualsStoreWithCrops, useAuth } from "../DataSto
 import InnerModal from './InnerModal.tsx';
 import AnnotationStatusLabel from '../components/ui/AnnotationStatusLabel.tsx';
 import { PrevNextVideoButtons } from '../components/ui/PrevNextButtons.tsx';
-import { Individual, RecordType, Video } from '../types.ts';
+import { Individual, RecordType, Video, Crop } from '../types.ts';
 
 // TODO: Once this component is in the repo then we can remove this hack
 type VideoAnnotatorComponentType = React.ComponentType<{
@@ -17,8 +17,8 @@ type VideoAnnotatorComponentType = React.ComponentType<{
   cropsUniqueValuesPerField: Record<string, string[]>;
   userId?: string;
   createIndividual: (data: Partial<Individual>) => Promise<Individual>;
-  deleteIndividual: (...args: any[]) => any;
-  createCrop: (...args: any[]) => any;
+  deleteIndividual: (id: string) => Promise<void>;
+  createCrop: (data: Partial<Crop>) => Promise<Crop>;
   openModal: (type: RecordType, id: string) => void;
 }>;
 
