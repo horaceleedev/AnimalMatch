@@ -13,6 +13,7 @@ const CropsDashboardPage: React.FC = () => {
   const uniqueValuesPerField = useCropsStore((state) => state.uniqueValuesPerField);
   const { user } = useAuth();
 
+  const isFetched = useCropsStore((state) => state.isFetched);
   const [selectedSiderKey, setSelectedSiderKey, cropsBySiderKey, cropsFiltered] = useCropsDashboardSiderState(crops, cropsMetadataFields, user);
 
   return (
@@ -29,11 +30,13 @@ const CropsDashboardPage: React.FC = () => {
           uniqueValuesPerField={uniqueValuesPerField}
         />
         <DashboardContent>
-          <CropsDashboardView
-            crops={cropsFiltered}
-            uniqueValuesPerField={uniqueValuesPerField}
-            cropsMetadataFields={cropsMetadataFields}
-          />
+          {isFetched ? (
+            <CropsDashboardView
+              crops={cropsFiltered}
+              uniqueValuesPerField={uniqueValuesPerField}
+              cropsMetadataFields={cropsMetadataFields}
+            />
+          ) : null}
         </DashboardContent>
       </Layout>
       <Outlet />

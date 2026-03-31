@@ -118,6 +118,7 @@ interface CollectionStore<TRecord, TProcessed, TExtra> {
   processedRecords: TProcessed[];
   uniqueValuesPerField: Record<string, string[]>;
   extra: TExtra;
+  isFetched: boolean;
   fetch: () => Promise<void>;
   subscribe: () => void;
   unsubscribe: () => void;
@@ -139,6 +140,7 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
     processedRecords: [] as TProcessed[],
     uniqueValuesPerField: {} as Record<string, string[]>,
     extra: extraInitialState as TExtra,
+    isFetched: false,
     fetch: async () => {
       let records: TRecord[] = [];
       try {
@@ -150,7 +152,7 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
         return;
       }
       const { processedRecords, uniqueValuesPerField, extra } = processRecords(records);
-      set({ unprocessedRecords: records, processedRecords, uniqueValuesPerField, extra });
+      set({ unprocessedRecords: records, processedRecords, uniqueValuesPerField, extra, isFetched: true });
     },
     subscribe: () => {
       console.log(`Subscribing to ${collectionName}`);
