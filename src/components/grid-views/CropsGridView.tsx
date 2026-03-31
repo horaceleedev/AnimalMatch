@@ -2,7 +2,6 @@ import React from 'react'
 import { generatePath, Link } from "react-router-dom";
 import { Card, Empty, Flex, Space, Tag, Tooltip, Typography } from "antd";
 import type { Crop, MetadataFieldsType, RecordType } from "../../types.ts";
-import { useCropsStore } from "../../DataStores.tsx";
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
 import CropWithSkeleton from './CropWithSkeleton.tsx';
 import "./CropsGridView.scss"
@@ -18,9 +17,7 @@ interface BasicCropsGridViewProps {
 const BasicCropsGridView: React.FC<BasicCropsGridViewProps> = ({
   crops, cropsMetadataFields, linkTemplate = "/crops/:cropId", openModal,
 }: BasicCropsGridViewProps) => {
-  const isFetched = useCropsStore((state) => state.isFetched);
-
-  if (isFetched && crops.length === 0) {
+  if (crops.length === 0) {
     return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />;
   }
   return (

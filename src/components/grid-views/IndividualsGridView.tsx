@@ -26,9 +26,7 @@ interface BasicIndividualsGridViewProps {
 const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
   individuals, individualsMetadataFields, isListView, linkTemplate = "/individuals/:individualId", buttons, allowEditingAgeAndSex, openModal,
 }: BasicIndividualsGridViewProps) => {
-  const isFetched = useIndividualsStore((state) => state.isFetched);
-
-  if (isFetched && individuals.length === 0) {
+  if (individuals.length === 0) {
     return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />;
   }
   return (

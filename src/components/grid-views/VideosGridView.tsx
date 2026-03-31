@@ -4,7 +4,6 @@ import { Card, Empty, Flex, Tag, Tooltip, Typography } from "antd";
 
 import type { RecordType, Video } from "../../types.ts";
 import type { MetadataFieldsType } from "../../types.ts";
-import { useVideoStore } from "../../DataStores.tsx";
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
 import "./VideosGridView.scss"
 
@@ -44,9 +43,7 @@ const BasicVideosGridView: FC<BasicVideosGridViewProps> = ({
     [openModal, onSelectRecord]
   );
 
-  const isFetched = useVideoStore((state) => state.isFetched);
-
-  if (isFetched && videos.length === 0) {
+  if (videos.length === 0) {
     return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />;
   }
   return (
