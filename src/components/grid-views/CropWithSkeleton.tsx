@@ -17,7 +17,7 @@ const CropWithSkeleton: React.FC<CropWithSkeletonProps> = ({ crop, imageHeight, 
     : imageHeight; // fallback
 
   return (
-    <div>
+    <div style={{display: 'flex', justifyContent: 'center'}}>
       {!loaded && (
         <Skeleton.Node active style={{height: imageHeight, width: scaledCropWidth}} />
       )}

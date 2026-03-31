@@ -1,6 +1,6 @@
 import React from 'react';
 import { generatePath, Link } from 'react-router-dom';
-import { Button, Card, Flex, Select, Space, Tag, Tooltip } from 'antd';
+import { Card, Select, Space, Tag, Tooltip } from 'antd';
 
 import { Individual, MetadataFieldsType, RecordType } from '../../types.ts';
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
