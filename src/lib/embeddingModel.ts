@@ -115,7 +115,7 @@ export async function loadModelFromUrl(
   const tryGpu = preferWebGPU && hasGpu;
 
   if (preferWebGPU && !hasGpu) {
-    throw new Error("WebGPU is not available in this environment (navigator.gpu missing)");
+    console.log("WebGPU is not available in this environment (navigator.gpu missing)");
   }
 
   if (tryGpu) {
