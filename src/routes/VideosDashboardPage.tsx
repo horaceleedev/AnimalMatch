@@ -68,6 +68,7 @@ const VideosDashboardPage: React.FC = () => {
   const uniqueLocations = useVideoStore((state) => state.extra.uniqueLocations);
   const uniqueValuesPerField = useVideoStore((state) => state.uniqueValuesPerField);
 
+  const isFetched = useVideoStore((state) => state.isFetched);
   const { user } = useAuth();
 
   const [sortFields, setSortFields] = useState<string[]>([]);
@@ -116,58 +117,62 @@ const VideosDashboardPage: React.FC = () => {
           uniqueValuesPerField={uniqueValuesPerField}
         />
         <DashboardContent>
-          <QueryOperationsButtons
-            metadataFields={videoMetadataFields} uniqueValuesPerField={uniqueValuesPerField}
-            sortFields={sortFields} setSortFields={setSortFields} sortOrders={sortOrders} setSortOrders={setSortOrders}
-            groupFields={groupFields} setGroupFields={setGroupFields} groupOrders={groupOrders} setGroupOrders={setGroupOrders}
-            query={query} setQuery={setQuery}
-          />
-
-          <Tabs defaultActiveKey="grid" items={viewsTabsItems} onChange={setView} />
-
-          {
-            (view === 'grid') ? 
-              <VideosGridView
-                videos={videosFiltered}
-                videoMetadataFields={videoMetadataFields}
-                isListView={false}
-                sortFields={sortFields}
-                sortOrders={sortOrders}
-                groupFields={groupFields}
-                groupOrders={groupOrders}
-                onSelectGroup={onSelectGroup}
+          {isFetched ? (
+            <>
+              <QueryOperationsButtons
+                metadataFields={videoMetadataFields} uniqueValuesPerField={uniqueValuesPerField}
+                sortFields={sortFields} setSortFields={setSortFields} sortOrders={sortOrders} setSortOrders={setSortOrders}
+                groupFields={groupFields} setGroupFields={setGroupFields} groupOrders={groupOrders} setGroupOrders={setGroupOrders}
+                query={query} setQuery={setQuery}
               />
-            :
-            (
-              (view === 'table') ?
-              <>
-                {
-                  (sortFields.length > 0 || groupFields.length > 0) &&
-                  "Note: the sorting/grouping options you have selected are not applied to this table view at the moment"
-                }
-                <RevoGrid columns={tableColumns} source={videosFiltered} rowHeaders={true} resize={true} autoSizeColumn={true} range={true} readonly={true} editors={gridEditors} />
-              </>
-              :
-              (uniqueLocations.length > 0) &&
-              <Splitter>
-                <Splitter.Panel defaultSize="40%" min="20%" max="70%" style={{height: 600, overflow: 'scroll', paddingRight: 12}}>
+
+              <Tabs defaultActiveKey="grid" items={viewsTabsItems} onChange={setView} />
+
+              {
+                (view === 'grid') ?
                   <VideosGridView
                     videos={videosFiltered}
                     videoMetadataFields={videoMetadataFields}
-                    isListView={true}
+                    isListView={false}
                     sortFields={sortFields}
                     sortOrders={sortOrders}
                     groupFields={groupFields}
                     groupOrders={groupOrders}
                     onSelectGroup={onSelectGroup}
                   />
-                </Splitter.Panel>
-                <Splitter.Panel style={{paddingLeft: 12}}>
-                  <BasicMapView style={{height: 600, width: 800}} uniqueLocations={uniqueLocations} highlightLocationIds={highlightLocationIds} />
-                </Splitter.Panel>
-              </Splitter>
-            )
-          }
+                :
+                (
+                  (view === 'table') ?
+                  <>
+                    {
+                      (sortFields.length > 0 || groupFields.length > 0) &&
+                      "Note: the sorting/grouping options you have selected are not applied to this table view at the moment"
+                    }
+                    <RevoGrid columns={tableColumns} source={videosFiltered} rowHeaders={true} resize={true} autoSizeColumn={true} range={true} readonly={true} editors={gridEditors} />
+                  </>
+                  :
+                  (uniqueLocations.length > 0) &&
+                  <Splitter>
+                    <Splitter.Panel defaultSize="40%" min="20%" max="70%" style={{height: 600, overflow: 'scroll', paddingRight: 12}}>
+                      <VideosGridView
+                        videos={videosFiltered}
+                        videoMetadataFields={videoMetadataFields}
+                        isListView={true}
+                        sortFields={sortFields}
+                        sortOrders={sortOrders}
+                        groupFields={groupFields}
+                        groupOrders={groupOrders}
+                        onSelectGroup={onSelectGroup}
+                      />
+                    </Splitter.Panel>
+                    <Splitter.Panel style={{paddingLeft: 12}}>
+                      <BasicMapView style={{height: 600, width: 800}} uniqueLocations={uniqueLocations} highlightLocationIds={highlightLocationIds} />
+                    </Splitter.Panel>
+                  </Splitter>
+                )
+              }
+            </>
+          ) : null}
         </DashboardContent>
       </Layout>
       {/* Outlet for VideoDetailView */}
