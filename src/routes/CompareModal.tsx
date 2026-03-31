@@ -24,7 +24,7 @@ import RecordActionsButton from '../components/ui/RecordActionsButton.tsx';
 import IndividualMatchPrompt from '../components/compare/IndividualMatchPrompt.tsx';
 import CropSimilarityBar from '../components/similarity/CropSimilarityBar.tsx';
 import CropToIndividualSimilarityBar from '../components/similarity/CropToIndividualSimilarityBar.tsx';
-import { Individual, Video } from '../types.ts';
+import { Crop, Individual, Video } from '../types.ts';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import { useIdentifyIndividual } from '../hooks/useIdentifyIndividual';
 import { useRankIndividuals } from '../hooks/useRankIndividuals';
@@ -41,7 +41,7 @@ const recordTypeLongNameToShortName: Record<string, string> = {
   "crops": "c",
 };
 
-const isFaceCrop = (crop?: { body_part?: string | null }) => crop?.body_part === "face";
+const isFaceCrop = (crop?: Crop) => crop?.body_part === "face";
 
 const CompareModal: FC = () => {
   const navigate = useNavigate();
