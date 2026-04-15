@@ -35,3 +35,12 @@ pb_data/
 *.njsproj
 *.sln
 *.sw?
+
+# pocketbase files and directories
+pb_data
+pb_data_*
+pb_migrations
+pocketbase
+
+.env
+
