@@ -5,9 +5,11 @@ import PocketBase from 'pocketbase';
 
 const DEFAULT_BASE_URL = 'http://127.0.0.1:8090';
 const DEFAULT_AUTH_COLLECTION = 'users';
-const DEFAULT_DATA_DIR = path.resolve(process.cwd(), '../test1');
-const DEFAULT_SCHEMA_PATH = path.resolve(process.cwd(), '../pb_elephant_schema.json');
-const IMPORT_TAG_PREFIX = 'import:test1:';
+const DEFAULT_DATA_DIR = path.resolve(process.cwd(), '../test2');
+const DEFAULT_SCHEMA_PATH = path.resolve(process.cwd(), '../pb_elephant_schema_2.json');
+const IMPORT_TAG_PREFIX = 'import:test2:';
+const DEFAULT_MISMATCH_SUMMARY_PATH = path.resolve(process.cwd(), '../mismatch_summary_1.txt');
+const DEFAULT_WARNING_SUMMARY_PATH = path.resolve(process.cwd(), '../warning_summary.txt');
 
 function parseArgs(argv) {
   const options = {
@@ -17,6 +19,8 @@ function parseArgs(argv) {
     password: process.env.PB_PASSWORD || '',
     dataDir: process.env.ELEPHANT_DATA_DIR || DEFAULT_DATA_DIR,
     schemaPath: process.env.PB_SCHEMA_PATH || DEFAULT_SCHEMA_PATH,
+    mismatchSummaryPath: process.env.MISMATCH_SUMMARY_PATH || DEFAULT_MISMATCH_SUMMARY_PATH,
+    warningSummaryPath: process.env.WARNING_SUMMARY_PATH || DEFAULT_WARNING_SUMMARY_PATH,
     dryRun: false,
     verbose: false,
   };
@@ -49,6 +53,14 @@ function parseArgs(argv) {
         options.schemaPath = path.resolve(next);
         i += 1;
         break;
+      case '--mismatch-summary':
+        options.mismatchSummaryPath = path.resolve(next);
+        i += 1;
+        break;
+      case '--warning-summary':
+        options.warningSummaryPath = path.resolve(next);
+        i += 1;
+        break;
       case '--dry-run':
         options.dryRun = true;
         break;
@@ -77,6 +89,8 @@ Options:
   --password <password>          PocketBase login password (or use PB_PASSWORD)
   --data-dir <path>              Directory containing extracted elephant slide folders
   --schema <path>                Path to exported PocketBase schema JSON
+  --mismatch-summary <path>      Path to mismatch summary text
+  --warning-summary <path>       Path to warning summary text
   --dry-run                      Validate and report without writing to PocketBase
   --verbose                      Print per-record operations
   --help                         Show this help
@@ -149,6 +163,14 @@ function inferSexFromText(...values) {
 
 function joinList(values) {
   return unique(values).join(', ');
+}
+
+function cleanTag(value) {
+  return typeof value === 'string' ? value.trim() : value;
+}
+
+function normalizeTags(values) {
+  return unique((values || []).map(cleanTag).filter(Boolean));
 }
 
 function fieldMap(schema, collectionName) {
@@ -383,7 +405,155 @@ async function loadSlides(dataDir) {
   return slides;
 }
 
-function normalizeDataset(slides, schema) {
+async function readOptionalTextFile(filePath) {
+  try {
+    return await fs.readFile(filePath, 'utf8');
+  } catch {
+    return '';
+  }
+}
+
+function parseMismatchSummary(text) {
+  const mismatchByUniqueId = new Map();
+
+  for (const line of text.split('\n')) {
+    const match = line.match(/^\[MISMATCH\]\s+(\S+)\s+unique_id=(\S+)/);
+    if (!match) {
+      continue;
+    }
+
+    const [, slideDir, uniqueId] = match;
+    const entry = mismatchByUniqueId.get(uniqueId) || [];
+    entry.push(slideDir);
+    mismatchByUniqueId.set(uniqueId, entry);
+  }
+
+  return mismatchByUniqueId;
+}
+
+function parseWarningSummary(text) {
+  const result = {
+    missingFromTxt: new Set(),
+    missingFromXlsx: new Set(),
+    missingFromBoth: new Set(),
+  };
+
+  let section = null;
+  for (const rawLine of text.split('\n')) {
+    const line = rawLine.trim();
+    if (!line) {
+      continue;
+    }
+
+    if (line === 'Missing from both txt and xlsx:') {
+      section = 'missingFromBoth';
+      continue;
+    }
+    if (line === 'Missing from txt:') {
+      section = 'missingFromTxt';
+      continue;
+    }
+    if (line === 'Missing from xlsx:') {
+      section = 'missingFromXlsx';
+      continue;
+    }
+    if (line.endsWith(':')) {
+      section = null;
+      continue;
+    }
+
+    if (section && line.startsWith('cam_')) {
+      result[section].add(line);
+    }
+  }
+
+  return result;
+}
+
+function buildVideoIssues({ uniqueIds, mismatchSummary, warningSummary, linkInTxt, recordingDate, derivedFolder, folderPath, longitude, latitude }) {
+  const issues = [];
+
+  if (!linkInTxt) {
+    issues.push('No txt filepath extracted.');
+  }
+  if (!recordingDate) {
+    issues.push('Missing recording date.');
+  }
+  if (longitude == null || latitude == null) {
+    issues.push('Missing camera coordinates.');
+  }
+  if (derivedFolder && folderPath && derivedFolder !== folderPath) {
+    issues.push(`Folder path mismatch: extracted="${folderPath}" txt="${derivedFolder}".`);
+  }
+
+  for (const uniqueId of uniqueIds) {
+    if (warningSummary.missingFromBoth.has(uniqueId)) {
+      issues.push(`Video ${uniqueId} missing from both txt and xlsx summaries.`);
+      continue;
+    }
+    if (warningSummary.missingFromTxt.has(uniqueId)) {
+      issues.push(`Video ${uniqueId} missing from txt summary.`);
+    }
+    if (warningSummary.missingFromXlsx.has(uniqueId)) {
+      issues.push(`Video ${uniqueId} missing from xlsx summary.`);
+    }
+    if (mismatchSummary.has(uniqueId)) {
+      issues.push(`Potential pptx/txt/xlsx path mismatch for ${uniqueId}.`);
+    }
+  }
+
+  return joinList(issues);
+}
+
+function buildIndividualIssues({ slide, identityRecord, videoLinks, mismatchSummary, warningSummary }) {
+  const issues = [];
+
+  if (!slide.identity_records?.length) {
+    issues.push('No structured identity record; age/sex inferred from slide text where possible.');
+  }
+  if (!videoLinks.length) {
+    issues.push('No linked videos extracted.');
+  }
+  if ((identityRecord.family_group || []).length > 1) {
+    issues.push(`Multiple family group entries: ${joinList(identityRecord.family_group)}.`);
+  }
+  if ((identityRecord.bond_group || []).length > 1) {
+    issues.push(`Multiple bond group entries: ${joinList(identityRecord.bond_group)}.`);
+  }
+
+  let missingTxtCount = 0;
+  let missingXlsxCount = 0;
+  let mismatchCount = 0;
+  for (const videoLink of videoLinks) {
+    const uniqueId = videoLink.unique_id;
+    if (!uniqueId) {
+      continue;
+    }
+    if (warningSummary.missingFromBoth.has(uniqueId) || warningSummary.missingFromTxt.has(uniqueId)) {
+      missingTxtCount += 1;
+    }
+    if (warningSummary.missingFromBoth.has(uniqueId) || warningSummary.missingFromXlsx.has(uniqueId)) {
+      missingXlsxCount += 1;
+    }
+    if (mismatchSummary.has(uniqueId)) {
+      mismatchCount += 1;
+    }
+  }
+
+  if (missingTxtCount > 0) {
+    issues.push(`${missingTxtCount} linked videos missing from txt summary.`);
+  }
+  if (missingXlsxCount > 0) {
+    issues.push(`${missingXlsxCount} linked videos missing from xlsx summary.`);
+  }
+  if (mismatchCount > 0) {
+    issues.push(`${mismatchCount} linked videos flagged in mismatch summary.`);
+  }
+
+  return joinList(issues);
+}
+
+function normalizeDataset(slides, schema, summaryData) {
   const individualFields = fieldMap(schema, 'individuals');
   const cropFields = fieldMap(schema, 'crops');
   const videoFields = fieldMap(schema, 'videos');
@@ -442,10 +612,13 @@ function normalizeDataset(slides, schema) {
         recording_date: toIsoUtc(videoLink.recording_date),
         custom_tags: [],
         filepath: videoLink.link_in_txt || null,
+        longitude: videoLink.longitude ?? null,
+        latitude: videoLink.latitude ?? null,
+        issues: [],
       };
 
       merged.uniqueIds = unique([...merged.uniqueIds, videoLink.unique_id]);
-      merged.custom_tags = unique([...(merged.custom_tags || []), ...(videoLink.custom_tags || [])]);
+      merged.custom_tags = normalizeTags([...(merged.custom_tags || []), ...(videoLink.custom_tags || [])]);
       if (!merged.recording_date && videoLink.recording_date) {
         merged.recording_date = toIsoUtc(videoLink.recording_date);
       }
@@ -454,6 +627,27 @@ function normalizeDataset(slides, schema) {
       }
       if (!merged.location_name && videoLink.location_name) {
         merged.location_name = videoLink.location_name;
+      }
+      if (merged.longitude == null && videoLink.longitude != null) {
+        merged.longitude = Number(videoLink.longitude);
+      }
+      if (merged.latitude == null && videoLink.latitude != null) {
+        merged.latitude = Number(videoLink.latitude);
+      }
+
+      const videoIssues = buildVideoIssues({
+        uniqueIds: [videoLink.unique_id].filter(Boolean),
+        mismatchSummary: summaryData.mismatchByUniqueId,
+        warningSummary: summaryData.warningSummary,
+        linkInTxt: videoLink.link_in_txt,
+        recordingDate: videoLink.recording_date,
+        derivedFolder,
+        folderPath: videoLink.folder_path,
+        longitude: videoLink.longitude,
+        latitude: videoLink.latitude,
+      });
+      if (videoIssues) {
+        merged.issues = unique([...(merged.issues || []), videoIssues]);
       }
 
       videosByFilename.set(filename, merged);
@@ -473,6 +667,13 @@ function normalizeDataset(slides, schema) {
       bond_group: unique(identityRecord.bond_group || []),
       videoFilenames: individualVideoFilenames,
       custom_tags: [],
+      issues: buildIndividualIssues({
+        slide,
+        identityRecord,
+        videoLinks,
+        mismatchSummary: summaryData.mismatchByUniqueId,
+        warningSummary: summaryData.warningSummary,
+      }) || null,
     });
 
     const linkedVideoFilenames = unique(videoLinks.map((videoLink) => videoLink.filename || videoLink.unique_id));
@@ -497,6 +698,7 @@ function normalizeDataset(slides, schema) {
         imageName: `${slugify(slide.id_name)}_${picture.output_filename}`,
         individualName: slide.id_name,
         sourceVideoFilename: cropVideoFilename,
+        slide_numbers: slide.slide_numbers || [],
         crop_coordinates: cropFields.has('crop_coordinates') ? [0, 0, 0, 0] : undefined,
         custom_tags: cropFields.has('custom_tags') ? [importTag] : undefined,
       });
@@ -507,7 +709,10 @@ function normalizeDataset(slides, schema) {
     videoFields,
     individualFields,
     cropFields,
-    videos: [...videosByFilename.values()].sort((a, b) => a.filename.localeCompare(b.filename)),
+    videos: [...videosByFilename.values()].map((video) => ({
+      ...video,
+      issues: joinList(video.issues || []),
+    })).sort((a, b) => a.filename.localeCompare(b.filename)),
     individuals: normalizedIndividuals.sort((a, b) => a.name.localeCompare(b.name)),
     crops: normalizedCrops,
     warnings,
@@ -552,36 +757,6 @@ function pruneUndefinedFields(payload) {
   );
 }
 
-async function diagnoseVideoCreate(pb, payload, video) {
-  const diagnostics = [];
-  const candidateDrops = ['annotation_status', 'custom_tags', 'recording_date', 'filepath', 'location_name'];
-
-  for (const fieldName of candidateDrops) {
-    if (!(fieldName in payload)) {
-      continue;
-    }
-
-    const candidatePayload = pruneUndefinedFields(
-      Object.fromEntries(
-        Object.entries(payload).filter(([key]) => key !== fieldName),
-      ),
-    );
-
-    try {
-      await pb.collection('videos').create(candidatePayload);
-      diagnostics.push(`retry_without_${fieldName}=success`);
-    } catch (error) {
-      diagnostics.push(`retry_without_${fieldName}=${formatPocketBaseError(error)}`);
-    }
-  }
-
-  return [
-    `payload=${JSON.stringify(payload)}`,
-    ...diagnostics,
-    `hint=check PocketBase admin UI field definitions for videos and compare against this payload for ${video.filename}`,
-  ].join(' | ');
-}
-
 function arraysEqual(a, b) {
   const left = [...(a || [])].sort();
   const right = [...(b || [])].sort();
@@ -617,6 +792,11 @@ async function ensureVideoRecords({ pb, dataset, dryRun, verbose }) {
       annotation_status: 'to annotate',
     };
     setIfFieldExists(payload, dataset.videoFields, 'filepath', video.filepath);
+    setIfFieldExists(payload, dataset.videoFields, 'longitude', video.longitude);
+    setIfFieldExists(payload, dataset.videoFields, 'latitude', video.latitude);
+    setIfFieldExists(payload, dataset.videoFields, 'utm_easting', video.longitude);
+    setIfFieldExists(payload, dataset.videoFields, 'utm_northing', video.latitude);
+    setIfFieldExists(payload, dataset.videoFields, 'issues', video.issues);
 
     const existing = existingByFilename.get(video.filename);
     if (existing) {
@@ -645,8 +825,7 @@ async function ensureVideoRecords({ pb, dataset, dryRun, verbose }) {
       try {
         created = await pb.collection('videos').create(pruneUndefinedFields(createPayload));
       } catch (error) {
-        const diagnostics = await diagnoseVideoCreate(pb, pruneUndefinedFields(createPayload), video);
-        throw new Error(`${formatPocketBaseError(error, { collection: 'videos', filename: video.filename })} | ${diagnostics}`);
+        throw new Error(formatPocketBaseError(error, { collection: 'videos', filename: video.filename }));
       }
       results.recordsByFilename.set(video.filename, created.id);
     }
@@ -696,6 +875,7 @@ async function ensureIndividualRecords({ pb, dataset, dryRun, verbose, videoIdsB
     setIfFieldExists(payload, dataset.individualFields, 'former_ids', individual.former_ids);
     setIfFieldExists(payload, dataset.individualFields, 'family_group', individual.family_group);
     setIfFieldExists(payload, dataset.individualFields, 'bond_group', individual.bond_group);
+    setIfFieldExists(payload, dataset.individualFields, 'issues', individual.issues);
 
     const existing = existingByName.get(individual.name);
     if (existing) {
@@ -792,6 +972,8 @@ async function ensureCropRecords({ pb, dataset, dryRun, verbose, individualIdsBy
       height,
     };
     setIfFieldExists(payload, dataset.cropFields, 'crop_coordinates', crop.crop_coordinates);
+    const slideNum = crop.slide_numbers.length === 1 ? crop.slide_numbers[0] : null;
+    setIfFieldExists(payload, dataset.cropFields, 'slide_num', slideNum);
 
     if (verbose) {
       console.log(`create crop ${crop.importTag}`);
@@ -839,7 +1021,12 @@ async function main() {
   const options = parseArgs(process.argv.slice(2));
   const schema = JSON.parse(await fs.readFile(options.schemaPath, 'utf8'));
   const slides = await loadSlides(options.dataDir);
-  const dataset = normalizeDataset(slides, schema);
+  const mismatchSummaryText = await readOptionalTextFile(options.mismatchSummaryPath);
+  const warningSummaryText = await readOptionalTextFile(options.warningSummaryPath);
+  const dataset = normalizeDataset(slides, schema, {
+    mismatchByUniqueId: parseMismatchSummary(mismatchSummaryText),
+    warningSummary: parseWarningSummary(warningSummaryText),
+  });
 
   if (!options.dryRun && (!options.email || !options.password)) {
     throw new Error('PocketBase credentials are required unless you run with --dry-run.');
