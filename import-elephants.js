@@ -19,7 +19,6 @@ function parseArgs(argv) {
     schemaPath: process.env.PB_SCHEMA_PATH || DEFAULT_SCHEMA_PATH,
     dryRun: false,
     verbose: false,
-    placeholderVideoFile: process.env.PB_VIDEO_PLACEHOLDER_FILE || '',
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -50,10 +49,6 @@ function parseArgs(argv) {
         options.schemaPath = path.resolve(next);
         i += 1;
         break;
-      case '--video-placeholder-file':
-        options.placeholderVideoFile = path.resolve(next);
-        i += 1;
-        break;
       case '--dry-run':
         options.dryRun = true;
         break;
@@ -82,7 +77,6 @@ Options:
   --password <password>          PocketBase login password (or use PB_PASSWORD)
   --data-dir <path>              Directory containing extracted elephant slide folders
   --schema <path>                Path to exported PocketBase schema JSON
-  --video-placeholder-file <p>   File to upload into videos.file if that legacy field is still required
   --dry-run                      Validate and report without writing to PocketBase
   --verbose                      Print per-record operations
   --help                         Show this help
@@ -111,7 +105,8 @@ function toIsoUtc(value) {
   if (Number.isNaN(date.getTime())) {
     return null;
   }
-  return date.toISOString();
+  const iso = date.toISOString();
+  return `${iso.slice(0, 10)} ${iso.slice(11)}`;
 }
 
 function normalizeAge(value) {
@@ -523,6 +518,70 @@ async function listRecords(pb, collectionName, perPage = 500) {
   return pb.collection(collectionName).getFullList({ perPage });
 }
 
+function formatPocketBaseError(error, context = {}) {
+  const parts = [];
+  const scope = Object.entries(context)
+    .filter(([, value]) => value !== undefined && value !== null && value !== '')
+    .map(([key, value]) => `${key}=${value}`)
+    .join(', ');
+
+  if (scope) {
+    parts.push(scope);
+  }
+
+  if (error?.response?.message) {
+    parts.push(error.response.message);
+  } else if (error?.message) {
+    parts.push(error.message);
+  }
+
+  if (error?.response?.data && Object.keys(error.response.data).length > 0) {
+    parts.push(`details=${JSON.stringify(error.response.data)}`);
+  }
+
+  if (error?.status) {
+    parts.push(`status=${error.status}`);
+  }
+
+  return parts.join(' | ') || 'Unknown PocketBase error';
+}
+
+function pruneUndefinedFields(payload) {
+  return Object.fromEntries(
+    Object.entries(payload).filter(([, value]) => value !== undefined),
+  );
+}
+
+async function diagnoseVideoCreate(pb, payload, video) {
+  const diagnostics = [];
+  const candidateDrops = ['annotation_status', 'custom_tags', 'recording_date', 'filepath', 'location_name'];
+
+  for (const fieldName of candidateDrops) {
+    if (!(fieldName in payload)) {
+      continue;
+    }
+
+    const candidatePayload = pruneUndefinedFields(
+      Object.fromEntries(
+        Object.entries(payload).filter(([key]) => key !== fieldName),
+      ),
+    );
+
+    try {
+      await pb.collection('videos').create(candidatePayload);
+      diagnostics.push(`retry_without_${fieldName}=success`);
+    } catch (error) {
+      diagnostics.push(`retry_without_${fieldName}=${formatPocketBaseError(error)}`);
+    }
+  }
+
+  return [
+    `payload=${JSON.stringify(payload)}`,
+    ...diagnostics,
+    `hint=check PocketBase admin UI field definitions for videos and compare against this payload for ${video.filename}`,
+  ].join(' | ');
+}
+
 function arraysEqual(a, b) {
   const left = [...(a || [])].sort();
   const right = [...(b || [])].sort();
@@ -539,7 +598,7 @@ function shouldUpdateRecord(existing, payload) {
   });
 }
 
-async function ensureVideoRecords({ pb, dataset, dryRun, verbose, placeholderVideoFile }) {
+async function ensureVideoRecords({ pb, dataset, dryRun, verbose }) {
   const existingVideos = await listRecords(pb, 'videos');
   const existingByFilename = new Map(existingVideos.map((record) => [record.filename, record]));
   const results = {
@@ -577,18 +636,18 @@ async function ensureVideoRecords({ pb, dataset, dryRun, verbose, placeholderVid
     }
 
     const createPayload = { ...payload };
-    if (dataset.videoFields.get('file')?.required) {
-      if (!placeholderVideoFile) {
-        throw new Error('Schema requires videos.file, but no --video-placeholder-file was provided. Remove the legacy requirement or supply a placeholder file.');
-      }
-      createPayload.file = await fileToUpload(placeholderVideoFile, `${slugify(video.filename)}${path.extname(placeholderVideoFile) || '.txt'}`);
-    }
 
     if (verbose) {
       console.log(`create video ${video.filename}`);
     }
     if (!dryRun) {
-      const created = await pb.collection('videos').create(createPayload);
+      let created;
+      try {
+        created = await pb.collection('videos').create(pruneUndefinedFields(createPayload));
+      } catch (error) {
+        const diagnostics = await diagnoseVideoCreate(pb, pruneUndefinedFields(createPayload), video);
+        throw new Error(`${formatPocketBaseError(error, { collection: 'videos', filename: video.filename })} | ${diagnostics}`);
+      }
       results.recordsByFilename.set(video.filename, created.id);
     }
     results.created += 1;
@@ -645,7 +704,11 @@ async function ensureIndividualRecords({ pb, dataset, dryRun, verbose, videoIdsB
           console.log(`update individual ${individual.name}`);
         }
         if (!dryRun) {
-          await pb.collection('individuals').update(existing.id, payload);
+          try {
+            await pb.collection('individuals').update(existing.id, payload);
+          } catch (error) {
+            throw new Error(formatPocketBaseError(error, { collection: 'individuals', operation: 'update', name: individual.name }));
+          }
         }
         results.updated += 1;
       } else {
@@ -659,7 +722,12 @@ async function ensureIndividualRecords({ pb, dataset, dryRun, verbose, videoIdsB
       console.log(`create individual ${individual.name}`);
     }
     if (!dryRun) {
-      const created = await pb.collection('individuals').create(payload);
+      let created;
+      try {
+        created = await pb.collection('individuals').create(payload);
+      } catch (error) {
+        throw new Error(formatPocketBaseError(error, { collection: 'individuals', operation: 'create', name: individual.name }));
+      }
       results.recordsByName.set(individual.name, created.id);
     }
     results.created += 1;
@@ -731,7 +799,11 @@ async function ensureCropRecords({ pb, dataset, dryRun, verbose, individualIdsBy
 
     if (!dryRun) {
       payload.image = await fileToUpload(crop.imagePath, crop.imageName);
-      await pb.collection('crops').create(payload);
+      try {
+        await pb.collection('crops').create(payload);
+      } catch (error) {
+        throw new Error(formatPocketBaseError(error, { collection: 'crops', individual: crop.individualName, image: crop.imageName }));
+      }
     }
     results.created += 1;
   }
@@ -796,7 +868,6 @@ async function main() {
         dataset,
         dryRun: options.dryRun,
         verbose: options.verbose,
-        placeholderVideoFile: options.placeholderVideoFile,
       });
 
   const videoIdsByFilename = videoResults.recordsByFilename;
@@ -840,6 +911,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(`\nImport failed: ${error.message}`);
+  console.error(`\nImport failed: ${formatPocketBaseError(error)}`);
   process.exitCode = 1;
 });
