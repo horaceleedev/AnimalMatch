@@ -20,6 +20,17 @@ For now you might need to comment out the video annotation route ([lines 125-128
 ### Production build
 TODO
 
+## Testing
+
+Testing uses `Vitest` for fast `jsdom` tests, `Vitest Browser Mode` for browser-backed component tests, and `Playwright` for E2E.
+All tests live under `/tests`, including Playwright specs in `/tests/e2e`.
+
+- `npm run test` for the vitest component and ts unit tests
+- `npm run test:browser` for vitest browser-mode component tests
+- `npm run test:e2e` for Playwright E2E tests
+
+First time setup: run `npx playwright install chromium` once before either the browser-mode or pw tests.
+
 ## React Components
 
 Here is a diagram showing the key React components in this codebase:

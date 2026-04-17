@@ -11,6 +11,10 @@ node_modules
 dist
 dist-ssr
 *.local
+playwright-report
+test-results
+.vitest-attachments/
+__screenshots__/
 
 # TypeScript cache
 *.tsbuildinfo
