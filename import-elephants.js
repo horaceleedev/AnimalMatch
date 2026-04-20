@@ -10,6 +10,7 @@ const DEFAULT_SCHEMA_PATH = path.resolve(process.cwd(), '../pb_elephant_schema_2
 const IMPORT_TAG_PREFIX = 'import:test2:';
 const DEFAULT_MISMATCH_SUMMARY_PATH = path.resolve(process.cwd(), '../mismatch_summary_1.txt');
 const DEFAULT_WARNING_SUMMARY_PATH = path.resolve(process.cwd(), '../warning_summary.txt');
+const REVIEW_TAG = 'needs_review';
 
 function parseArgs(argv) {
   const options = {
@@ -610,7 +611,7 @@ function normalizeDataset(slides, schema, summaryData) {
         uniqueIds: [],
         location_name: videoLink.location_name || null,
         recording_date: toIsoUtc(videoLink.recording_date),
-        custom_tags: [],
+        custom_tags: [REVIEW_TAG],
         filepath: videoLink.link_in_txt || null,
         longitude: videoLink.longitude ?? null,
         latitude: videoLink.latitude ?? null,
@@ -666,7 +667,7 @@ function normalizeDataset(slides, schema, summaryData) {
       family_group: unique(identityRecord.family_group || []),
       bond_group: unique(identityRecord.bond_group || []),
       videoFilenames: individualVideoFilenames,
-      custom_tags: [],
+      custom_tags: [REVIEW_TAG],
       issues: buildIndividualIssues({
         slide,
         identityRecord,
@@ -700,7 +701,7 @@ function normalizeDataset(slides, schema, summaryData) {
         sourceVideoFilename: cropVideoFilename,
         slide_numbers: slide.slide_numbers || [],
         crop_coordinates: cropFields.has('crop_coordinates') ? [0, 0, 0, 0] : undefined,
-        custom_tags: cropFields.has('custom_tags') ? [importTag] : undefined,
+        custom_tags: cropFields.has('custom_tags') ? [importTag, REVIEW_TAG] : undefined,
       });
     }
   }
