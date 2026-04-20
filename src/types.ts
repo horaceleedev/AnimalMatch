@@ -31,13 +31,15 @@ export interface VideoRecord extends RecordModel {
   updated: string;
   id: string;
   filename: string;
+  filepath: string;
   file: string;
   thumbnail: string;
   location_name: string;
   notes: string;
+  issues: string;
   recording_date: string;
-  utm_easting: number;
-  utm_northing: number;
+  longitude: number;
+  latitude: number;
   custom_tags: string[];
   assignees: string[];
   annotation_status: string;
@@ -61,7 +63,11 @@ export interface IndividualRecord extends RecordModel {
   videos: string[];
   age: string;
   sex: string;
+  former_ids: string;
+  family_group: string;
+  bond_group: string;
   notes: string;
+  issues: string;
   custom_tags: string[];
 };
 export interface Individual extends IndividualRecord {
@@ -81,6 +87,7 @@ export interface CropRecord extends RecordModel {
   body_part: string;
   side: string;
   custom_tags: string[];
+  slide_num: number;
   description: string;
   frame_number: number;
   timestamp: number;
