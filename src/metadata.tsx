@@ -1,6 +1,6 @@
 import { blue, gray, green, orange } from '@ant-design/colors';
 
-import Icon, { ClockCircleOutlined, ColumnHeightOutlined, ColumnWidthOutlined, FileTextOutlined, IdcardOutlined, PlaySquareOutlined, TagsOutlined, UserOutlined } from "@ant-design/icons";
+import Icon, { ClockCircleOutlined, ColumnHeightOutlined, ColumnWidthOutlined, FileTextOutlined, IdcardOutlined, NumberOutlined, PlaySquareOutlined, TagsOutlined, UserOutlined } from "@ant-design/icons";
 import Location from './assets/material_symbols/location_on_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import CalendarMonth from './assets/material_symbols/calendar_month_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import PIN from './assets/material_symbols/pin_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -37,6 +37,12 @@ export const videoMetadataFields: MetadataFieldsType = {
     inputType: 'text',
     isUneditable: true,
   },
+  'filepath': {
+    displayName: 'Filepath',
+    icon: <FileTextOutlined />,
+    type: 'text',
+    inputType: 'text',
+  },
   'location_name': {
     displayName: 'Location name',
     icon: <Icon component={Location} />,
@@ -55,14 +61,20 @@ export const videoMetadataFields: MetadataFieldsType = {
     type: 'rich_text',
     inputType: 'text',
   },
-  'utm_easting': {
-    displayName: 'UTM easting',
+  'issues': {
+    displayName: 'Issues',
+    icon: <FileTextOutlined />,
+    type: 'rich_text',
+    inputType: 'text',
+  },
+  'longitude': {
+    displayName: 'Longitude',
     icon: <Icon component={Location} />,
     type: 'number',
     inputType: 'number',
   },
-  'utm_northing': {
-    displayName: 'UTM northing',
+  'latitude': {
+    displayName: 'Latitude',
     icon: <Icon component={Location} />,
     type: 'number',
     inputType: 'number',
@@ -149,6 +161,30 @@ export const individualsMetadataFields: MetadataFieldsType = {
     type: 'rich_text',
     inputType: 'text',
   },
+  'former_ids': {
+    displayName: 'Former IDs',
+    icon: <IdcardOutlined />,
+    type: 'text',
+    inputType: 'text',
+  },
+  'family_group': {
+    displayName: 'Family group',
+    icon: <IdcardOutlined />,
+    type: 'text',
+    inputType: 'text',
+  },
+  'bond_group': {
+    displayName: 'Bond group',
+    icon: <IdcardOutlined />,
+    type: 'text',
+    inputType: 'text',
+  },
+  'issues': {
+    displayName: 'Issues',
+    icon: <FileTextOutlined />,
+    type: 'rich_text',
+    inputType: 'text',
+  },
   'custom_tags': {
     displayName: 'Custom tags',
     icon: <TagsOutlined />,
@@ -209,6 +245,12 @@ export const cropsMetadataFields: MetadataFieldsType = {
     icon: <FileTextOutlined />,
     type: 'rich_text',
     inputType: 'text',
+  },
+  'slide_num': {
+    displayName: 'Slide number',
+    icon: <NumberOutlined />,
+    type: 'number',
+    inputType: 'number',
   },
   'custom_tags': {
     displayName: 'Custom tags',

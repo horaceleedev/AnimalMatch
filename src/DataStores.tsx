@@ -2,7 +2,6 @@
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import proj4 from "proj4";
 import PocketBase, { ClientResponseError, type RecordModel } from 'pocketbase';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -292,16 +291,18 @@ export const useVideoStore = createRealtimeCollectionStore<VideoRecord, Video, {
   extraInitialState: { uniqueLocations: [] },
   processRecords: (records: VideoRecord[]) => {
     const processedVideos: Video[] = records.map((record: VideoRecord) => {
+      // NOTE: Commented out for elephant project which doesn't use UTM coordinates, but leaving here for future 
+      // reference in case we want to support UTM again in the future.
       // https://stackoverflow.com/a/18621244
-      const [long, lat] = proj4("+proj=utm +zone=29", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",[record.utm_easting, record.utm_northing]);
+      // const [long, lat] = proj4("+proj=utm +zone=29", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",[record.utm_easting, record.utm_northing]);
       return {
         ...record,
         // Parse timestamp in UTC to avoid converting to local timezone
         recording_date: dayjs.utc(record.recording_date).format("YYYY-MM-DD HH:mm:ss"),
         url: pb.files.getURL(record, record.file),
         thumbnailUrl: pb.files.getURL(record, record.thumbnail),
-        lat,
-        long,
+        lat: record.latitude,
+        long: record.longitude,
       };
     });
     console.log('Processed videos', processedVideos);
