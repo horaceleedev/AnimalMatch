@@ -39,6 +39,12 @@ export const videoMetadataFields: MetadataFieldsType = {
     inputType: 'text',
     isUneditable: true,
   },
+  'filepath': {
+    displayName: 'Filepath',
+    icon: <FileTextOutlined />,
+    type: 'text',
+    inputType: 'text',
+  },
   'location_name': {
     displayName: 'Location name',
     icon: <Icon component={Location} />,
@@ -57,6 +63,12 @@ export const videoMetadataFields: MetadataFieldsType = {
     type: 'rich_text',
     inputType: 'text',
   },
+  'issues': {
+    displayName: 'Issues',
+    icon: <FileTextOutlined />,
+    type: 'rich_text',
+    inputType: 'text',
+  },
   'month_of_SD_retrieval': {
     displayName: 'Month of SD retrieval',
     icon: <CalendarOutlined />,
@@ -69,14 +81,14 @@ export const videoMetadataFields: MetadataFieldsType = {
     type: 'select',
     valueEditorType: 'select',
   },
-  'utm_easting': {
-    displayName: 'UTM easting',
+  'longitude': {
+    displayName: 'Longitude',
     icon: <Icon component={Location} />,
     type: 'number',
     inputType: 'number',
   },
-  'utm_northing': {
-    displayName: 'UTM northing',
+  'latitude': {
+    displayName: 'Latitude',
     icon: <Icon component={Location} />,
     type: 'number',
     inputType: 'number',
@@ -175,6 +187,30 @@ export const individualsMetadataFields: MetadataFieldsType = {
     type: 'rich_text',
     inputType: 'text',
   },
+  'former_ids': {
+    displayName: 'Former IDs',
+    icon: <IdcardOutlined />,
+    type: 'text',
+    inputType: 'text',
+  },
+  'family_group': {
+    displayName: 'Family group',
+    icon: <IdcardOutlined />,
+    type: 'text',
+    inputType: 'text',
+  },
+  'bond_group': {
+    displayName: 'Bond group',
+    icon: <IdcardOutlined />,
+    type: 'text',
+    inputType: 'text',
+  },
+  'issues': {
+    displayName: 'Issues',
+    icon: <FileTextOutlined />,
+    type: 'rich_text',
+    inputType: 'text',
+  },
   'custom_tags': {
     displayName: 'Custom tags',
     icon: <TagsOutlined />,
@@ -235,6 +271,12 @@ export const cropsMetadataFields: MetadataFieldsType = {
     icon: <FileTextOutlined />,
     type: 'rich_text',
     inputType: 'text',
+  },
+  'slide_num': {
+    displayName: 'Slide number',
+    icon: <NumberOutlined />,
+    type: 'number',
+    inputType: 'number',
   },
   'custom_tags': {
     displayName: 'Custom tags',
