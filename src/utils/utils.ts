@@ -1,4 +1,4 @@
-import { countBy, orderBy } from "es-toolkit";
+import { countBy } from "es-toolkit";
 
 import { Individual, LocationInfo, MetadataFieldsType, Video } from "../types";
 
@@ -57,14 +57,14 @@ export const getUniqueValuesPerField = (metadataFields: MetadataFieldsType, proc
       const uniqueValues = Array.from(
         new Set(processedRecords.map(x => x[fieldValue]).filter(isNonNullString))
       );
-      const uniqueValuesSorted = orderBy(uniqueValues, [x => x], ['asc']);
+      const uniqueValuesSorted = [...uniqueValues].sort((a, b) => a.localeCompare(b));
       uniqueValuesPerField[fieldValue] = uniqueValuesSorted;
       console.log(uniqueValuesSorted);
     } else if (field.type === 'multiselect') {
       const uniqueValues = Array.from(
         new Set(processedRecords.flatMap(x => x[fieldValue] ?? []).filter(isNonNullString))
       );
-      const uniqueValuesSorted = orderBy(uniqueValues, [x => x], ['asc']);
+      const uniqueValuesSorted = [...uniqueValues].sort((a, b) => a.localeCompare(b));
       uniqueValuesPerField[fieldValue] = uniqueValuesSorted;
       // console.log(uniqueValuesSorted);
     }
