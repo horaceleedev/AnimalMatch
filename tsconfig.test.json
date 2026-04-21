@@ -1,0 +1,7 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "types": ["@webgpu/types", "vitest/globals", "@vitest/browser/matchers"]
+  },
+  "include": ["tests"]
+}

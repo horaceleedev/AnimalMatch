@@ -37,7 +37,7 @@ describe('LoginPage', () => {
     mockLocation.state = '/videos';
   });
 
-  // This is an example of a normal component test in jsdom, rahter than a real browser.
+  // This is an example of a normal component test in jsdom, rather than a real browser.
   // We mock the auth hook and the router hooks, render the page, fill in the form, and check the user-visible outcome.
   it('submits credentials and navigates to the original destination', async () => {
     const login = vi.fn().mockResolvedValue(undefined);

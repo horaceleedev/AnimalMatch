@@ -10,7 +10,7 @@ import RecordActionsButton from '../../src/components/ui/RecordActionsButton';
 // As well as any browser api beyond the DOM, intersectionobservers, localStorage, etc.
 // We would also use this mode for testing things that require real DOM APIs like layout,
 // or where we want to test the real behaviour of a component including its children and not mock any part of it.
-// NOTE:: Wwe can do any tests in browser mode, but its more complex than just using jsdom.
+// NOTE: We can do any tests in browser mode, but its more complex than just using jsdom.
 
 // In this test we mock the clipboard API to check if clicking copy-link gives the correct feedback and copies the correct URL.
 test('copies a record link using the current base path', async () => {
