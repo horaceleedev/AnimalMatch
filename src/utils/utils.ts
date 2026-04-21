@@ -2,6 +2,8 @@ import { countBy, orderBy } from "es-toolkit";
 
 import { Individual, LocationInfo, MetadataFieldsType, Video } from "../types";
 
+const isNonNullString = (value: unknown): value is string => typeof value === "string";
+
 export const getUniqueLocationsFromVideos = (videos: Video[]) => {
   const numVideosPerUniqueLocation = countBy(videos, x => JSON.stringify([x.lat, x.long]));
   const uniqueLocations = Object.entries(numVideosPerUniqueLocation).map(([latLongString, numVideos]) => {
@@ -52,14 +54,16 @@ export const getUniqueValuesPerField = (metadataFields: MetadataFieldsType, proc
         return;
       }
 
-      const uniqueValues = Array.from(new Set(processedRecords.map(x => x[fieldValue])));
+      const uniqueValues = Array.from(
+        new Set(processedRecords.map(x => x[fieldValue]).filter(isNonNullString))
+      );
       const uniqueValuesSorted = orderBy(uniqueValues, [x => x], ['asc']);
       uniqueValuesPerField[fieldValue] = uniqueValuesSorted;
       console.log(uniqueValuesSorted);
     } else if (field.type === 'multiselect') {
-      const uniqueValues = Array.from(new Set(
-        processedRecords.map(x => x[fieldValue]).flat()
-      ));
+      const uniqueValues = Array.from(
+        new Set(processedRecords.flatMap(x => x[fieldValue] ?? []).filter(isNonNullString))
+      );
       const uniqueValuesSorted = orderBy(uniqueValues, [x => x], ['asc']);
       uniqueValuesPerField[fieldValue] = uniqueValuesSorted;
       // console.log(uniqueValuesSorted);

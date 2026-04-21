@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { Video } from '../../src/types';
-import { getUniqueLocationsFromVideos } from '../../src/utils/utils';
+import type { MetadataFieldsType, Video } from '../../src/types';
+import { getUniqueLocationsFromVideos, getUniqueValuesPerField } from '../../src/utils/utils';
 
 // This is an example of a pure unit test, identical to unit tests in any non frontend codebase.
 // Just some representative input data and an assertion on the returned value.
@@ -57,5 +57,33 @@ describe('getUniqueLocationsFromVideos', () => {
         tooltipText: '1 videos in this location',
       },
     ]);
+  });
+});
+
+describe('getUniqueValuesPerField', () => {
+  it('filters nullish values out of select and multiselect fields', () => {
+    const metadataFields: MetadataFieldsType = {
+      side: {
+        displayName: 'Side',
+        type: 'select',
+        valueEditorType: 'select',
+      },
+      custom_tags: {
+        displayName: 'Custom tags',
+        type: 'multiselect',
+        valueEditorType: 'multiselect',
+      },
+    };
+
+    const uniqueValues = getUniqueValuesPerField(metadataFields, [
+      { side: 'left', custom_tags: ['ear', null] },
+      { side: null, custom_tags: ['tail', undefined] },
+      { side: 'right', custom_tags: null },
+    ]);
+
+    expect(uniqueValues).toEqual({
+      side: ['left', 'right'],
+      custom_tags: ['ear', 'tail'],
+    });
   });
 });
