@@ -102,6 +102,7 @@ const CustomQueryBuilder = ({metadataFields, uniqueValuesPerField, query, setQue
           onQueryChange={setQuery}
           addRuleToNewGroups
           listsAsArrays
+          parseNumbers="strict-limited"
           showCombinatorsBetweenRules
         />
       </QueryBuilderAntD>
