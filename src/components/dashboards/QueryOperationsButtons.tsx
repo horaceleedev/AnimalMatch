@@ -82,7 +82,7 @@ const CustomQueryBuilder = ({metadataFields, uniqueValuesPerField, query, setQue
         output.defaultOperator = 'contains';
       }
       if (field.valueEditorType === 'select' || field.valueEditorType === 'multiselect') {
-        output.values = uniqueValuesPerField[fieldValue].map(x => ({name: x, value: x}));
+        output.values = uniqueValuesPerField[fieldValue].map(x => ({ name: x, value: x, label: x }));
       }
       if (field.type === 'rich_text') {
         output.datatype = 'text';
