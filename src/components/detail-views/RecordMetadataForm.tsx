@@ -70,7 +70,8 @@ const RecordMetadataForm = <T extends RecordModel>({
             let customClassName = undefined;
             if (value.renderType === 'video_link') {
               size = 'large';
-              labelRender = (option) => <VideoLinkButton id={option.value as string} linkTemplate={videoLinkTemplate} openModal={openModal} />;
+              const timestamp = 'timestamp' in processedRecord ? processedRecord.timestamp as number : undefined;
+              labelRender = (option) => <VideoLinkButton id={option.value as string} linkTemplate={videoLinkTemplate} timestamp={timestamp} />;
             } else if (value.renderType === 'individual_link') {
               size = 'large';
               labelRender = (option) => <IndividualLinkButton id={option.value as string} linkTemplate={individualLinkTemplate} openModal={openModal} />;
