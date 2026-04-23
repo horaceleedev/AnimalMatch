@@ -1,6 +1,6 @@
 import { blue, gray, green, orange } from '@ant-design/colors';
 
-import Icon, { ClockCircleOutlined, ColumnHeightOutlined, ColumnWidthOutlined, FileTextOutlined, IdcardOutlined, NumberOutlined, PlaySquareOutlined, TagsOutlined, UserOutlined } from "@ant-design/icons";
+import Icon, { ClockCircleOutlined, ColumnHeightOutlined, ColumnWidthOutlined, FileTextOutlined, FolderOpenOutlined, IdcardOutlined, NumberOutlined, PlaySquareOutlined, QuestionOutlined, TagsOutlined, UserOutlined, WarningOutlined } from "@ant-design/icons";
 import Location from './assets/material_symbols/location_on_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import CalendarMonth from './assets/material_symbols/calendar_month_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import PIN from './assets/material_symbols/pin_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -39,12 +39,12 @@ export const videoMetadataFields: MetadataFieldsType = {
   },
   'filepath': {
     displayName: 'Filepath',
-    icon: <FileTextOutlined />,
+    icon: <FolderOpenOutlined />,
     type: 'text',
     inputType: 'text',
   },
   'location_name': {
-    displayName: 'Location name',
+    displayName: 'Camera name',
     icon: <Icon component={Location} />,
     type: 'select',
     valueEditorType: 'select',
@@ -63,7 +63,7 @@ export const videoMetadataFields: MetadataFieldsType = {
   },
   'issues': {
     displayName: 'Issues',
-    icon: <FileTextOutlined />,
+    icon: <WarningOutlined />,
     type: 'rich_text',
     inputType: 'text',
   },
@@ -113,7 +113,7 @@ export const videoMetadataFields: MetadataFieldsType = {
 
 export const individualsMetadataFields: MetadataFieldsType = {
   'id': {
-    displayName: 'Id',
+    displayName: 'System ID',
     icon: <Icon component={PIN} />,
     type: 'text',
     inputType: 'text',
@@ -121,6 +121,12 @@ export const individualsMetadataFields: MetadataFieldsType = {
   },
   'name': {
     displayName: 'Name',
+    icon: <IdcardOutlined />,
+    type: 'text',
+    inputType: 'text',
+  },
+  'former_ids': {
+    displayName: 'Former IDs',
     icon: <IdcardOutlined />,
     type: 'text',
     inputType: 'text',
@@ -133,14 +139,13 @@ export const individualsMetadataFields: MetadataFieldsType = {
     renderType: 'user_label',
     isUneditable: true,
   },
-  // 'is_identified': {
-  //   displayName: 'Is identified',
-  //   icon: <QuestionOutlined />,
-  //   type: 'boolean',
-  //   valueEditorType: 'radio', // TODO change this later
-  //   displayBooleanValuesAs: ["Unidentified", "Identified"],
-  //   isUneditable: true,
-  // },
+  'is_identified': {
+    displayName: 'Known or Prospective',
+    icon: <QuestionOutlined />,
+    type: 'boolean',
+    valueEditorType: 'radio', // TODO change this later
+    displayBooleanValuesAs: ["Prospective", "Known"],
+  },
   'age': {
     displayName: 'Age',
     icon: <Icon component={Cake} />,
@@ -155,18 +160,6 @@ export const individualsMetadataFields: MetadataFieldsType = {
     valueEditorType: 'select',
     presetOptions: ['male', 'female', 'unknown/other sex'],
   },
-  'notes': {
-    displayName: 'Notes',
-    icon: <FileTextOutlined />,
-    type: 'rich_text',
-    inputType: 'text',
-  },
-  'former_ids': {
-    displayName: 'Former IDs',
-    icon: <IdcardOutlined />,
-    type: 'text',
-    inputType: 'text',
-  },
   'family_group': {
     displayName: 'Family group',
     icon: <IdcardOutlined />,
@@ -179,9 +172,15 @@ export const individualsMetadataFields: MetadataFieldsType = {
     type: 'text',
     inputType: 'text',
   },
+  'notes': {
+    displayName: 'Notes',
+    icon: <FileTextOutlined />,
+    type: 'rich_text',
+    inputType: 'text',
+  },
   'issues': {
     displayName: 'Issues',
-    icon: <FileTextOutlined />,
+    icon: <WarningOutlined />,
     type: 'rich_text',
     inputType: 'text',
   },
@@ -246,17 +245,18 @@ export const cropsMetadataFields: MetadataFieldsType = {
     type: 'rich_text',
     inputType: 'text',
   },
-  'slide_num': {
-    displayName: 'Slide number',
-    icon: <NumberOutlined />,
-    type: 'number',
-    inputType: 'number',
-  },
   'custom_tags': {
     displayName: 'Custom tags',
     icon: <TagsOutlined />,
     type: 'multiselect',
     valueEditorType: 'multiselect',
+  },
+  'slide_num': {
+    displayName: 'Slide number',
+    icon: <NumberOutlined />,
+    type: 'number',
+    inputType: 'number',
+    isUneditable: true,
   },
   'frame_number': {
     displayName: 'Frame number',
