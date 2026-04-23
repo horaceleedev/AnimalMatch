@@ -3,19 +3,19 @@ import { matchPath, Outlet, useLocation } from "react-router-dom";
 import { Layout, Splitter, Tabs } from "antd";
 import type { TabsProps } from 'antd';
 import Icon, { AppstoreOutlined } from "@ant-design/icons";
-import { RevoGrid } from '@revolist/react-datagrid';
 import { RuleGroupType } from 'react-querybuilder';
 
 import Table from '../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Map from '../assets/material_symbols/map_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
-import { gridEditors, tableColumns, videoMetadataFields } from "../metadata.tsx";
+import { videoMetadataFields } from "../metadata.tsx";
 import DashboardContent from '../components/dashboards/DashboardContent.tsx';
 import VideosGridView from "../components/grid-views/VideosGridView.tsx";
 import QueryOperationsButtons from "../components/dashboards/QueryOperationsButtons.tsx";
 import { useAuth, useVideoStore } from "../DataStores.tsx";
 import BasicMapView from '../components/ui/BasicMapView.tsx';
 import { useVideosDashboardSiderState, VideosDashboardSider } from '../components/dashboards/VideosDashboardSider.tsx';
+import VideosTableView from '../components/table-views/VideosTableView.tsx';
 import { Video } from '../types.ts';
 import "./VideosDashboardPage.scss";
 
@@ -145,7 +145,7 @@ const VideosDashboardPage: React.FC = () => {
                   (sortFields.length > 0 || groupFields.length > 0) &&
                   "Note: the sorting/grouping options you have selected are not applied to this table view at the moment"
                 }
-                <RevoGrid columns={tableColumns} source={videosFiltered} rowHeaders={true} resize={true} autoSizeColumn={true} range={true} readonly={true} editors={gridEditors} />
+                <VideosTableView videos={videosFiltered} videoMetadataFields={videoMetadataFields} />
               </>
               :
               (uniqueLocations.length > 0) &&
