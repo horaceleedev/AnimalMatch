@@ -6,7 +6,6 @@ import * as ReactDndHtml5Backend from 'react-dnd-html5-backend';
 import type { SelectProps } from 'antd';
 import type { Field, RuleGroupType, RuleType } from 'react-querybuilder';
 import { QueryBuilder } from 'react-querybuilder';
-// import { fields } from './fields';
 import 'react-querybuilder/dist/query-builder.css';
 import { QueryBuilderAntD } from '@react-querybuilder/antd';
 
@@ -84,7 +83,7 @@ const CustomQueryBuilder = ({metadataFields, uniqueValuesPerField, query, setQue
       if (field.valueEditorType === 'select' || field.valueEditorType === 'multiselect') {
         output.values = uniqueValuesPerField[fieldValue].map(x => ({ name: x, value: x, label: x }));
       }
-if (field.type === 'boolean') {
+      if (field.type === 'boolean') {
         output.values = [
           // @ts-ignore (temporary hack - name and value are expected to be strings)
           { name: true, value: true, label: field.displayBooleanValuesAs?.[1] ?? 'True' },
