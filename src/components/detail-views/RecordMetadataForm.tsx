@@ -1,4 +1,4 @@
-import { Button, Form, Input, InputNumber, Select, Tag } from "antd";
+import { Button, Form, Input, InputNumber, Radio, Select, Tag } from "antd";
 import type { DefaultOptionType, LabelInValueType } from "rc-select/lib/Select";
 import TextArea from 'antd/es/input/TextArea';
 import { RecordModel } from "pocketbase";
@@ -108,6 +108,15 @@ const RecordMetadataForm = <T extends RecordModel>({
                 labelRender={customRender}
               />
             );
+          } else if (value.valueEditorType === 'radio') {
+            if (value.type === 'boolean') {
+              inputElement = (
+                <Radio.Group disabled={disabled} options={[
+                  { value: true, label: value.displayBooleanValuesAs ? value.displayBooleanValuesAs[1] : 'True' },
+                  { value: false, label: value.displayBooleanValuesAs ? value.displayBooleanValuesAs[0] : 'False' },
+                ]} />
+              );
+            }
           } else if (value.inputType === 'date') {
             // inputElement = <DatePicker showTime needConfirm={false} disabled={disabled} />;
             // Temporary hack TODO fix issue with DatePicker above

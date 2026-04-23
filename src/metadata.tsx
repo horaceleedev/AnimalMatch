@@ -151,7 +151,7 @@ export const individualsMetadataFields: MetadataFieldsType = {
   //   displayName: 'Is identified',
   //   icon: <QuestionOutlined />,
   //   type: 'boolean',
-  //   inputType: 'text', // TODO change this later
+  //   valueEditorType: 'radio', // TODO change this later
   //   displayBooleanValuesAs: ["Unidentified", "Identified"],
   //   isUneditable: true,
   // },
