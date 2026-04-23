@@ -63,7 +63,7 @@ export interface IndividualRecord extends RecordModel {
   id: string;
   name: string;
   created_by: string;
-  // is_identified: boolean;
+  is_identified: boolean;
   videos: string[];
   age: string;
   sex: string;
