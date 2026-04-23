@@ -19,6 +19,11 @@ export const getUniqueLocationsFromVideos = (videos: Video[]) => {
 };
 
 export const getUniqueLocationsFromIndividuals = (individuals: Individual[], allVideos: Video[]) => {
+  if (allVideos.length === 0) {
+    console.warn("Warning when computing individual locations: allVideos is empty (possibly because videos are still loading), returning empty unique locations");
+    return [];
+  }
+
   let videos: Video[] = []; // list of videos where the individuals appear in
   for (const indiv of individuals) {
     for (const videoId of indiv.videos) {
