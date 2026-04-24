@@ -5,7 +5,7 @@ import * as ReactDnD from 'react-dnd';
 import * as ReactDndHtml5Backend from 'react-dnd-html5-backend';
 import type { SelectProps } from 'antd';
 import type { Field, RuleGroupType, RuleType } from 'react-querybuilder';
-import { QueryBuilder } from 'react-querybuilder';
+import { defaultOperators, QueryBuilder } from 'react-querybuilder';
 import 'react-querybuilder/dist/query-builder.css';
 import { QueryBuilderAntD } from '@react-querybuilder/antd';
 
@@ -76,10 +76,12 @@ const CustomQueryBuilder = ({metadataFields, uniqueValuesPerField, query, setQue
         datatype: field.type,
         inputType: field.inputType,
         valueEditorType: field.valueEditorType,
+        operators: defaultOperators.filter(op => op.name === '='),
+        defaultOperator: '=',
       }
-      if (field.inputType === 'text') {
-        output.defaultOperator = 'contains';
-      }
+      // if (field.inputType === 'text') {
+      //   output.defaultOperator = 'contains';
+      // }
       if (field.valueEditorType === 'select' || field.valueEditorType === 'multiselect') {
         output.values = uniqueValuesPerField[fieldValue].map(x => ({ name: x, value: x, label: x }));
       }
