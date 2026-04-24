@@ -131,13 +131,15 @@ type QueryOperationsButtonsProps = {
   setGroupOrders: (x: ("asc" | "desc")[]) => void;
   query: RuleGroupType;
   setQuery: (x: RuleGroupType) => void;
+  handleSearch?: (x: string) => void;
 }
 
 const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
   metadataFields, uniqueValuesPerField,
   sortFields, setSortFields, sortOrders, setSortOrders,
   groupFields, setGroupFields, groupOrders, setGroupOrders,
-  query, setQuery
+  query, setQuery,
+  handleSearch,
 }: QueryOperationsButtonsProps) => {
   const firstFilterRule = useMemo(
     // Find the first rule in the query that is not a nested group
@@ -174,7 +176,7 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
   return (
     <Space size="small" style={{ marginBottom: 10 }}>
       {/* Search button */}
-      <Input.Search placeholder="Search" allowClear onSearch={() => {}} style={{ minWidth: 300 }} />
+      <Input.Search placeholder="Search" allowClear onSearch={handleSearch} style={{ minWidth: 300 }} />
 
       {/* Sort button and popover */}
       <Popover title={groupFields.length > 0 ? "Sort within groups by" : "Sort by"} content={
