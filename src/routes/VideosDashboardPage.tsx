@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { matchPath, Outlet, useLocation } from "react-router-dom";
 import { Layout, Splitter, Tabs } from "antd";
 import type { TabsProps } from 'antd';
@@ -21,19 +21,29 @@ import { Video } from '../types.ts';
 import "./VideosDashboardPage.scss";
 
 /**
- * Store a copy of the filtered video list for use in outlet context.
- * @param videosFiltered 
- * @returns [outletVideos, setOutletVideos]
+ * Cache a list of videos used for the previous/next navigation buttons in VideoDetailView.
+ * This list is only updated when the input list of videos (videosFiltered) changes
+ * while the user is on the dashboard page, such as when the sider selection is changed
+ * or a text search is performed. It is also updated when the user clicks on a video within
+ * a group in VideosGridView, in which case it is set to the list of videos in that group.
+ * However, it is not updated when the user edits a video's metadata in VideoDetailView,
+ * such as by changing its annotation status or custom tags, to ensure a consistent
+ * navigation experience.
+ * 
+ * @param videosFiltered - The current filtered list of videos from the dashboard (search + sider filters applied)
+ * @returns An object with:
+ *   - `outletContext`: Video list to pass to `<Outlet />` for prev/next navigation
+ *   - `onSelectGroup`: Callback to update the outlet video list when a group is selected in VideosGridView
  */
-function useOutletVideosState(videosFiltered: Video[]): [Video[], React.Dispatch<React.SetStateAction<Video[]>>] {
+function useNavigationVideosManager(videosFiltered: Video[]) {
   /*
-    Outlet video state stores the video list used to navigate between videos in VideoDetailView.
-    Keep this separate from videosFiltered so that outlet context is not changed when the user
-    edits the metadata of a video eg. by changing its annotation status or custom tags.
+    outletVideos state stores the video list used to navigate between videos in VideoDetailView.
+    This is kept separate from videosFiltered to prevent the navigation list from changing
+    when the user edits a video's metadata.
   */
   const [outletVideos, setOutletVideos] = useState<Video[]>(videosFiltered);
 
-  // Update the outlet videos after navigating back to the dashboard page.
+  // Keep outletVideos updated while the user is on the dashboard page.
   const { pathname } = useLocation();
   useEffect(() => {
     if (matchPath("/videos", pathname)) {
@@ -41,7 +51,16 @@ function useOutletVideosState(videosFiltered: Video[]): [Video[], React.Dispatch
     }
   }, [pathname, videosFiltered]);
 
-  return [outletVideos, setOutletVideos];
+  const outletContext = useMemo(() => ({
+    videos: outletVideos,
+  }), [outletVideos]);
+
+  // Update outlet videos after selecting a group in VideosGridView.
+  const onSelectGroup = useCallback((groupRecords: Video[]) => {
+    setOutletVideos(groupRecords);
+  }, []);
+
+  return { outletContext, onSelectGroup };
 }
 
 const viewsTabsItems: TabsProps['items'] = [
@@ -101,19 +120,8 @@ const VideosDashboardPage: React.FC = () => {
     });
   }, [searchQuery, siderFilteredVideos, videoMetadataFields]);
 
-  /*
-    Keep a copy of filteredVideos, which only updates when navigating back to the dashboard
-    or changing the sider selection.
-  */
-  const [outletVideos, setOutletVideos] = useOutletVideosState(videosFiltered);
-  const outletContext = useMemo(() => ({
-    videos: outletVideos,
-  }), [outletVideos]);
-
-  // Update outlet videos after selecting a group in VideosGridView.
-  const onSelectGroup = (groupRecords: Video[]) => {
-    setOutletVideos(groupRecords);
-  };
+  // Manage list of videos used for navigation in VideoDetailView
+  const { outletContext, onSelectGroup } = useNavigationVideosManager(videosFiltered);
 
   const highlightLocationIds = useMemo(
     () => new Set(videosFiltered.map(video => JSON.stringify([video.lat, video.long]))),
