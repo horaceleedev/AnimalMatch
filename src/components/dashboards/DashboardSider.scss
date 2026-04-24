@@ -21,15 +21,11 @@
       padding-bottom: 2px;
     }
 
-    .ant-menu-item {
+    .ant-menu-item, .ant-menu-submenu-title {
       height: 32px;
       line-height: 32px;
       width: unset;
       margin: 2px;
-      padding-left: 20px !important;
-    }
-
-    .ant-menu-submenu-title {
       padding-left: 20px !important;
     }
   }

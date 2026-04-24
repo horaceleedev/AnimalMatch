@@ -73,24 +73,31 @@ export const IndividualsDashboardSider: FC<IndividualsDashboardSiderProps> = ({
           //   label: 'Recently added',
           // },
           {
-            key: 'by-age',
-            label: 'By age',
-            icon: individualsMetadataFields['age'].icon,
-            children: individualsMetadataFields['age'].presetOptions!.map(age => ({
-              key: 'age/'+age,
-              label: age,
-              extra: individualsBySiderKey['age/'+age].length,
-            })),
-          },
-          {
-            key: 'by-sex',
-            label: 'By sex',
-            icon: individualsMetadataFields['sex'].icon,
-            children: individualsMetadataFields['sex'].presetOptions!.map(sex => ({
-              key: 'sex/'+sex,
-              label: sex,
-              extra: individualsBySiderKey['sex/'+sex].length,
-            })),
+            key: 'by-age-sex',
+            label: 'By age and sex',
+            type: 'group',
+            children: [
+              {
+                key: 'by-age',
+                label: 'By age',
+                icon: individualsMetadataFields['age'].icon,
+                children: individualsMetadataFields['age'].presetOptions!.map(age => ({
+                  key: 'age/'+age,
+                  label: age,
+                  extra: individualsBySiderKey['age/'+age].length,
+                })),
+              },
+              {
+                key: 'by-sex',
+                label: 'By sex',
+                icon: individualsMetadataFields['sex'].icon,
+                children: individualsMetadataFields['sex'].presetOptions!.map(sex => ({
+                  key: 'sex/'+sex,
+                  label: sex,
+                  extra: individualsBySiderKey['sex/'+sex].length,
+                })),
+              },
+            ],
           },
           (
             uniqueValuesPerField['custom_tags']?.length ?
