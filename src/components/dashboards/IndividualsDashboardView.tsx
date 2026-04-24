@@ -11,6 +11,7 @@ import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
 import BasicMapView from '../ui/BasicMapView.tsx';
 import { getUniqueLocationsFromIndividuals } from '../../utils/utils.ts';
+import useSearchFilter from '../../hooks/useSearchFilter.ts';
 import { Individual, MetadataFieldsType, Video } from '../../types.ts';
 
 const viewsTabsItems: TabsProps['items'] = [
@@ -82,9 +83,14 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
     });
   }, [individuals, query]);
 
+  const { filteredRecords: searchFilteredIndividuals, setSearchQuery } = useSearchFilter(
+    filteredIndividuals,
+    individualsMetadataFields,
+  );
+
   const uniqueLocations = useMemo(() => {
-    return getUniqueLocationsFromIndividuals(filteredIndividuals, videos);
-  }, [filteredIndividuals, videos]);
+    return getUniqueLocationsFromIndividuals(searchFilteredIndividuals, videos);
+  }, [searchFilteredIndividuals, videos]);
 
   return (
     <>
@@ -93,6 +99,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
         sortFields={sortFields} setSortFields={setSortFields} sortOrders={sortOrders} setSortOrders={setSortOrders}
         groupFields={groupFields} setGroupFields={setGroupFields} groupOrders={groupOrders} setGroupOrders={setGroupOrders}
         query={query} setQuery={setQuery}
+        handleSearch={setSearchQuery}
       />
       {
         !onlyShowListView && 
@@ -101,7 +108,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
       {
         (view === 'list') ? 
         <IndividualsGridView
-          individuals={filteredIndividuals}
+          individuals={searchFilteredIndividuals}
           individualsMetadataFields={individualsMetadataFields}
           linkTemplate={linkTemplate}
           buttons={listViewButtons}
@@ -119,7 +126,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
           <Splitter>
             <Splitter.Panel defaultSize="40%" min="20%" max="70%" style={{height: 600, overflow: 'scroll', paddingRight: 12}}>
               <IndividualsGridView
-                individuals={filteredIndividuals}
+                individuals={searchFilteredIndividuals}
                 individualsMetadataFields={individualsMetadataFields}
                 linkTemplate={linkTemplate}
                 buttons={listViewButtons}

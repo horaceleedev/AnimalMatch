@@ -4,7 +4,7 @@ import { Layout, Splitter, Tabs } from "antd";
 import type { TabsProps } from 'antd';
 import Icon, { AppstoreOutlined } from "@ant-design/icons";
 import { RuleGroupType } from 'react-querybuilder';
-import { pick } from 'es-toolkit';
+import useSearchFilter from '../hooks/useSearchFilter.ts';
 
 import Table from '../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Map from '../assets/material_symbols/map_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -98,27 +98,9 @@ const VideosDashboardPage: React.FC = () => {
   const setQuery = () => {
     alert('Not implemented');
   }
-  const [searchQuery, setSearchQuery] = useState("");
-
   const [selectedSiderKey, setSelectedSiderKey, videosBySiderKey, siderFilteredVideos] = useVideosDashboardSiderState(videos, videoMetadataFields, user);
 
-  // Basic implementation of search functionality
-  const videosFiltered = useMemo(() => {
-    if (!searchQuery) return siderFilteredVideos;
-    const lowerSearchQuery = searchQuery.toLowerCase().trim();
-    return siderFilteredVideos.filter(video => {
-      // Concatenate all metadata fields of the video into a single string
-      // and check if the search query is included
-      const searchableString = Object.values(
-        // Only pick the metadata fields that are relevant for searching
-        pick(video, Object.keys(videoMetadataFields))
-      )
-        .map(val => Array.isArray(val) ? val.join(', ') : String(val ?? ''))
-        .join('\n')
-        .toLowerCase();
-      return searchableString.includes(lowerSearchQuery);
-    });
-  }, [searchQuery, siderFilteredVideos, videoMetadataFields]);
+  const { filteredRecords: videosFiltered, setSearchQuery } = useSearchFilter(siderFilteredVideos, videoMetadataFields);
 
   // Manage list of videos used for navigation in VideoDetailView
   const { outletContext, onSelectGroup } = useNavigationVideosManager(videosFiltered);
