@@ -189,14 +189,16 @@ export const individualsMetadataFields: MetadataFieldsType = {
   'family_group': {
     displayName: 'Family group',
     icon: <IdcardOutlined />,
-    type: 'text',
-    inputType: 'text',
+    type: 'select',
+    valueEditorType: 'select',
+    allowAddingNewOptions: true,
   },
   'bond_group': {
     displayName: 'Bond group',
     icon: <IdcardOutlined />,
-    type: 'text',
-    inputType: 'text',
+    type: 'select',
+    valueEditorType: 'select',
+    allowAddingNewOptions: true,
   },
   'notes': {
     displayName: 'Notes',
