@@ -106,6 +106,7 @@ export type MetadataFieldsType = Record<string, {
   extraData?: Record<string, any>;
   renderType?: 'user_label' | 'video_link' | 'individual_link' | 'annotation_status_label';
   displayBooleanValuesAs?: string[];
+  allowAddingNewOptions?: boolean;
   isInternal?: boolean;
   isUneditable?: boolean;
 }>;

@@ -1,4 +1,4 @@
-import { Button, Form, Input, InputNumber, Radio, Select, Tag } from "antd";
+import { AutoComplete, Button, Form, Input, InputNumber, Radio, Select, Tag } from "antd";
 import type { DefaultOptionType, LabelInValueType } from "rc-select/lib/Select";
 import TextArea from 'antd/es/input/TextArea';
 import { RecordModel } from "pocketbase";
@@ -60,39 +60,56 @@ const RecordMetadataForm = <T extends RecordModel>({
           } else if (value.inputType === 'text') {
             inputElement = <Input disabled={disabled} />;
           } else if (value.valueEditorType === 'select') {
-            let size: 'small' | 'middle' | 'large' | undefined;
-            let optionRender = undefined;
-            let labelRender = (option: LabelInValueType) => (
-              <Tag icon={showIconInSelectionFields ? value.icon : undefined}>
-                {option.label}
-              </Tag>
-            );
-            let customClassName = undefined;
-            if (value.renderType === 'video_link') {
-              size = 'large';
-              labelRender = (option) => <VideoLinkButton id={option.value as string} linkTemplate={videoLinkTemplate} openModal={openModal} />;
-            } else if (value.renderType === 'individual_link') {
-              size = 'large';
-              labelRender = (option) => <IndividualLinkButton id={option.value as string} linkTemplate={individualLinkTemplate} openModal={openModal} />;
-            } else if (value.renderType === 'user_label') {
-              size = 'large';
-              labelRender = (option) => <UserLabel id={option.value as string} />;
-              customClassName = "select-user"
-            } else if (value.renderType === 'annotation_status_label') {
-              optionRender = (option: DefaultOptionType) => <AnnotationStatusLabel status={option.value as string} />;
-              labelRender = (option) => <AnnotationStatusLabel status={option.value as string} />;
-            }
+            // If allowAddingNewOptions is true, use AutoComplete which allows users
+            // to add new options in addition to selecting from existing options.
+            // Otherwise, use Select.
+            if (value.allowAddingNewOptions) {
+              inputElement = (
+                <AutoComplete
+                  options={
+                    uniqueValuesPerField[fieldValue]
+                      .filter(v => !!v) // filter out empty strings; TODO move this filtering inside getUniqueValuesPerField?
+                      .map(val => ({ value: val, label: val }))
+                    }
+                  filterOption
+                  disabled={disabled}
+                />
+              );
+            } else {
+              let size: 'small' | 'middle' | 'large' | undefined;
+              let optionRender = undefined;
+              let labelRender = (option: LabelInValueType) => (
+                <Tag icon={showIconInSelectionFields ? value.icon : undefined}>
+                  {option.label}
+                </Tag>
+              );
+              let customClassName = undefined;
+              if (value.renderType === 'video_link') {
+                size = 'large';
+                labelRender = (option) => <VideoLinkButton id={option.value as string} linkTemplate={videoLinkTemplate} openModal={openModal} />;
+              } else if (value.renderType === 'individual_link') {
+                size = 'large';
+                labelRender = (option) => <IndividualLinkButton id={option.value as string} linkTemplate={individualLinkTemplate} openModal={openModal} />;
+              } else if (value.renderType === 'user_label') {
+                size = 'large';
+                labelRender = (option) => <UserLabel id={option.value as string} />;
+                customClassName = "select-user"
+              } else if (value.renderType === 'annotation_status_label') {
+                optionRender = (option: DefaultOptionType) => <AnnotationStatusLabel status={option.value as string} />;
+                labelRender = (option) => <AnnotationStatusLabel status={option.value as string} />;
+              }
 
-            inputElement = (
-              <Select
-                options={uniqueValuesPerField[fieldValue].map(val => ({ value: val, label: val }))}
-                disabled={disabled}
-                size={size}
-                optionRender={optionRender}
-                labelRender={labelRender}
-                className={customClassName}
-              />
-            );
+              inputElement = (
+                <Select
+                  options={uniqueValuesPerField[fieldValue].map(val => ({ value: val, label: val }))}
+                  disabled={disabled}
+                  size={size}
+                  optionRender={optionRender}
+                  labelRender={labelRender}
+                  className={customClassName}
+                />
+              );
+            }
           } else if (value.valueEditorType === 'multiselect') {
             let customRender = undefined;
             if (value.renderType === 'user_label') {
