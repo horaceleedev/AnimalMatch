@@ -1,6 +1,6 @@
 import { FC, useMemo, useState } from "react";
 import { Layout, Menu, Typography } from "antd";
-import { IdcardOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
+import { CheckOutlined, IdcardOutlined, QuestionOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
 const { Sider } = Layout;
 
 import { MetadataFieldsType, UserRecord, Individual } from "../../types";
@@ -11,6 +11,9 @@ export const useIndividualsDashboardSiderState = (individuals: Individual[], ind
   const individualsBySiderKey: Record<string, Individual[]> = useMemo(() => ({
     "all-individuals": individuals,
     "created-by-me": user ? individuals.filter(individual => individual.created_by === user.id) : [],
+    // by identification status
+    "is_identified": individuals.filter(individual => individual.is_identified === true),
+    "is_not_identified": individuals.filter(individual => individual.is_identified === false),
     // ages
     ...individualsMetadataFields['age'].presetOptions!.reduce((acc: Record<string, Individual[]>, age: string) => {
       acc['age/'+age] = individuals.filter(individual => individual.age === age);
@@ -72,6 +75,31 @@ export const IndividualsDashboardSider: FC<IndividualsDashboardSiderProps> = ({
           //   key: 'recently-added',
           //   label: 'Recently added',
           // },
+          (
+            // Only show if is_identified field is available
+            individualsMetadataFields['is_identified'] ?
+            {
+              key: 'by-identification-status',
+              label: 'By identification status',
+              type: 'group',
+              children: [
+                {
+                  key: 'is_identified',
+                  label: individualsMetadataFields['is_identified'].displayBooleanValuesAs?.[1] ?? 'Identified',
+                  icon: <CheckOutlined />,
+                  extra: individualsBySiderKey['is_identified'].length,
+                },
+                {
+                  key: 'is_not_identified',
+                  label: individualsMetadataFields['is_identified'].displayBooleanValuesAs?.[0] ?? 'Not identified',
+                  icon: <QuestionOutlined />,
+                  extra: individualsBySiderKey['is_not_identified'].length,
+                },
+              ],
+            }
+            :
+            null
+          ),
           {
             key: 'by-age-sex',
             label: 'By age and sex',
