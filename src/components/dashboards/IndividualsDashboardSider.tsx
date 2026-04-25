@@ -1,7 +1,10 @@
 import { FC, useMemo, useState } from "react";
 import { Layout, Menu, Typography } from "antd";
-import { CheckOutlined, ExclamationCircleOutlined, IdcardOutlined, QuestionOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
+import Icon, { CheckOutlined, ExclamationCircleOutlined, IdcardOutlined, QuestionOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
 const { Sider } = Layout;
+
+import FamilyGroup from "../../assets/material_symbols/family_group_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
+import GroupWork from "../../assets/material_symbols/group_work_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 
 import { MetadataFieldsType, UserRecord, Individual } from "../../types";
 import "./DashboardSider.scss";
@@ -24,6 +27,20 @@ export const useIndividualsDashboardSiderState = (individuals: Individual[], ind
       acc['sex/'+sex] = individuals.filter(individual => individual.sex === sex);
       return acc;
     }, {}),
+    // family groups
+    ...individuals.reduce((acc: Record<string, Individual[]>, cur: Individual) => {
+      const key = 'family_group/' + cur.family_group;
+      if (!(key in acc)) acc[key] = [];
+      acc[key].push(cur);
+      return acc;
+    }, {}),
+     // bond groups
+     ...individuals.reduce((acc: Record<string, Individual[]>, cur: Individual) => {
+      const key = 'bond_group/' + cur.bond_group;
+      if (!(key in acc)) acc[key] = [];
+      acc[key].push(cur);
+      return acc;
+     }, {}),
     // issues
     "has-issues": individuals.filter(individual => individual.issues && individual.issues.trim() !== ""),
     // custom tags
@@ -125,6 +142,33 @@ export const IndividualsDashboardSider: FC<IndividualsDashboardSiderProps> = ({
                   key: 'sex/'+sex,
                   label: sex,
                   extra: individualsBySiderKey['sex/'+sex].length,
+                })),
+              },
+            ],
+          },
+          {
+            key: 'by-family-bond-group',
+            label: 'By family/bond group',
+            type: 'group',
+            children: [
+              {
+                key: 'by-family-group',
+                label: 'By family group',
+                icon: <Icon component={FamilyGroup} />,
+                children: (uniqueValuesPerField['family_group'] || []).map(group => ({
+                  key: 'family_group/' + group,
+                  label: group || "No family group",
+                  extra: individualsBySiderKey['family_group/' + group].length,
+                })),
+              },
+              {
+                key: 'by-bond-group',
+                label: 'By bond group',
+                icon: <Icon component={GroupWork} />,
+                children: (uniqueValuesPerField['bond_group'] || []).map(group => ({
+                  key: 'bond_group/' + group,
+                  label: <Typography.Text ellipsis={{tooltip: true}}>{group || "No bond group"}</Typography.Text>,
+                  extra: individualsBySiderKey['bond_group/' + group].length,
                 })),
               },
             ],
