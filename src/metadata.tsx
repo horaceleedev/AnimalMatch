@@ -11,6 +11,8 @@ import WC from './assets/material_symbols/wc_24dp_5F6368_FILL0_wght400_GRAD0_ops
 import BoundingBoxIcon from "./assets/material_symbols/activity_zone_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 import FaceZone from "./assets/material_symbols/familiar_face_and_zone_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 import PendingActions from "./assets/material_symbols/pending_actions_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
+import FamilyGroup from "./assets/material_symbols/family_group_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
+import GroupWork from "./assets/material_symbols/group_work_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 
 import { MetadataFieldsType } from './types';
 
@@ -188,14 +190,14 @@ export const individualsMetadataFields: MetadataFieldsType = {
   },
   'family_group': {
     displayName: 'Family group',
-    icon: <IdcardOutlined />,
+    icon: <Icon component={FamilyGroup} />,
     type: 'select',
     valueEditorType: 'select',
     allowAddingNewOptions: true,
   },
   'bond_group': {
     displayName: 'Bond group',
-    icon: <IdcardOutlined />,
+    icon: <Icon component={GroupWork} />,
     type: 'select',
     valueEditorType: 'select',
     allowAddingNewOptions: true,
