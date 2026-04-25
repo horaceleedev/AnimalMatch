@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { Flex, Modal, Select, Tooltip } from "antd";
 import { useShallow } from 'zustand/react/shallow';
@@ -12,7 +12,7 @@ import { Individual, RecordType, Video, Crop } from '../types.ts';
 // TODO: Once this component is in the repo then we can remove this hack
 type VideoAnnotatorComponentType = React.ComponentType<{
   video: Video;
-  individualsInVideo: Individual[];
+  individuals: Individual[];
   individualsUniqueValuesPerField: Record<string, string[]>;
   cropsUniqueValuesPerField: Record<string, string[]>;
   userId?: string;
@@ -63,10 +63,6 @@ const VideoAnnotatorModal: React.FC = () => {
     }
     return createdIndividual;
   };
-  const individualsInVideo = useMemo(() => {
-    if (!video?.id) return [];
-    return individuals.filter(indiv => indiv.videos.includes(video.id))
-  }, [individuals, video?.id]);
 
   const changeAnnotationStatus = async (newStatus: string) => {
     if (!video) return;
@@ -146,7 +142,7 @@ const VideoAnnotatorModal: React.FC = () => {
         VideoAnnotatorComponent ?
         <VideoAnnotatorComponent
           video={video}
-          individualsInVideo={individualsInVideo}
+          individuals={individuals}
           individualsUniqueValuesPerField={individualsUniqueValuesPerField}
           cropsUniqueValuesPerField={cropsUniqueValuesPerField}
           userId={user?.id}
