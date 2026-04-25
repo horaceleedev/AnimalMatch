@@ -17,6 +17,7 @@ type VideoAnnotatorComponentType = React.ComponentType<{
   cropsUniqueValuesPerField: Record<string, string[]>;
   userId?: string;
   createIndividual: (data: Partial<Individual>) => Promise<Individual>;
+  updateIndividual: (id: string, data: Partial<Individual>) => Promise<Individual>;
   deleteIndividual: (id: string) => Promise<void>;
   createCrop: (data: Partial<Crop>) => Promise<Crop>;
   openModal: (type: RecordType, id: string) => void;
@@ -47,7 +48,7 @@ const VideoAnnotatorModal: React.FC = () => {
   const [videos, updateVideo, videosUniqueValuesPerField] = useVideoStore(useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField]));
   const video = videos.find(x => x.id === videoId);
 
-  const { individuals: individuals, createIndividual: _createIndividual, deleteIndividual, individualsUniqueValuesPerField, createCrop, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
+  const { individuals: individuals, createIndividual: _createIndividual, updateIndividual, deleteIndividual, individualsUniqueValuesPerField, createCrop, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
   const createIndividual = async (data: Partial<Individual>) => {
     if (!video) throw new Error('Video not found');
 
@@ -147,6 +148,7 @@ const VideoAnnotatorModal: React.FC = () => {
           cropsUniqueValuesPerField={cropsUniqueValuesPerField}
           userId={user?.id}
           createIndividual={createIndividual}
+          updateIndividual={updateIndividual}
           deleteIndividual={deleteIndividual}
           createCrop={createCrop}
           openModal={(type: RecordType, id: string) => setInnerModalProps({ type, id })}
