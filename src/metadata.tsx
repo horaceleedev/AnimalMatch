@@ -1,6 +1,6 @@
 import { blue, gray, green, orange } from '@ant-design/colors';
 
-import Icon, { ClockCircleOutlined, ColumnHeightOutlined, ColumnWidthOutlined, FileTextOutlined, FolderOpenOutlined, IdcardOutlined, NumberOutlined, PlaySquareOutlined, QuestionOutlined, TagsOutlined, UserOutlined, WarningOutlined } from "@ant-design/icons";
+import Icon, { ClockCircleOutlined, ColumnHeightOutlined, ColumnWidthOutlined, ExclamationCircleOutlined, FileTextOutlined, FolderOpenOutlined, IdcardOutlined, NumberOutlined, PlaySquareOutlined, QuestionOutlined, TagsOutlined, UserOutlined } from "@ant-design/icons";
 import Location from './assets/material_symbols/location_on_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import CalendarMonth from './assets/material_symbols/calendar_month_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import PIN from './assets/material_symbols/pin_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -63,7 +63,7 @@ export const videoMetadataFields: MetadataFieldsType = {
   },
   'issues': {
     displayName: 'Issues',
-    icon: <WarningOutlined />,
+    icon: <ExclamationCircleOutlined />,
     type: 'rich_text',
     inputType: 'text',
   },
@@ -182,7 +182,7 @@ export const individualsMetadataFields: MetadataFieldsType = {
   },
   'issues': {
     displayName: 'Issues',
-    icon: <WarningOutlined />,
+    icon: <ExclamationCircleOutlined />,
     type: 'rich_text',
     inputType: 'text',
   },
