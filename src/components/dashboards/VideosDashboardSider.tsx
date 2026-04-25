@@ -1,6 +1,6 @@
 import { FC, useMemo, useState } from "react";
 import { Layout, Menu, Typography } from "antd";
-import { PlaySquareOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
+import { ExclamationCircleOutlined, PlaySquareOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
 const { Sider } = Layout;
 
 import AnnotationStatusLabel from "../ui/AnnotationStatusLabel";
@@ -17,6 +17,8 @@ export const useVideosDashboardSiderState = (videos: Video[], videoMetadataField
       acc[status] = videos.filter(video => video.annotation_status === status);
       return acc;
     }, {}),
+    // issues
+    "has-issues": videos.filter(video => video.issues && video.issues.trim() !== ""),
     // custom tags
     ...videos.reduce((acc: Record<string, Video[]>, cur: Video) => {
       for (const tag of cur.custom_tags) {
@@ -94,6 +96,19 @@ export const VideosDashboardSider: FC<VideosDashboardSiderProps> = ({
               label: <AnnotationStatusLabel status={status} largeSize />,
               extra: videosBySiderKey[status].length,
             })),
+          },
+          {
+            key: 'other',
+            label: 'Other',
+            type: 'group',
+            children: [
+              {
+                key: 'has-issues',
+                label: 'Has issues',
+                icon: <ExclamationCircleOutlined />,
+                extra: videosBySiderKey['has-issues'].length,
+              },
+            ],
           },
           uniqueValuesPerField["custom_tags"]?.length
             ? {

@@ -1,6 +1,6 @@
 import { FC, useMemo, useState } from "react";
 import { Layout, Menu, Typography } from "antd";
-import { CheckOutlined, IdcardOutlined, QuestionOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
+import { CheckOutlined, ExclamationCircleOutlined, IdcardOutlined, QuestionOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
 const { Sider } = Layout;
 
 import { MetadataFieldsType, UserRecord, Individual } from "../../types";
@@ -24,6 +24,8 @@ export const useIndividualsDashboardSiderState = (individuals: Individual[], ind
       acc['sex/'+sex] = individuals.filter(individual => individual.sex === sex);
       return acc;
     }, {}),
+    // issues
+    "has-issues": individuals.filter(individual => individual.issues && individual.issues.trim() !== ""),
     // custom tags
     ...individuals.reduce((acc: Record<string, Individual[]>, cur: Individual) => {
       for (const tag of cur.custom_tags) {
@@ -124,6 +126,19 @@ export const IndividualsDashboardSider: FC<IndividualsDashboardSiderProps> = ({
                   label: sex,
                   extra: individualsBySiderKey['sex/'+sex].length,
                 })),
+              },
+            ],
+          },
+          {
+            key: 'other',
+            label: 'Other',
+            type: 'group',
+            children: [
+              {
+                key: 'has-issues',
+                label: 'Has issues',
+                icon: <ExclamationCircleOutlined />,
+                extra: individualsBySiderKey['has-issues'].length,
               },
             ],
           },
