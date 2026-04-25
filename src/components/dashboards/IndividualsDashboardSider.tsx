@@ -135,7 +135,7 @@ export const IndividualsDashboardSider: FC<IndividualsDashboardSiderProps> = ({
               type: 'group',
               children: uniqueValuesPerField['custom_tags'].map(x => ({
                 key: 'custom-tags/'+x,
-                label: <Typography.Text ellipsis={{tooltip: x}}>{x}</Typography.Text>,
+                label: <Typography.Text ellipsis={{tooltip: true}}>{x}</Typography.Text>,
                 icon: <TagOutlined />,
                 extra: individualsBySiderKey['custom-tags/'+x].length,
               })),

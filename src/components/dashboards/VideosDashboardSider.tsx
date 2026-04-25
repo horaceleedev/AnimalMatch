@@ -103,7 +103,7 @@ export const VideosDashboardSider: FC<VideosDashboardSiderProps> = ({
                 children: uniqueValuesPerField["custom_tags"].map((x) => ({
                   key: "custom-tags/" + x,
                   label: (
-                    <Typography.Text ellipsis={{ tooltip: x }}>
+                    <Typography.Text ellipsis={{ tooltip: true }}>
                       {x}
                     </Typography.Text>
                   ),
