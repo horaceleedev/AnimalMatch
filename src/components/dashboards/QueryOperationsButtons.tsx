@@ -9,7 +9,7 @@ import { defaultOperators, QueryBuilder } from 'react-querybuilder';
 import 'react-querybuilder/dist/query-builder.css';
 import { QueryBuilderAntD } from '@react-querybuilder/antd';
 
-import Icon, { CloseOutlined, FilterOutlined, GroupOutlined } from "@ant-design/icons";
+import Icon, { CloseOutlined, FilterOutlined, GroupOutlined, SearchOutlined } from "@ant-design/icons";
 import SwapVert from '../../assets/material_symbols/swap_vert_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
 import type { MetadataFieldsType } from "../../types.ts";
@@ -133,7 +133,7 @@ type QueryOperationsButtonsProps = {
   setGroupOrders: (x: ("asc" | "desc")[]) => void;
   query: RuleGroupType;
   setQuery: (x: RuleGroupType) => void;
-  handleSearch?: (x: string) => void;
+  handleSearch: (x: string) => void;
 }
 
 const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
@@ -177,8 +177,14 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
 
   return (
     <Space size="small" style={{ marginBottom: 10 }}>
-      {/* Search button */}
-      <Input.Search placeholder="Search" allowClear onSearch={handleSearch} style={{ minWidth: 300 }} />
+      {/* Search input */}
+      <Input
+        placeholder="Search"
+        prefix={<SearchOutlined />}
+        allowClear
+        onChange={(e) => handleSearch(e.target.value)}
+        style={{ minWidth: 300 }}
+      />
 
       {/* Sort button and popover */}
       <Popover title={groupFields.length > 0 ? "Sort within groups by" : "Sort by"} content={
