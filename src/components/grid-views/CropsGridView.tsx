@@ -41,6 +41,7 @@ const BasicCropsGridView: React.FC<BasicCropsGridViewProps> = ({
                   <Space wrap size={4}>
                     {
                       ['body_part'].map(field => (
+                        crop[field] &&
                         <Tooltip title={cropsMetadataFields[field].displayName} key={field}>
                           <Tag icon={cropsMetadataFields[field].icon}>
                             {crop[field]}
