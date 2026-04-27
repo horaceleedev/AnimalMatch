@@ -260,7 +260,7 @@ export const cropsMetadataFields: MetadataFieldsType = {
     icon: <Icon component={FaceZone} />,
     type: 'select',
     valueEditorType: 'select',
-    presetOptions: ['full body', 'face', 'butt', 'ear'],
+    presetOptions: ['full body', 'ear', 'trunk', 'tusk', 'face', 'butt', 'tail'],
   },
   'side': {
     displayName: 'Side',
