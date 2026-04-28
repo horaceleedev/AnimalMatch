@@ -1,18 +1,19 @@
-import { FC, useMemo } from "react";
+import { useMemo } from "react";
+import type { FC, ReactNode } from "react";
 import { Button, Input, Popover, Select, Space, Switch } from "antd";
 import { QueryBuilderDnD } from "@react-querybuilder/dnd";
 import * as ReactDnD from "react-dnd";
 import * as ReactDndHtml5Backend from "react-dnd-html5-backend";
-import type { Field, RuleGroupType, RuleType, ValueEditorType } from "react-querybuilder";
+import type { Field, RuleGroupType, RuleType } from "react-querybuilder";
 import { QueryBuilder } from "react-querybuilder";
-// import { fields } from './fields';
-import "react-querybuilder/dist/query-builder.scss";
+import "react-querybuilder/dist/query-builder.css";
 import { QueryBuilderAntD } from "@react-querybuilder/antd";
 
 import Icon, {
   CloseOutlined,
   FilterOutlined,
   GroupOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import SwapVert from "../../assets/material_symbols/swap_vert_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 
@@ -27,43 +28,47 @@ type FieldSelectorProps = {
   onChange: (x: string) => void;
 };
 
+type FieldOption = {
+  value: string;
+  label: string;
+  icon?: ReactNode;
+};
+
+type OptionRenderData = {
+  data?: FieldOption;
+  label?: ReactNode;
+  value?: string | number | null;
+};
+
 const FieldSelector: FC<FieldSelectorProps> = ({
   metadataFields,
   value,
   onChange,
 }: FieldSelectorProps) => {
-  const fieldOptions = useMemo(
+  const fieldOptions = useMemo<FieldOption[]>(
     () =>
       Object.entries(metadataFields).map(([fieldValue, field]) => ({
         value: fieldValue,
         label: field.displayName,
         icon: field.icon,
       })),
-    [metadataFields]
+    [metadataFields],
   );
 
-  interface FieldOption {
-    value: string;
-    label: string;
-    icon: React.ReactNode;
-  }
-
-  interface OptionRenderData {
-    data?: FieldOption;
-    label?: string | React.ReactNode;
-    value?: string | number;
-  }
-
-  const optionRender = (option: OptionRenderData): React.ReactNode => (
+  const optionRender = (option: OptionRenderData): ReactNode => (
     <Space>
       {option.data?.icon} {option.label}
     </Space>
   );
-  const labelRender = (option: OptionRenderData): React.ReactNode => (
-    <Space>
-      {metadataFields[`${option.value}`].icon} {option.label}
-    </Space>
-  );
+  const labelRender = (option: OptionRenderData): ReactNode => {
+    const fieldKey = String(option.value ?? "");
+    const icon = metadataFields[fieldKey]?.icon;
+    return (
+      <Space>
+        {icon} {option.label}
+      </Space>
+    );
+  };
 
   return (
     <Select
@@ -102,19 +107,34 @@ const CustomQueryBuilder: FC<CustomQueryBuilderProps> = ({
         icon: field.icon,
         datatype: field.type,
         inputType: field.inputType,
-        valueEditorType: field.valueEditorType as ValueEditorType | undefined,
+        valueEditorType: field.valueEditorType,
+        operators: [{ name: "=", value: "=", label: "=" }],
+        defaultOperator: "=",
       };
-      if (field.inputType === "text") {
-        output.defaultOperator = "contains";
-      }
       if (
         field.valueEditorType === "select" ||
         field.valueEditorType === "multiselect"
       ) {
-        output.values = uniqueValuesPerField[fieldValue].map((x) => ({
+        const values = uniqueValuesPerField[fieldValue] ?? field.presetOptions ?? [];
+        output.values = values.map((x) => ({
           name: x,
           value: x,
+          label: x,
         }));
+      }
+      if (field.type === "boolean") {
+        output.values = [
+          {
+            name: true,
+            value: true,
+            label: field.displayBooleanValuesAs?.[1] ?? "True",
+          },
+          {
+            name: false,
+            value: false,
+            label: field.displayBooleanValuesAs?.[0] ?? "False",
+          },
+        ] as unknown as Field["values"];
       }
       if (field.type === "rich_text") {
         output.datatype = "text";
@@ -155,6 +175,7 @@ type QueryOperationsButtonsProps = {
   setGroupOrders: (x: ("asc" | "desc")[]) => void;
   query: RuleGroupType;
   setQuery: (x: RuleGroupType) => void;
+  handleSearch: (x: string) => void;
 };
 
 const QueryOperationsButtons: FC<QueryOperationsButtonsProps> = ({
@@ -170,8 +191,17 @@ const QueryOperationsButtons: FC<QueryOperationsButtonsProps> = ({
   setGroupOrders,
   query,
   setQuery,
+  handleSearch,
 }: QueryOperationsButtonsProps) => {
   const { selectedItems, selectionMode, toggleSelectionMode } = useSelectionStore();
+  const firstFilterRule = useMemo(
+    () =>
+      query.rules.find(
+        (rule): rule is RuleType =>
+          typeof rule === "object" && rule !== null && !("rules" in rule),
+      ),
+    [query.rules],
+  );
 
   const handleSortFieldSelect = (val: string) => {
     setSortFields([val]);
@@ -201,11 +231,12 @@ const QueryOperationsButtons: FC<QueryOperationsButtonsProps> = ({
 
   return (
     <Space size="small" style={{ marginBottom: 10 }}>
-      {/* Search button */}
-      <Input.Search
+      {/* Search input */}
+      <Input
         placeholder="Search"
+        prefix={<SearchOutlined />}
         allowClear
-        onSearch={() => {}}
+        onChange={(event) => handleSearch(event.target.value)}
         style={{ minWidth: 300 }}
       />
 
@@ -251,7 +282,7 @@ const QueryOperationsButtons: FC<QueryOperationsButtonsProps> = ({
           variant={sortFields.length > 0 ? "filled" : "text"}
         >
           {sortFields.length > 0
-            ? `Sorted by ${metadataFields[sortFields[0]].displayName}`
+            ? `Sorted by ${metadataFields[sortFields[0]]?.displayName ?? sortFields[0]}`
             : "Sort"}
         </Button>
       </Popover>
@@ -291,11 +322,11 @@ const QueryOperationsButtons: FC<QueryOperationsButtonsProps> = ({
         <Button
           type="text"
           icon={<FilterOutlined />}
-          color={query.rules.length > 0 ? "primary" : "default"}
-          variant={query.rules.length > 0 ? "filled" : "text"}
+          color={firstFilterRule ? "primary" : "default"}
+          variant={firstFilterRule ? "filled" : "text"}
         >
-          {query.rules.length > 0
-            ? `Filtered by ${metadataFields[(query.rules[0] as RuleType).field].displayName}`
+          {firstFilterRule
+            ? `Filtered by ${metadataFields[firstFilterRule.field]?.displayName ?? firstFilterRule.field}`
             : "Filter"}
         </Button>
       </Popover>
@@ -342,7 +373,7 @@ const QueryOperationsButtons: FC<QueryOperationsButtonsProps> = ({
           variant={groupFields.length > 0 ? "filled" : "text"}
         >
           {groupFields.length > 0
-            ? `Grouped by ${metadataFields[groupFields[0]].displayName}`
+            ? `Grouped by ${metadataFields[groupFields[0]]?.displayName ?? groupFields[0]}`
             : "Group"}
         </Button>
       </Popover>

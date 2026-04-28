@@ -1,6 +1,8 @@
-import { countBy, orderBy } from "es-toolkit";
+import { countBy } from "es-toolkit";
 
 import { Individual, LocationInfo, MetadataFieldsType, Video } from "../types";
+
+const isNonNullString = (value: unknown): value is string => typeof value === "string";
 
 export const getUniqueLocationsFromVideos = (videos: Video[]) => {
   const numVideosPerUniqueLocation = countBy(videos, x => JSON.stringify([x.lat, x.long]));
@@ -17,6 +19,11 @@ export const getUniqueLocationsFromVideos = (videos: Video[]) => {
 };
 
 export const getUniqueLocationsFromIndividuals = (individuals: Individual[], allVideos: Video[]) => {
+  if (allVideos.length === 0) {
+    console.warn("Warning when computing individual locations: allVideos is empty (possibly because videos are still loading), returning empty unique locations");
+    return [];
+  }
+
   const videos: Video[] = []; // list of videos where the individuals appear in
   for (const indiv of individuals) {
     for (const videoId of indiv.videos) {
@@ -52,15 +59,17 @@ export const getUniqueValuesPerField = (metadataFields: MetadataFieldsType, proc
         return;
       }
 
-      const uniqueValues = Array.from(new Set(processedRecords.map(x => x[fieldValue])));
-      const uniqueValuesSorted = orderBy(uniqueValues, [x => x], ['asc']);
+      const uniqueValues = Array.from(
+        new Set(processedRecords.map(x => x[fieldValue]).filter(isNonNullString))
+      );
+      const uniqueValuesSorted = [...uniqueValues].sort((a, b) => a.localeCompare(b));
       uniqueValuesPerField[fieldValue] = uniqueValuesSorted;
       console.log(uniqueValuesSorted);
     } else if (field.type === 'multiselect') {
-      const uniqueValues = Array.from(new Set(
-        processedRecords.map(x => x[fieldValue]).flat()
-      ));
-      const uniqueValuesSorted = orderBy(uniqueValues, [x => x], ['asc']);
+      const uniqueValues = Array.from(
+        new Set(processedRecords.flatMap(x => x[fieldValue] ?? []).filter(isNonNullString))
+      );
+      const uniqueValuesSorted = [...uniqueValues].sort((a, b) => a.localeCompare(b));
       uniqueValuesPerField[fieldValue] = uniqueValuesSorted;
       // console.log(uniqueValuesSorted);
     }

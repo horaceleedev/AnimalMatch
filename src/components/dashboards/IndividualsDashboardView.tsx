@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Splitter, Tabs, type TabsProps } from "antd";
 import Icon from "@ant-design/icons";
-import { formatQuery, RuleGroupType } from 'react-querybuilder';
+import { RuleGroupType, type RuleType } from 'react-querybuilder';
 
 import Table from '../../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Map from '../../assets/material_symbols/map_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -11,6 +11,7 @@ import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
 import BasicMapView from '../ui/BasicMapView.tsx';
 import { getUniqueLocationsFromIndividuals } from '../../utils/utils.ts';
+import useSearchFilter from '../../hooks/useSearchFilter.ts';
 import { Individual, MetadataFieldsType, Video } from '../../types.ts';
 
 const viewsTabsItems: TabsProps['items'] = [
@@ -31,6 +32,11 @@ const viewsTabsItems: TabsProps['items'] = [
   },
 ];
 const initialQuery: RuleGroupType = { combinator: 'and', rules: [] };
+const getFirstRule = (query: RuleGroupType): RuleType | undefined => {
+  const firstRule = query.rules[0];
+  if (!firstRule || 'rules' in firstRule) return undefined; // if the first rule is missing or is a nested rule group
+  return firstRule;
+};
 
 interface IndividualsDashboardViewProps {
   individuals: Individual[];
@@ -63,24 +69,28 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
       alert('Max 1 filter supported at the moment');
       return;
     }
-    if (newQuery.rules.length > 0) {
-      if (newQuery.rules[0].combinator) {
-        alert('Groups not supported at the moment');
-        return;
-      }
+    if (newQuery.rules.length > 0 && !getFirstRule(newQuery)) {
+      alert('Groups not supported at the moment');
+      return;
     }
     _setQuery(newQuery);
   };
   const filteredIndividuals = useMemo(() => {
+    const firstRule = getFirstRule(query);
     return individuals.filter((individual) => {
-      if (query.rules.length == 0) return true;
-      return individual[query.rules[0].field] == query.rules[0].value;
+      if (!firstRule) return true;
+      return individual[firstRule.field as keyof Individual] == firstRule.value;
     });
-  }, [individuals,  query]);
+  }, [individuals, query]);
+
+  const { filteredRecords: searchFilteredIndividuals, setSearchQuery } = useSearchFilter(
+    filteredIndividuals,
+    individualsMetadataFields,
+  );
 
   const uniqueLocations = useMemo(() => {
-    return getUniqueLocationsFromIndividuals(filteredIndividuals, videos);
-  }, [filteredIndividuals, videos]);
+    return getUniqueLocationsFromIndividuals(searchFilteredIndividuals, videos);
+  }, [searchFilteredIndividuals, videos]);
 
   return (
     <>
@@ -89,6 +99,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
         sortFields={sortFields} setSortFields={setSortFields} sortOrders={sortOrders} setSortOrders={setSortOrders}
         groupFields={groupFields} setGroupFields={setGroupFields} groupOrders={groupOrders} setGroupOrders={setGroupOrders}
         query={query} setQuery={setQuery}
+        handleSearch={setSearchQuery}
       />
       {
         !onlyShowListView && 
@@ -97,7 +108,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
       {
         (view === 'list') ? 
         <IndividualsGridView
-          individuals={filteredIndividuals}
+          individuals={searchFilteredIndividuals}
           individualsMetadataFields={individualsMetadataFields}
           linkTemplate={linkTemplate}
           buttons={listViewButtons}
@@ -115,7 +126,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
           <Splitter>
             <Splitter.Panel defaultSize="40%" min="20%" max="70%" style={{height: 600, overflow: 'scroll', paddingRight: 12}}>
               <IndividualsGridView
-                individuals={filteredIndividuals}
+                individuals={searchFilteredIndividuals}
                 individualsMetadataFields={individualsMetadataFields}
                 linkTemplate={linkTemplate}
                 buttons={listViewButtons}

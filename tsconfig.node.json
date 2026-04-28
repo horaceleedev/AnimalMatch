@@ -3,6 +3,7 @@
     "target": "ES2022",
     "lib": ["ES2023"],
     "module": "ESNext",
+    "types": ["node"],
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -18,5 +19,10 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts"]
+  "include": [
+    "vite.config.ts",
+    "vitest.config.ts",
+    "vitest.browser.config.ts",
+    "playwright.config.ts"
+  ]
 }

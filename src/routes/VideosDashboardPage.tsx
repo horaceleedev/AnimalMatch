@@ -1,15 +1,15 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { matchPath, Outlet, useLocation } from "react-router-dom";
-import { Layout, Splitter, Tabs, theme } from "antd";
+import { Layout, Splitter, Tabs } from "antd";
 import type { TabsProps } from 'antd';
 import Icon, { AppstoreOutlined } from "@ant-design/icons";
-import { RevoGrid } from '@revolist/react-datagrid';
 import { RuleGroupType } from 'react-querybuilder';
+import useSearchFilter from '../hooks/useSearchFilter.ts';
 
 import Table from '../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Map from '../assets/material_symbols/map_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
-import { gridEditors, tableColumns, videoMetadataFields } from "../metadata.tsx";
+import { videoMetadataFields } from "../metadata.tsx";
 import DashboardContent from '../components/dashboards/DashboardContent.tsx';
 import VideosGridView from "../components/grid-views/VideosGridView.tsx";
 import QueryOperationsButtons from "../components/dashboards/QueryOperationsButtons.tsx";
@@ -17,24 +17,35 @@ import { useAuth, useVideoStore } from "../DataStores.tsx";
 import BasicMapView from '../components/ui/BasicMapView.tsx';
 import { VideosDashboardSider } from '../components/dashboards/VideosDashboardSider.tsx';
 import { useVideosDashboardSiderState } from "../components/dashboards/useVideosDashboardSiderState.tsx";
+import VideosTableView from '../components/table-views/VideosTableView.tsx';
 import { Video } from '../types.ts';
 import "./VideosDashboardPage.scss";
 import { useSelectionStore } from '../hooks/useSelectionStore.ts';
 
 /**
- * Store a copy of the filtered video list for use in outlet context.
- * @param videosFiltered 
- * @returns [outletVideos, setOutletVideos]
+ * Cache a list of videos used for the previous/next navigation buttons in VideoDetailView.
+ * This list is only updated when the input list of videos (videosFiltered) changes
+ * while the user is on the dashboard page, such as when the sider selection is changed
+ * or a text search is performed. It is also updated when the user clicks on a video within
+ * a group in VideosGridView, in which case it is set to the list of videos in that group.
+ * However, it is not updated when the user edits a video's metadata in VideoDetailView,
+ * such as by changing its annotation status or custom tags, to ensure a consistent
+ * navigation experience.
+ *
+ * @param videosFiltered - The current filtered list of videos from the dashboard (search + sider filters applied)
+ * @returns An object with:
+ *   - `outletContext`: Video list to pass to `<Outlet />` for prev/next navigation
+ *   - `onSelectGroup`: Callback to update the outlet video list when a group is selected in VideosGridView
  */
-function useOutletVideosState(videosFiltered: Video[]): [Video[], React.Dispatch<React.SetStateAction<Video[]>>] {
+function useNavigationVideosManager(videosFiltered: Video[]) {
   /*
-    Outlet video state stores the video list used to navigate between videos in VideoDetailView.
-    Keep this separate from videosFiltered so that outlet context is not changed when the user
-    edits the metadata of a video eg. by changing its annotation status or custom tags.
+    outletVideos state stores the video list used to navigate between videos in VideoDetailView.
+    This is kept separate from videosFiltered to prevent the navigation list from changing
+    when the user edits a video's metadata.
   */
   const [outletVideos, setOutletVideos] = useState<Video[]>(videosFiltered);
 
-  // Update the outlet videos after navigating back to the dashboard page.
+  // Keep outletVideos updated while the user is on the dashboard page.
   const { pathname } = useLocation();
   useEffect(() => {
     if (matchPath("/videos", pathname)) {
@@ -42,7 +53,16 @@ function useOutletVideosState(videosFiltered: Video[]): [Video[], React.Dispatch
     }
   }, [pathname, videosFiltered]);
 
-  return [outletVideos, setOutletVideos];
+  const outletContext = useMemo(() => ({
+    videos: outletVideos,
+  }), [outletVideos]);
+
+  // Update outlet videos after selecting a group in VideosGridView.
+  const onSelectGroup = useCallback((groupRecords: Video[]) => {
+    setOutletVideos(groupRecords);
+  }, []);
+
+  return { outletContext, onSelectGroup };
 }
 
 const viewsTabsItems: TabsProps['items'] = [
@@ -77,29 +97,18 @@ const VideosDashboardPage: React.FC = () => {
   const [sortOrders, setSortOrders] = useState<("asc" | "desc")[]>([]);
   const [groupFields, setGroupFields] = useState<string[]>([]);
   const [groupOrders, setGroupOrders] = useState<("asc" | "desc")[]>([]);
-  const [query, _setQuery] = useState(initialQuery);
+  const [query] = useState(initialQuery);
   const setQuery = () => {
     alert('Not implemented');
   }
+  const [selectedSiderKey, setSelectedSiderKey, videosBySiderKey, siderFilteredVideos] = useVideosDashboardSiderState(videos, videoMetadataFields, user);
 
-  const [selectedSiderKey, setSelectedSiderKey, videosBySiderKey, videosFiltered] = useVideosDashboardSiderState(videos, videoMetadataFields, user);
+  const { filteredRecords: videosFiltered, setSearchQuery } = useSearchFilter(siderFilteredVideos, videoMetadataFields);
 
-  /*
-    Keep a copy of filteredVideos, which only updates when navigating back to the dashboard
-    or changing the sider selection.
-  */
-  const [outletVideos, setOutletVideos] = useOutletVideosState(videosFiltered);
-  const outletContext = useMemo(() => ({
-    videos: outletVideos,
-  }), [outletVideos]);
-
-  // Update outlet videos after selecting a group in VideosGridView.
-  const onSelectGroup = (groupRecords: Video[]) => {
-    setOutletVideos(groupRecords);
-  };
-  // Update outlet videos after selecting a sider key
+  // Manage list of videos used for navigation in VideoDetailView
+  const { outletContext, onSelectGroup } = useNavigationVideosManager(videosFiltered);
+  // Clear selected videos when changing the sider filter.
   function onSiderChange({ key }: { key: string }) {
-    setOutletVideos(videosBySiderKey[key]);
     setSelectedSiderKey(key);
     selectionStore.clearSelection();
   }
@@ -109,7 +118,7 @@ const VideosDashboardPage: React.FC = () => {
     [videosFiltered]
   );
 
-  const { colorBgContainer } = theme.useToken().token;
+  // const { colorBgContainer } = theme.useToken().token;
 
   return (
     <>
@@ -130,6 +139,7 @@ const VideosDashboardPage: React.FC = () => {
             sortFields={sortFields} setSortFields={setSortFields} sortOrders={sortOrders} setSortOrders={setSortOrders}
             groupFields={groupFields} setGroupFields={setGroupFields} groupOrders={groupOrders} setGroupOrders={setGroupOrders}
             query={query} setQuery={setQuery}
+            handleSearch={(val: string) => setSearchQuery(val)}
           />
 
           <Tabs defaultActiveKey="grid" items={viewsTabsItems} onChange={setView} />
@@ -154,7 +164,7 @@ const VideosDashboardPage: React.FC = () => {
                   (sortFields.length > 0 || groupFields.length > 0) &&
                   "Note: the sorting/grouping options you have selected are not applied to this table view at the moment"
                 }
-                <RevoGrid columns={tableColumns} source={videosFiltered} rowHeaders={true} resize={true} autoSizeColumn={true} range={true} readonly={true} editors={gridEditors} />
+                <VideosTableView videos={videosFiltered} videoMetadataFields={videoMetadataFields} />
               </>
               :
               (uniqueLocations.length > 0) &&

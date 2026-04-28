@@ -30,7 +30,7 @@ const withSortingAndGrouping = <P extends BasicGridViewProps, T extends RecordMo
 ) => {
   return (props: P & SortingGroupingOptions<T>) => {
     if (!(opts.processedRecordsProp in props)) {
-      throw new Error(`Missing prop ${opts.processedRecordsProp} in withSortingAndGrouping`);
+      throw new Error(`Missing prop "${opts.processedRecordsProp}" in ${BasicGridView.displayName || BasicGridView.name || "BasicGridView"} wrapped by withSortingAndGrouping`);
     }
     const processedRecords = props[opts.processedRecordsProp] as T[];
     const metadataFields = props[opts.metadataFieldsProp] as MetadataFieldsType;
@@ -159,7 +159,7 @@ const withPagination = <P extends BasicGridViewProps, T extends RecordModel>(
 ) => {
   return (props: P) => {
     if (!(processedRecordsProp in props)) {
-      throw new Error(`Missing prop ${processedRecordsProp} in withSortingAndGrouping`);
+      throw new Error(`Missing prop "${processedRecordsProp}" in ${BasicGridView.displayName || BasicGridView.name || "BasicGridView"} wrapped by withPagination`);
     }
 
     const [currentPageNum, setcurrentPageNum] = useState(1); // 1-based index for Pagination component

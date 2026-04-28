@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Flex, Image, Select, Space, Tabs, theme, type TabsProps } from "antd";
+import { Button, Flex, Select, Space, Tabs, theme, type TabsProps } from "antd";
 import StickyBox from 'react-sticky-box';
 import { generatePath, Link } from 'react-router-dom';
 

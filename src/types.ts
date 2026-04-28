@@ -1,4 +1,5 @@
 import { type RecordModel } from 'pocketbase';
+import { type ValueEditorType } from 'react-querybuilder';
 
 export type RecordType = "video" | "individual" | "crop";
 export interface RecordDetailModalProps {
@@ -100,11 +101,12 @@ export type MetadataFieldsType = Record<string, {
   icon?: JSX.Element;
   type: 'text' | 'number' | 'date' | 'boolean' | 'select' | 'multiselect' | 'rich_text';
   inputType?: string;
-  valueEditorType?: string;
+  valueEditorType?: ValueEditorType;
   presetOptions?: string[];
   extraData?: Record<string, any>;
   renderType?: 'user_label' | 'video_link' | 'individual_link' | 'annotation_status_label';
   displayBooleanValuesAs?: string[];
+  allowAddingNewOptions?: boolean;
   isInternal?: boolean;
   isUneditable?: boolean;
 }>;

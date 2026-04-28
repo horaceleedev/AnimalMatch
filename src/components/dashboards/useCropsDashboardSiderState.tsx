@@ -3,7 +3,7 @@ import { Crop, MetadataFieldsType, UserRecord } from "../../types";
 
 export const useCropsDashboardSiderState = (
   crops: Crop[],
-  cropsMetadataFields: MetadataFieldsType,
+  _cropsMetadataFields: MetadataFieldsType,
   user: UserRecord | null,
 ) => {
   const [selectedSiderKey, setSelectedSiderKey] = useState("all-crops");

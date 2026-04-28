@@ -15,7 +15,7 @@ interface CropsDashboardSiderProps {
   uniqueValuesPerField: Record<string, string[]>;
 }
 export const CropsDashboardSider: FC<CropsDashboardSiderProps> = ({
-  selectedSiderKey, setSelectedSiderKey, cropsBySiderKey, cropsMetadataFields, uniqueValuesPerField,
+  selectedSiderKey, setSelectedSiderKey, cropsBySiderKey, cropsMetadataFields: _cropsMetadataFields, uniqueValuesPerField,
 }) => {
   return (
     <Sider className="dashboard-sider" style={{ /* background: colorBgContainer */ }} width={220}>
@@ -47,7 +47,7 @@ export const CropsDashboardSider: FC<CropsDashboardSiderProps> = ({
           //   type: 'group',
           //   children: cropsMetadataFields['body_part'].presetOptions!.map(body_part => ({
           //     key: 'body_part/'+body_part,
-          //     label: <Typography.Text ellipsis={{tooltip: body_part}}>{body_part}</Typography.Text>,
+          //     label: <Typography.Text ellipsis={{tooltip: true}}>{body_part}</Typography.Text>,
           //     extra: cropsBySiderKey['body_part/'+body_part].length,
           //   })),
           // },
@@ -59,7 +59,7 @@ export const CropsDashboardSider: FC<CropsDashboardSiderProps> = ({
               type: 'group',
               children: uniqueValuesPerField['custom_tags'].map(x => ({
                 key: 'custom-tags/'+x,
-                label: <Typography.Text ellipsis={{tooltip: x}}>{x}</Typography.Text>,
+                label: <Typography.Text ellipsis={{tooltip: true}}>{x}</Typography.Text>,
                 icon: <TagOutlined />,
                 extra: cropsBySiderKey['custom-tags/'+x].length,
               })),

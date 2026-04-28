@@ -1,19 +1,40 @@
-import React, { useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { Button, Flex, Modal, Select, Space, Tooltip } from "antd";
-import { intersection } from 'es-toolkit';
+import React, { useEffect, useState } from 'react'
+import { useNavigate, useOutletContext, useParams } from "react-router-dom";
+import { Flex, Modal, Select, Tooltip } from "antd";
 import { useShallow } from 'zustand/react/shallow';
 
 import { useVideoStore, useIndividualsStoreWithCrops, useAuth } from "../DataStores.tsx";
-import VideoAnnotator from '../components/VideoAnnotator/VideoAnnotator.tsx';
 import InnerModal from './InnerModal.tsx';
 import AnnotationStatusLabel from '../components/ui/AnnotationStatusLabel.tsx';
-import { Individual, RecordType } from '../types.ts';
+import { PrevNextVideoButtons } from '../components/ui/PrevNextButtons.tsx';
+import { Individual, RecordType, Video, Crop } from '../types.ts';
+
+// TODO: Once this component is in the repo then we can remove this hack
+type VideoAnnotatorComponentType = React.ComponentType<{
+  video: Video;
+  individuals: Individual[];
+  individualsUniqueValuesPerField: Record<string, string[]>;
+  cropsUniqueValuesPerField: Record<string, string[]>;
+  userId?: string;
+  createIndividual: (data: Partial<Individual>) => Promise<Individual>;
+  updateIndividual: (id: string, data: Partial<Individual>) => Promise<Individual>;
+  deleteIndividual: (id: string) => Promise<void>;
+  createCrop: (data: Partial<Crop>) => Promise<Crop>;
+  openModal: (type: RecordType, id: string) => void;
+}>;
+
+const videoAnnotatorModules = import.meta.glob('../components/VideoAnnotator/VideoAnnotator.tsx');
 
 const VideoAnnotatorModal: React.FC = () => {
   const navigate = useNavigate();
   const { videoId } = useParams<"videoId">();
   console.log(videoId)
+
+  // Get videos for navigation (previous/next video) from outlet context (passed from VideosDashboardPage)
+  const outletContext = useOutletContext<{
+    videos?: Video[],
+  }>();
+  const navigationVideos = outletContext?.videos || [];
 
   const [isModalOpen, setIsModalOpen] = useState(true);
   const handleDismiss = () => {
@@ -27,7 +48,7 @@ const VideoAnnotatorModal: React.FC = () => {
   const [videos, updateVideo, videosUniqueValuesPerField] = useVideoStore(useShallow((state) => [state.processedRecords, state.update, state.uniqueValuesPerField]));
   const video = videos.find(x => x.id === videoId);
 
-  const { individuals: individuals, createIndividual: _createIndividual, deleteIndividual, individualsUniqueValuesPerField, createCrop, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
+  const { individuals: individuals, createIndividual: _createIndividual, updateIndividual, deleteIndividual, individualsUniqueValuesPerField, createCrop, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
   const createIndividual = async (data: Partial<Individual>) => {
     if (!video) throw new Error('Video not found');
 
@@ -43,10 +64,6 @@ const VideoAnnotatorModal: React.FC = () => {
     }
     return createdIndividual;
   };
-  const individualsInVideo = useMemo(() => {
-    if (!video?.id) return [];
-    return individuals.filter(indiv => indiv.videos.includes(video.id))
-  }, [individuals, video?.id]);
 
   const changeAnnotationStatus = async (newStatus: string) => {
     if (!video) return;
@@ -58,6 +75,25 @@ const VideoAnnotatorModal: React.FC = () => {
   };
 
   const { user } = useAuth();
+  const [VideoAnnotatorComponent, setVideoAnnotatorComponent] = useState<VideoAnnotatorComponentType | null>(null);
+  const [annotatorLoadError, setAnnotatorLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loader = videoAnnotatorModules['../components/VideoAnnotator/VideoAnnotator.tsx'];
+    if (!loader) {
+      setAnnotatorLoadError("Video annotator module is not available in this repo checkout.");
+      return;
+    }
+
+    loader()
+      .then((mod) => {
+        setVideoAnnotatorComponent(() => (mod as { default: VideoAnnotatorComponentType }).default);
+      })
+      .catch((error) => {
+        console.error("Failed to load VideoAnnotator module:", error);
+        setAnnotatorLoadError("Failed to load video annotator module.");
+      });
+  }, []);
 
   const [innerModalProps, setInnerModalProps] = useState<{ type?: RecordType; id?: string; }>({
     type: undefined,
@@ -76,6 +112,12 @@ const VideoAnnotatorModal: React.FC = () => {
       title={
         <Flex align="center" gap="middle">
           {video.filename}
+          <PrevNextVideoButtons
+            record={video}
+            recordLinkTemplate="/videos/:videoId/annotate"
+            records={navigationVideos}
+            flexProps={{ gap: "small" }}
+          />
           <Tooltip title="Annotation status">
             <Select
               value={video.annotation_status}
@@ -97,17 +139,23 @@ const VideoAnnotatorModal: React.FC = () => {
       keyboard={false} // ignore escape key (don't close modal when esc key is pressed)
       width="90vw"
     >
-      <VideoAnnotator
-        video={video}
-        individualsInVideo={individualsInVideo}
-        individualsUniqueValuesPerField={individualsUniqueValuesPerField}
-        cropsUniqueValuesPerField={cropsUniqueValuesPerField}
-        userId={user?.id}
-        createIndividual={createIndividual}
-        deleteIndividual={deleteIndividual}
-        createCrop={createCrop}
-        openModal={(type, id) => setInnerModalProps({ type, id })}
-      />
+      {
+        VideoAnnotatorComponent ?
+        <VideoAnnotatorComponent
+          video={video}
+          individuals={individuals}
+          individualsUniqueValuesPerField={individualsUniqueValuesPerField}
+          cropsUniqueValuesPerField={cropsUniqueValuesPerField}
+          userId={user?.id}
+          createIndividual={createIndividual}
+          updateIndividual={updateIndividual}
+          deleteIndividual={deleteIndividual}
+          createCrop={createCrop}
+          openModal={(type: RecordType, id: string) => setInnerModalProps({ type, id })}
+        />
+        :
+        <div>{annotatorLoadError ?? "Loading video annotator..."}</div>
+      }
       <InnerModal {...innerModalProps} exitModal={() => setInnerModalProps({ type: undefined, id: undefined })} />
     </Modal>
   );
