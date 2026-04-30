@@ -3,12 +3,15 @@ import { Popover, Button } from "antd"
 import { useState } from "react";
 
 import { BatchEditingForm } from "./BatchEditingForm"
+import type { RecordType } from "../../types";
 
 export function BatchEditPopup({
+    recordType,
     selectionMode,
     selectedItems,
     uniqueValuesPerField,
 }: {
+    recordType: RecordType;
     selectionMode: boolean;
     selectedItems: Set<string>;
     uniqueValuesPerField: Record<string, string[]>;
@@ -23,7 +26,13 @@ export function BatchEditPopup({
     }
     return (
       <Popover
-        content={<BatchEditingForm uniqueValuesPerField={uniqueValuesPerField} onSubmit={onSubmit} />}
+        content={(
+          <BatchEditingForm
+            recordType={recordType}
+            uniqueValuesPerField={uniqueValuesPerField}
+            onSubmit={onSubmit}
+          />
+        )}
         trigger="click"
         arrow={false}
         placement="bottomLeft"
