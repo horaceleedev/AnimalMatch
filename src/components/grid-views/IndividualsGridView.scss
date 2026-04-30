@@ -32,6 +32,11 @@
         margin-bottom: unset !important;
       }
     }
+
+    &.selected .ant-card {
+      border: 3px solid #1890ff;
+      box-shadow: 0 0 10px rgba(24, 144, 255, 0.5);
+    }
   }
 }
 @media only screen and (max-width: 992px) {

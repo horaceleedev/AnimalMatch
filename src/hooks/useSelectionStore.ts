@@ -1,118 +1,316 @@
 import { create } from "zustand";
-import { useVideosStoreWithUsers, useVideoStore } from "../DataStores";
-import { useCallback } from "react";
+import {
+  useCropsStore,
+  useIndividualsStore,
+  useVideosStoreWithUsers,
+  useVideoStore,
+} from "../DataStores";
+import { useCallback, useMemo } from "react";
+import { getSortedUniqueStrings } from "../utils/utils";
+import type { Crop, Individual, RecordType, Video } from "../types";
 
 type State = {
   selectionMode: boolean;
+  selectedRecordType?: RecordType;
   selectedItems: Set<string>;
 };
 
 type Actions = {
-  toggleSelectionMode: () => void;
+  setSelectionMode: (selectionMode: boolean, recordType: RecordType) => void;
   addSelection: (itemId: string) => void;
+  addSelections: (itemIds: string[]) => void;
   removeSelection: (itemId: string) => void;
+  removeSelections: (itemIds: string[]) => void;
   toggleItemSelection: (itemId: string) => void;
+  pruneSelection: (itemIds: string[]) => void;
   clearSelection: () => void;
 };
 
 export const useSelectionStore = create<State & Actions>((set) => ({
   selectionMode: false,
+  selectedRecordType: undefined,
   selectedItems: new Set<string>(),
 
-  toggleSelectionMode: () =>
-    set((state) => ({ selectionMode: !state.selectionMode })),
+  setSelectionMode: (selectionMode, recordType) =>
+    set((state) => {
+      if (!selectionMode) {
+        return {
+          selectionMode: false,
+          selectedRecordType: undefined,
+          selectedItems: new Set<string>(),
+        };
+      }
+
+      if (state.selectedRecordType && state.selectedRecordType !== recordType) {
+        return {
+          selectionMode: true,
+          selectedRecordType: recordType,
+          selectedItems: new Set<string>(),
+        };
+      }
+
+      return {
+        selectionMode: true,
+        selectedRecordType: recordType,
+      };
+    }),
 
   addSelection: (itemId: string) =>
     set(({ selectedItems }) => {
-      selectedItems.add(itemId);
-      return { selectedItems: new Set(selectedItems) };
+      const nextSelectedItems = new Set(selectedItems);
+      nextSelectedItems.add(itemId);
+      return { selectedItems: nextSelectedItems };
+    }),
+
+  addSelections: (itemIds: string[]) =>
+    set(({ selectedItems }) => {
+      const nextSelectedItems = new Set(selectedItems);
+      itemIds.forEach((itemId) => nextSelectedItems.add(itemId));
+      return { selectedItems: nextSelectedItems };
     }),
 
   removeSelection: (itemId: string) =>
     set(({ selectedItems }) => {
-      selectedItems.delete(itemId);
-      return { selectedItems: new Set(selectedItems) };
+      const nextSelectedItems = new Set(selectedItems);
+      nextSelectedItems.delete(itemId);
+      return { selectedItems: nextSelectedItems };
+    }),
+
+  removeSelections: (itemIds: string[]) =>
+    set(({ selectedItems }) => {
+      const nextSelectedItems = new Set(selectedItems);
+      itemIds.forEach((itemId) => nextSelectedItems.delete(itemId));
+      return { selectedItems: nextSelectedItems };
     }),
 
   toggleItemSelection: (itemId: string) =>
-    set(({ selectedItems, addSelection, removeSelection }) => {
-      if (selectedItems.has(itemId)) {
-        removeSelection(itemId);
+    set(({ selectedItems }) => {
+      const nextSelectedItems = new Set(selectedItems);
+      if (nextSelectedItems.has(itemId)) {
+        nextSelectedItems.delete(itemId);
       } else {
-        addSelection(itemId);
+        nextSelectedItems.add(itemId);
       }
-      return { selectedItems: new Set(selectedItems) };
+      return { selectedItems: nextSelectedItems };
+    }),
+
+  pruneSelection: (itemIds: string[]) =>
+    set(({ selectedItems }) => {
+      const allowedItems = new Set(itemIds);
+      const nextSelectedItems = new Set(
+        Array.from(selectedItems).filter((itemId) => allowedItems.has(itemId)),
+      );
+
+      if (nextSelectedItems.size === selectedItems.size) {
+        let isDifferent = false;
+        for (const itemId of nextSelectedItems) {
+          if (!selectedItems.has(itemId)) {
+            isDifferent = true;
+            break;
+          }
+        }
+        if (!isDifferent) {
+          return {};
+        }
+      }
+
+      return { selectedItems: nextSelectedItems };
     }),
 
   clearSelection: () => set({ selectedItems: new Set<string>() }),
 }));
 
-/**
- * Get the set of all annotation statuses of the currently selected videos.
- */
-export const useSelectedAnnotationStatuses = () => {
-  const { selectedItems } = useSelectionStore();
+export const useSelectedVideos = (): Video[] => {
+  const { selectedItems, selectedRecordType } = useSelectionStore();
   const videos = useVideoStore((state) => state.processedRecords);
-  const annotationStatuses = new Set<string>();
-  selectedItems.forEach((videoId) => {
-    const video = videos.find((v) => v.id === videoId);
-    if (video) {
-      annotationStatuses.add(video.annotation_status);
+
+  return useMemo(() => {
+    if (selectedRecordType !== "video") {
+      return [];
     }
-  });
-  return annotationStatuses;
+
+    return videos.filter((video) => selectedItems.has(video.id));
+  }, [selectedItems, selectedRecordType, videos]);
 };
 
-/**
- * Get the set of all custom tags of the currently selected videos.
- */
-export const useSelectedCustomTags = () => {
-  const { selectedItems } = useSelectionStore();
-  const videos = useVideoStore((state) => state.processedRecords);
-  const customTags = new Set<string>();
-  selectedItems.forEach((videoId) => {
-    const video = videos.find((v) => v.id === videoId);
-    if (video) {
-      video.custom_tags.forEach((tag) => customTags.add(tag));
+export const useSelectedIndividuals = (): Individual[] => {
+  const { selectedItems, selectedRecordType } = useSelectionStore();
+  const individuals = useIndividualsStore((state) => state.processedRecords);
+
+  return useMemo(() => {
+    if (selectedRecordType !== "individual") {
+      return [];
     }
-  });
-  return customTags;
+
+    return individuals.filter((individual) => selectedItems.has(individual.id));
+  }, [individuals, selectedItems, selectedRecordType]);
 };
 
-/**
- * Get the set of all assignees for the currently selected videos.
- */
-export const useSelectedAssignees = () => {
-  const { selectedItems } = useSelectionStore();
-  const videos = useVideoStore((state) => state.processedRecords);
-  const assignees = new Set<string>();
-  selectedItems.forEach((videoId) => {
-    const video = videos.find((v) => v.id === videoId);
-    if (video) {
-      video.assignees.forEach((assignee) => assignees.add(assignee));
+export const useSelectedCrops = (): Crop[] => {
+  const { selectedItems, selectedRecordType } = useSelectionStore();
+  const crops = useCropsStore((state) => state.processedRecords);
+
+  return useMemo(() => {
+    if (selectedRecordType !== "crop") {
+      return [];
     }
-  });
-  return assignees;
+
+    return crops.filter((crop) => selectedItems.has(crop.id));
+  }, [crops, selectedItems, selectedRecordType]);
 };
 
 /**
  * Update the specified fields for all currently selected videos.
  */
 export const useUpdateSelectedVideos = () => {
-  const { selectedItems, clearSelection } = useSelectionStore();
+  const selectedVideos = useSelectedVideos();
+  const { clearSelection } = useSelectionStore();
   const { updateVideo } = useVideosStoreWithUsers();
 
-  return useCallback((
+  return useCallback(async (
     updatedFields: Partial<{
-      custom_tags: string[];
       assignees: string[];
       annotation_status: string;
+      custom_tags: {
+        add: string[];
+        remove: string[];
+      };
     }>,
   ) => {
-    selectedItems.forEach((videoId) => {
-      updateVideo(videoId, updatedFields);
+    const updates = selectedVideos.flatMap((video) => {
+      const payload: Partial<{
+        assignees: string[];
+        annotation_status: string;
+        custom_tags: string[];
+      }> = {};
+
+      if (updatedFields.assignees) {
+        payload.assignees = updatedFields.assignees;
+      }
+      if (updatedFields.annotation_status) {
+        payload.annotation_status = updatedFields.annotation_status;
+      }
+      if (updatedFields.custom_tags) {
+        const nextTags = new Set(video.custom_tags);
+        updatedFields.custom_tags.add.forEach((tag) => nextTags.add(tag));
+        updatedFields.custom_tags.remove.forEach((tag) => nextTags.delete(tag));
+        payload.custom_tags = getSortedUniqueStrings(Array.from(nextTags));
+      }
+
+      if (Object.keys(payload).length === 0) {
+        return [];
+      }
+
+      return [updateVideo(video.id, payload)];
     });
 
+    if (updates.length === 0) {
+      return;
+    }
+
+    await Promise.all(updates);
     clearSelection();
-  }, [selectedItems, clearSelection, updateVideo]);
+  }, [selectedVideos, clearSelection, updateVideo]);
+};
+
+export const useUpdateSelectedIndividuals = () => {
+  const selectedIndividuals = useSelectedIndividuals();
+  const { clearSelection } = useSelectionStore();
+  const updateIndividual = useIndividualsStore((state) => state.update);
+
+  return useCallback(async (
+    updatedFields: Partial<{
+      age: string;
+      sex: string;
+      custom_tags: {
+        add: string[];
+        remove: string[];
+      };
+    }>,
+  ) => {
+    const updates = selectedIndividuals.flatMap((individual) => {
+      const payload: Partial<{
+        age: string;
+        sex: string;
+        custom_tags: string[];
+      }> = {};
+
+      if (updatedFields.age !== undefined) {
+        payload.age = updatedFields.age;
+      }
+      if (updatedFields.sex !== undefined) {
+        payload.sex = updatedFields.sex;
+      }
+      if (updatedFields.custom_tags) {
+        const nextTags = new Set(individual.custom_tags);
+        updatedFields.custom_tags.add.forEach((tag) => nextTags.add(tag));
+        updatedFields.custom_tags.remove.forEach((tag) => nextTags.delete(tag));
+        payload.custom_tags = getSortedUniqueStrings(Array.from(nextTags));
+      }
+
+      if (Object.keys(payload).length === 0) {
+        return [];
+      }
+
+      return [updateIndividual(individual.id, payload)];
+    });
+
+    if (updates.length === 0) {
+      return;
+    }
+
+    await Promise.all(updates);
+    clearSelection();
+  }, [clearSelection, selectedIndividuals, updateIndividual]);
+};
+
+export const useUpdateSelectedCrops = () => {
+  const selectedCrops = useSelectedCrops();
+  const { clearSelection } = useSelectionStore();
+  const updateCrop = useCropsStore((state) => state.update);
+
+  return useCallback(async (
+    updatedFields: Partial<{
+      body_part: string;
+      side: string;
+      custom_tags: {
+        add: string[];
+        remove: string[];
+      };
+    }>,
+  ) => {
+    const updates = selectedCrops.flatMap((crop) => {
+      const payload: Partial<{
+        body_part: string;
+        side: string;
+        custom_tags: string[];
+      }> = {};
+
+      if (updatedFields.body_part !== undefined) {
+        payload.body_part = updatedFields.body_part;
+      }
+      if (updatedFields.side !== undefined) {
+        payload.side = updatedFields.side;
+      }
+      if (updatedFields.custom_tags) {
+        const nextTags = new Set(crop.custom_tags);
+        updatedFields.custom_tags.add.forEach((tag) => nextTags.add(tag));
+        updatedFields.custom_tags.remove.forEach((tag) => nextTags.delete(tag));
+        payload.custom_tags = getSortedUniqueStrings(Array.from(nextTags));
+      }
+
+      if (Object.keys(payload).length === 0) {
+        return [];
+      }
+
+      return [updateCrop(crop.id, payload)];
+    });
+
+    if (updates.length === 0) {
+      return;
+    }
+
+    await Promise.all(updates);
+    clearSelection();
+  }, [clearSelection, selectedCrops, updateCrop]);
 };

@@ -8,6 +8,7 @@ import Table from '../../assets/material_symbols/table_24dp_5F6368_FILL0_wght400
 import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import CropsGridView from '../grid-views/CropsGridView.tsx';
 import useSearchFilter from '../../hooks/useSearchFilter.ts';
+import { useRecordSelectionUi } from '../../hooks/useRecordSelectionUi.ts';
 import { Crop, MetadataFieldsType, RecordType } from '../../types.ts';
 
 const viewsTabsItems: TabsProps['items'] = [
@@ -85,14 +86,22 @@ const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
     cropsMetadataFields,
   );
 
+  const filteredCropIds = useMemo(
+    () => searchFilteredCrops.map((crop) => crop.id),
+    [searchFilteredCrops],
+  );
+  const selectionUi = useRecordSelectionUi("crop", filteredCropIds);
+
   return (
     <>
       <QueryOperationsButtons
+        selectionUi={selectionUi}
         metadataFields={cropsMetadataFields} uniqueValuesPerField={uniqueValuesPerField}
         sortFields={sortFields} setSortFields={setSortFields} sortOrders={sortOrders} setSortOrders={setSortOrders}
         groupFields={groupFields} setGroupFields={setGroupFields} groupOrders={groupOrders} setGroupOrders={setGroupOrders}
         query={query} setQuery={setQuery}
         handleSearch={setSearchQuery}
+        showBatchEdit
       />
       {
         !onlyShowGridView && 
@@ -103,6 +112,7 @@ const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
         <CropsGridView
           crops={searchFilteredCrops}
           cropsMetadataFields={cropsMetadataFields}
+          selectionUi={selectionUi}
           linkTemplate={linkTemplate}
           // buttons={gridViewButtons}
           openModal={openModal}

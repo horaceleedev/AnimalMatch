@@ -13,13 +13,14 @@ import { videoMetadataFields } from "../metadata.tsx";
 import DashboardContent from '../components/dashboards/DashboardContent.tsx';
 import VideosGridView from "../components/grid-views/VideosGridView.tsx";
 import QueryOperationsButtons from "../components/dashboards/QueryOperationsButtons.tsx";
-import { useAuth, useVideoStore } from "../DataStores.tsx";
+import { useAuth, useVideosStoreWithUsers } from "../DataStores.tsx";
 import BasicMapView from '../components/ui/BasicMapView.tsx';
 import { VideosDashboardSider } from '../components/dashboards/VideosDashboardSider.tsx';
 import { useVideosDashboardSiderState } from "../components/dashboards/useVideosDashboardSiderState.tsx";
 import VideosTableView from '../components/table-views/VideosTableView.tsx';
 import { Video } from '../types.ts';
 import "./VideosDashboardPage.scss";
+import { useRecordSelectionUi } from '../hooks/useRecordSelectionUi.ts';
 import { useSelectionStore } from '../hooks/useSelectionStore.ts';
 
 /**
@@ -86,9 +87,8 @@ const initialQuery: RuleGroupType = { combinator: 'and', rules: [] };
 
 const VideosDashboardPage: React.FC = () => {
   const [view, setView] = useState(viewsTabsItems[0].key);
-  const videos = useVideoStore((state) => state.processedRecords);
-  const uniqueLocations = useVideoStore((state) => state.extra.uniqueLocations);
-  const uniqueValuesPerField = useVideoStore((state) => state.uniqueValuesPerField);
+  const { videos, videosUniqueValuesPerField: uniqueValuesPerField, uniqueVideoLocations: uniqueLocations } =
+    useVideosStoreWithUsers();
   const selectionStore = useSelectionStore();
 
   const { user } = useAuth();
@@ -104,6 +104,11 @@ const VideosDashboardPage: React.FC = () => {
   const [selectedSiderKey, setSelectedSiderKey, videosBySiderKey, siderFilteredVideos] = useVideosDashboardSiderState(videos, videoMetadataFields, user);
 
   const { filteredRecords: videosFiltered, setSearchQuery } = useSearchFilter(siderFilteredVideos, videoMetadataFields);
+  const filteredVideoIds = useMemo(
+    () => videosFiltered.map((video) => video.id),
+    [videosFiltered],
+  );
+  const selectionUi = useRecordSelectionUi("video", filteredVideoIds);
 
   // Manage list of videos used for navigation in VideoDetailView
   const { outletContext, onSelectGroup } = useNavigationVideosManager(videosFiltered);
@@ -135,11 +140,13 @@ const VideosDashboardPage: React.FC = () => {
         />
         <DashboardContent>
           <QueryOperationsButtons
+            selectionUi={selectionUi}
             metadataFields={videoMetadataFields} uniqueValuesPerField={uniqueValuesPerField}
             sortFields={sortFields} setSortFields={setSortFields} sortOrders={sortOrders} setSortOrders={setSortOrders}
             groupFields={groupFields} setGroupFields={setGroupFields} groupOrders={groupOrders} setGroupOrders={setGroupOrders}
             query={query} setQuery={setQuery}
             handleSearch={(val: string) => setSearchQuery(val)}
+            showBatchEdit
           />
 
           <Tabs defaultActiveKey="grid" items={viewsTabsItems} onChange={setView} />
@@ -150,6 +157,7 @@ const VideosDashboardPage: React.FC = () => {
                 videos={videosFiltered}
                 videoMetadataFields={videoMetadataFields}
                 isListView={false}
+                selectionUi={selectionUi}
                 sortFields={sortFields}
                 sortOrders={sortOrders}
                 groupFields={groupFields}
@@ -174,6 +182,7 @@ const VideosDashboardPage: React.FC = () => {
                     videos={videosFiltered}
                     videoMetadataFields={videoMetadataFields}
                     isListView={true}
+                    selectionUi={selectionUi}
                     sortFields={sortFields}
                     sortOrders={sortOrders}
                     groupFields={groupFields}

@@ -2,154 +2,135 @@ import { FC, MouseEvent, useCallback } from "react";
 import { generatePath, Link } from "react-router-dom";
 import { Card, Flex, Tag, Tooltip, Typography } from "antd";
 
-import type { RecordType, Video } from "../../types.ts";
-import type { MetadataFieldsType } from "../../types.ts";
-import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
-import "./VideosGridView.scss"
-import { useSelectionStore } from "../../hooks/useSelectionStore.ts";
+import type { RecordSelectionUi } from "../../hooks/useRecordSelectionUi.ts";
+import type { MetadataFieldsType, RecordType, Video } from "../../types.ts";
+import withSortingGroupingAndPagination from "./withSortingGroupingAndPagination.tsx";
+import "./VideosGridView.scss";
 
 interface BasicVideosGridViewProps {
   videos: Video[];
   videoMetadataFields: MetadataFieldsType;
   isListView: boolean;
+  selectionUi?: RecordSelectionUi;
   linkTemplate?: string;
-  openModal?: (type: RecordType , id: string) => void;
+  openModal?: (type: RecordType, id: string) => void;
   onSelectRecord?: () => void;
-};
+}
 
 function playVideoPreview(event: MouseEvent<HTMLElement>) {
-  event.currentTarget.querySelector('video')?.play();
+  event.currentTarget.querySelector("video")?.play();
 }
 
 function stopVideoPreview(event: MouseEvent<HTMLElement>) {
-  event.currentTarget.querySelector('video')?.load();
+  event.currentTarget.querySelector("video")?.load();
 }
 
-// Basic video grid view (without grouping and sorting)
 const BasicVideosGridView: FC<BasicVideosGridViewProps> = ({
   videos,
   videoMetadataFields,
   isListView,
+  selectionUi,
   linkTemplate = "/videos/:videoId",
   openModal,
   onSelectRecord,
 }: BasicVideosGridViewProps) => {
-  const { selectionMode, selectedItems, toggleItemSelection } = useSelectionStore();
-  const selectVideo = useCallback((videoId: string) => (e: MouseEvent) => {
-    e.preventDefault();
-    toggleItemSelection(videoId);
-  }, [toggleItemSelection]);
+  const selectionModeActive = selectionUi?.selectionModeActive ?? false;
+  const selectedItems = selectionUi?.selectedItems ?? new Set<string>();
 
-  const openVideoModal = useCallback((videoId: string) => (e: MouseEvent) => {
-    onSelectRecord?.();
-    if (!openModal) return;
-    e.preventDefault();
-    openModal("video", videoId);
-  }, [openModal, onSelectRecord]);
+  const selectVideo = useCallback(
+    (videoId: string) => (event: MouseEvent) => {
+      event.preventDefault();
+      selectionUi?.toggleItemSelection(videoId);
+    },
+    [selectionUi],
+  );
 
-  const onClickVideo = selectionMode ? selectVideo : openVideoModal;
+  const openVideoModal = useCallback(
+    (videoId: string) => (event: MouseEvent) => {
+      onSelectRecord?.();
+      if (!openModal) return;
+      event.preventDefault();
+      openModal("video", videoId);
+    },
+    [onSelectRecord, openModal],
+  );
 
   return (
-    <div className={isListView ? "videos-list " : "videos-grid"}>
-      {videos.map((video: Video) => (
-        // Old version:
-        // <Link key={video.id} to={"/videos/" + video.id}>
-        //   <Card
-        //     hoverable
-        //     size="small"
-        //     cover={<video src={video.url} width="300px" controls />}
-        //   >
-        //     <Card.Meta
-        //       title={video.filename}
-        //       description={
-        //         <Flex wrap gap={4}>
-        //           {
-        //             ['location_name', 'month_of_SD_retrieval', 'habitat', 'recording_date'].map(field => (
-        //               <Tooltip title={videoMetadataFields[field].displayName} key={field}>
-        //                 <Tag icon={videoMetadataFields[field].icon}>
-        //                   {video[field]}
-        //                 </Tag>
-        //               </Tooltip>
-        //             ))
-        //           }
-        //         </Flex>
-        //       }
-        //     />
-        //   </Card>
-        // </Link>
-
-        // New version:
-        <Link
-          key={video.id}
-          to={generatePath(linkTemplate, { videoId: video.id })}
-          onClick={onClickVideo(video.id)}
-        >
-          <Card
-            className={
-              selectionMode && selectedItems.has(video.id)
-                ? "selected"
-                : ""
-            }
-            hoverable
-            style={{ overflow: "hidden" }}
-            styles={{ body: { padding: 0 } }}
-            // video hover preview
-            onMouseEnter={playVideoPreview}
-            onMouseLeave={stopVideoPreview}
+    <div className="gallery-view">
+      <div className={isListView ? "videos-list " : "videos-grid"}>
+        {videos.map((video) => (
+          <Link
+            key={video.id}
+            to={generatePath(linkTemplate, { videoId: video.id })}
+            onClick={(selectionModeActive ? selectVideo : openVideoModal)(video.id)}
           >
-            <Flex
-              vertical={!isListView}
-              justify={isListView ? "flex-start" : "space-between"}
+            <Card
+              className={
+                selectionModeActive && selectedItems.has(video.id) ? "selected" : ""
+              }
+              hoverable
+              style={{ overflow: "hidden" }}
+              styles={{ body: { padding: 0 } }}
+              onMouseEnter={playVideoPreview}
+              onMouseLeave={stopVideoPreview}
             >
-              <video
-                src={video.url}
-                poster={video.thumbnailUrl}
-                playsInline
-                muted
-                preload="none"
-              />
               <Flex
-                vertical
-                align="flex-start"
-                justify="space-between"
-                style={{ padding: 12 }}
+                vertical={!isListView}
+                justify={isListView ? "flex-start" : "space-between"}
               >
-                <Typography.Title
-                  level={5}
-                  className="video-title"
-                  ellipsis={{ tooltip: true }}
+                <video
+                  src={video.url}
+                  poster={video.thumbnailUrl}
+                  playsInline
+                  muted
+                  preload="none"
+                />
+                <Flex
+                  vertical
+                  align="flex-start"
+                  justify="space-between"
+                  style={{ padding: 12 }}
                 >
-                  {video.filename}
-                </Typography.Title>
-                <Flex wrap gap={4}>
-                  {[
-                    "location_name",
-                    "month_of_SD_retrieval",
-                    "habitat",
-                    "recording_date",
-                  ].map((field) => (
-                    <Tooltip
-                      title={videoMetadataFields[field].displayName}
-                      key={field}
-                    >
-                      <Tag icon={videoMetadataFields[field].icon}>
-                        {video[field]}
-                      </Tag>
-                    </Tooltip>
-                  ))}
+                  <Typography.Title
+                    level={5}
+                    className="video-title"
+                    ellipsis={{ tooltip: true }}
+                  >
+                    {video.filename}
+                  </Typography.Title>
+                  <Flex wrap gap={4}>
+                    {[
+                      "location_name",
+                      "month_of_SD_retrieval",
+                      "habitat",
+                      "recording_date",
+                    ].map((field) => (
+                      <Tooltip
+                        title={videoMetadataFields[field].displayName}
+                        key={field}
+                      >
+                        <Tag icon={videoMetadataFields[field].icon}>
+                          {video[field]}
+                        </Tag>
+                      </Tooltip>
+                    ))}
+                  </Flex>
                 </Flex>
               </Flex>
-            </Flex>
-          </Card>
-        </Link>
-      ))}
+            </Card>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 };
 
-const VideosGridView = withSortingGroupingAndPagination<BasicVideosGridViewProps, Video>(
-  BasicVideosGridView,
-  { processedRecordsProp: 'videos', metadataFieldsProp: 'videoMetadataFields' }
-);
+const VideosGridView = withSortingGroupingAndPagination<
+  BasicVideosGridViewProps,
+  Video
+>(BasicVideosGridView, {
+  processedRecordsProp: "videos",
+  metadataFieldsProp: "videoMetadataFields",
+});
 
 export default VideosGridView;
