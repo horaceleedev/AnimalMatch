@@ -1,6 +1,6 @@
 import { EditOutlined } from "@ant-design/icons"
 import { Popover, Button } from "antd"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { BatchEditingForm } from "./BatchEditingForm"
 import type { RecordType } from "../../types";
@@ -18,6 +18,13 @@ export function BatchEditPopup({
 }) {
     const [open, setOpen] = useState(false);
     const disabled = !selectionMode || selectedItems.size === 0;
+
+    useEffect(() => {
+        if (disabled) {
+            setOpen(false);
+        }
+    }, [disabled]);
+
     function onSubmit() {
         setOpen(false);
     }
