@@ -1,6 +1,11 @@
 import { expect, test } from "@playwright/test";
 
 const PB_BASE_URL = "https://meru.robots.ox.ac.uk/animalmatch-dev";
+const TEST_TOKEN = [
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+  "eyJleHAiOjQxMDI0NDQ4MDAsInR5cGUiOiJhdXRoIiwiY29sbGVjdGlvbklkIjoidXNlcnMifQ",
+  "test-signature",
+].join(".");
 
 const makeUserRecord = () => ({
   collectionId: "users",
@@ -48,6 +53,16 @@ test("batch edits annotation status for all selected videos", async ({ page }) =
   ];
   const updatedRequests: Array<{ id: string; payload: unknown }> = [];
 
+  await page.addInitScript(({ seededUser, seededToken }) => {
+    window.localStorage.setItem(
+      "pocketbase_auth",
+      JSON.stringify({
+        token: seededToken,
+        record: seededUser,
+      }),
+    );
+  }, { seededUser: userRecord, seededToken: TEST_TOKEN });
+
   await page.route(`${PB_BASE_URL}/api/realtime*`, async (route) => {
     const request = route.request();
     if (request.method() === "GET") {
@@ -80,7 +95,7 @@ test("batch edits annotation status for all selected videos", async ({ page }) =
         status: 200,
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          token: "test-token",
+          token: TEST_TOKEN,
           record: userRecord,
         }),
       });
@@ -92,7 +107,7 @@ test("batch edits annotation status for all selected videos", async ({ page }) =
         status: 200,
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          token: "test-token",
+          token: TEST_TOKEN,
           record: userRecord,
         }),
       });
@@ -185,11 +200,7 @@ test("batch edits annotation status for all selected videos", async ({ page }) =
     });
   });
 
-  await page.goto("/login");
-  await page.getByPlaceholder("Username or email address").fill("demo-user");
-  await page.getByPlaceholder("Password").fill("hunter2");
-  await page.getByRole("button", { name: "Log in" }).click();
-
+  await page.goto("/videos");
   await expect(page).toHaveURL(/\/videos$/);
   await expect(page.getByText("alpha.mp4")).toBeVisible();
   await expect(page.getByText("beta.mp4")).toBeVisible();
