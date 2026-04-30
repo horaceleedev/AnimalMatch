@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { FC, ReactNode } from "react";
-import { Button, Input, Popover, Select, Space, Switch } from "antd";
+import { Button, Input, Popover, Select, Space } from "antd";
 import { QueryBuilderDnD } from "@react-querybuilder/dnd";
 import * as ReactDnD from "react-dnd";
 import * as ReactDndHtml5Backend from "react-dnd-html5-backend";
@@ -17,10 +17,10 @@ import Icon, {
 } from "@ant-design/icons";
 import SwapVert from "../../assets/material_symbols/swap_vert_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 
+import type { RecordSelectionUi } from "../../hooks/useRecordSelectionUi.ts";
 import type { MetadataFieldsType } from "../../types.ts";
 import "./QueryOperationsButtons.scss";
-import { useSelectionStore } from "../../hooks/useSelectionStore.ts";
-import { BatchEditPopup } from "../ui/BatchEditPopup.tsx";
+import { SelectionToolbarControls } from "../ui/SelectionToolbarControls.tsx";
 
 type FieldSelectorProps = {
   metadataFields: MetadataFieldsType;
@@ -163,6 +163,7 @@ const CustomQueryBuilder: FC<CustomQueryBuilderProps> = ({
 };
 
 type QueryOperationsButtonsProps = {
+  selectionUi: RecordSelectionUi;
   metadataFields: MetadataFieldsType;
   uniqueValuesPerField: Record<string, string[]>;
   sortFields: string[];
@@ -176,9 +177,11 @@ type QueryOperationsButtonsProps = {
   query: RuleGroupType;
   setQuery: (x: RuleGroupType) => void;
   handleSearch: (x: string) => void;
+  showBatchEdit?: boolean;
 };
 
 const QueryOperationsButtons: FC<QueryOperationsButtonsProps> = ({
+  selectionUi,
   metadataFields,
   uniqueValuesPerField,
   sortFields,
@@ -192,8 +195,8 @@ const QueryOperationsButtons: FC<QueryOperationsButtonsProps> = ({
   query,
   setQuery,
   handleSearch,
+  showBatchEdit = false,
 }: QueryOperationsButtonsProps) => {
-  const { selectedItems, selectionMode, toggleSelectionMode } = useSelectionStore();
   const firstFilterRule = useMemo(
     () =>
       query.rules.find(
@@ -378,18 +381,9 @@ const QueryOperationsButtons: FC<QueryOperationsButtonsProps> = ({
         </Button>
       </Popover>
 
-      {/* Selection mode toggle */}
-      <Switch
-        checkedChildren={`Selected ${selectedItems.size}`}
-        unCheckedChildren="Select"
-        onChange={toggleSelectionMode}
-        checked={selectionMode}
-      />
-
-      {/* Batch edit button and popover */}
-      <BatchEditPopup
-        selectionMode={selectionMode}
-        selectedItems={selectedItems}
+      <SelectionToolbarControls
+        selectionUi={selectionUi}
+        showBatchEdit={showBatchEdit}
         uniqueValuesPerField={uniqueValuesPerField}
       />
     </Space>
