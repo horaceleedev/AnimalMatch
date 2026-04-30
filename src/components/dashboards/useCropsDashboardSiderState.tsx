@@ -34,15 +34,13 @@ export const useCropsDashboardSiderState = (
     () => cropsBySiderKey[selectedSiderKey],
     [cropsBySiderKey, selectedSiderKey],
   );
-  /* Default to all crops if the selected sider key is deleted. */
-  if (!cropsFiltered) {
-    setSelectedSiderKey("all-crops");
-    return ["all-crops", setSelectedSiderKey, cropsBySiderKey, crops] as const;
-  }
+  // The selected key can disappear when its backing group/tag is removed, so
+  // fallback to "all-crops" without mutating state during render.
+  const effectiveSelectedSiderKey = cropsFiltered ? selectedSiderKey : "all-crops";
   return [
-    selectedSiderKey,
+    effectiveSelectedSiderKey,
     setSelectedSiderKey,
     cropsBySiderKey,
-    cropsFiltered,
+    cropsFiltered ?? crops,
   ] as const;
 };
