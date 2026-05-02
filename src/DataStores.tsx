@@ -11,7 +11,9 @@ import type { Video, VideoRecord, LocationInfo, Individual, IndividualRecord, Cr
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from "./metadata.tsx";
 import { getUniqueLocationsFromVideos, getUniqueValuesPerField } from './utils/utils.ts';
 
-const pb = new PocketBase('http://127.0.0.1:8090');
+const pocketBaseUrl = import.meta.env.VITE_DATABASE_URL || 'http://127.0.0.1:8090';
+
+const pb = new PocketBase(pocketBaseUrl);
 
 // Show a message when the realtime client disconnects / reconnects
 let isConnected: boolean | undefined = undefined;
