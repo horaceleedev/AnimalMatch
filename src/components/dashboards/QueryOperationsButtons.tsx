@@ -28,7 +28,6 @@ type FieldOption = {
   label: string;
   icon?: React.ReactNode;
 };
-type FieldSelectProps = SelectProps<string, FieldOption>;
 
 const FieldSelector: React.FC<FieldSelectorProps> = ({
   metadataFields,
@@ -43,10 +42,10 @@ const FieldSelector: React.FC<FieldSelectorProps> = ({
     [metadataFields]
   );
 
-  const optionRender: NonNullable<FieldSelectProps['optionRender']> = (option) => (
+  const optionRender: NonNullable<SelectProps['optionRender']> = (option) => (
     <Space>{option.data.icon} {option.label}</Space>
   );
-  const labelRender: NonNullable<FieldSelectProps['labelRender']> = (option) => {
+  const labelRender: NonNullable<SelectProps['labelRender']> = (option) => {
     const fieldValue = String(option.value);
     return <Space>{metadataFields[fieldValue]?.icon} {option.label}</Space>;
   };
@@ -78,12 +77,34 @@ type QueryBuilderFieldData = {
   renderType?: MetadataFieldsType[string]['renderType'];
 };
 
+const MULTI_VALUE_OPERATORS = new Set(['in', 'notIn']);
+
+const normalizeMultiOperatorRuleValue = (rule: RuleType): RuleType => {
+  if (!MULTI_VALUE_OPERATORS.has(rule.operator)) return rule;
+
+  const value = rule.value;
+  const normalizedValue =
+    Array.isArray(value)
+      ? value.map(String)
+      : value === null || value === undefined || value === ''
+        ? []
+        : [String(value)];
+
+  return {
+    ...rule,
+    value: normalizedValue,
+  };
+};
+
+const normalizeMultiOperatorValues = (group: RuleGroupType): RuleGroupType => ({
+  ...group,
+  rules: group.rules.map(rule =>
+    'rules' in rule ? normalizeMultiOperatorValues(rule) : normalizeMultiOperatorRuleValue(rule)
+  ),
+});
+
 const normalizeMultiSelectValue = (value: ValueEditorProps['value']) => {
   if (Array.isArray(value)) return value.map(String);
-  if (typeof value === 'string') {
-    if (value.length === 0) return [];
-    return value.split(',').map(part => part.trim()).filter(Boolean);
-  }
   return [];
 };
 
@@ -165,7 +186,7 @@ const RenderAwareValueEditor = (props: ValueEditorProps) => {
         onChange={nextValue => {
           if (props.type === 'multiselect') {
             const values = Array.isArray(nextValue) ? nextValue.map(String) : [];
-            props.handleOnChange(props.listsAsArrays ? values : values.join(','));
+            props.handleOnChange(values);
             return;
           }
           props.handleOnChange(nextValue);
@@ -185,13 +206,17 @@ const CustomQueryBuilder = ({metadataFields, uniqueValuesPerField, query, setQue
     [metadataFields, uniqueValuesPerField]
   );
 
+  const handleQueryChange = (nextQuery: RuleGroupType) => {
+    setQuery(normalizeMultiOperatorValues(nextQuery));
+  };
+
   return (
     <QueryBuilderDnD dnd={{ ...ReactDnD, ...ReactDndHtml5Backend }}>
       <QueryBuilderAntD>
         <QueryBuilder
           fields={fields}
           query={query}
-          onQueryChange={setQuery}
+          onQueryChange={handleQueryChange}
           addRuleToNewGroups
           listsAsArrays
           parseNumbers="strict-limited"

@@ -105,10 +105,7 @@ const VideosDashboardPage: React.FC = () => {
   const [sortOrders, setSortOrders] = useState<("asc" | "desc")[]>([]);
   const [groupFields, setGroupFields] = useState<string[]>([]);
   const [groupOrders, setGroupOrders] = useState<("asc" | "desc")[]>([]);
-  const [query, _setQuery] = useState(initialQuery);
-  const setQuery = (newQuery: RuleGroupType) => {
-    _setQuery(newQuery);
-  };
+  const [query, setQuery] = useState(initialQuery);
 
   const linkedCountByVideoId = useMemo(() => {
     const counts: Record<string, number> = {};

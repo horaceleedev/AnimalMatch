@@ -55,11 +55,7 @@ const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
   const [sortOrders, setSortOrders] = useState<("asc" | "desc")[]>([]);
   const [groupFields, setGroupFields] = useState<string[]>(defaultGroupFields);
   const [groupOrders, setGroupOrders] = useState<("asc" | "desc")[]>(defaultGroupOrders);
-  const [query, _setQuery] = useState(initialQuery);
-
-  const setQuery = (newQuery: RuleGroupType) => {
-    _setQuery(newQuery);
-  };
+  const [query, setQuery] = useState(initialQuery);
   const filteredCrops = useMemo(() => {
     return filterByQuery(crops, query);
   }, [crops, query]);

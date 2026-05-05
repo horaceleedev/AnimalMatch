@@ -303,6 +303,10 @@ test('switches select filters to multi-value mode for "is any of"', async () => 
   openRuleSelect('.rule-operators .ant-select-selector');
   await screen.getByText('is any of').click();
 
+  const queryAfterOperatorChange = getQueryState();
+  // multi-select operators should set the value to an array, even if no values have been selected yet
+  expect(Array.isArray((queryAfterOperatorChange.rules[0] as RuleType).value)).toBe(true);
+
   expect(document.querySelector('.rule-value .ant-select-multiple')).not.toBeNull();
   expect(getQueryState()).toEqual(expect.objectContaining({
     combinator: 'and',
@@ -391,11 +395,8 @@ test('preserves render-aware labels when select filters switch to multi-value mo
   }));
 
   const rawSelectedValue = (nextQuery.rules[0] as RuleType).value;
-  const selectedValues = Array.isArray(rawSelectedValue)
-    ? rawSelectedValue.map(String)
-    : typeof rawSelectedValue === 'string'
-      ? rawSelectedValue.split(',').map(part => part.trim()).filter(Boolean)
-      : [];
+  expect(Array.isArray(rawSelectedValue)).toBe(true);
+  const selectedValues = (rawSelectedValue as string[]).map(String);
   expect(selectedValues.length).toBeGreaterThan(0);
   expect(uniqueValuesPerField.annotation_status).toContain(selectedValues[0]);
 
@@ -430,11 +431,8 @@ test('allows deselecting render-aware multiselect values', async () => {
   await screen.getByRole('button', { name: 'Filter' }).click();
 
   const populatedValue = (getQueryState().rules[0] as RuleType).value;
-  const hasSelectedValue = Array.isArray(populatedValue)
-    ? populatedValue.length > 0
-    : typeof populatedValue === 'string'
-      ? populatedValue.length > 0
-      : false;
+  expect(Array.isArray(populatedValue)).toBe(true);
+  const hasSelectedValue = (populatedValue as unknown[]).length > 0;
   expect(hasSelectedValue).toBe(true);
 
   const closeIcons = Array.from(document.querySelectorAll('.rule-value .anticon-close-circle')) as HTMLElement[];
@@ -447,10 +445,7 @@ test('allows deselecting render-aware multiselect values', async () => {
   await Promise.resolve();
 
   const nextValue = (getQueryState().rules[0] as RuleType).value;
-  const hasRemainingValue = Array.isArray(nextValue)
-    ? nextValue.length > 0
-    : typeof nextValue === 'string'
-      ? nextValue.length > 0
-      : false;
+  expect(Array.isArray(nextValue)).toBe(true);
+  const hasRemainingValue = (nextValue as unknown[]).length > 0;
   expect(hasRemainingValue).toBe(false);
 });
