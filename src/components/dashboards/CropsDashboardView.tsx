@@ -7,6 +7,7 @@ import Table from '../../assets/material_symbols/table_24dp_5F6368_FILL0_wght400
 
 import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import CropsGridView from '../grid-views/CropsGridView.tsx';
+import useSearchFilter from '../../hooks/useSearchFilter.ts';
 import { Crop, MetadataFieldsType, RecordType } from '../../types.ts';
 import { filterByQuery } from '../../lib/filtering/filterEngine.ts';
 
@@ -38,7 +39,7 @@ interface CropsDashboardViewProps {
   // gridViewButtons?: (crop: Crop) => JSX.Element;
   defaultGroupFields?: string[];
   defaultGroupOrders?: ("asc" | "desc")[];
-  openModal?: (type: RecordType , id: string) => void;
+  openModal?: (type: RecordType, id: string) => void;
 }
 const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
   crops, uniqueValuesPerField, cropsMetadataFields,
@@ -63,6 +64,11 @@ const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
     return filterByQuery(crops, query);
   }, [crops, query]);
 
+  const { filteredRecords: searchFilteredCrops, setSearchQuery } = useSearchFilter(
+    filteredCrops,
+    cropsMetadataFields,
+  );
+
   return (
     <>
       <QueryOperationsButtons
@@ -70,6 +76,7 @@ const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
         sortFields={sortFields} setSortFields={setSortFields} sortOrders={sortOrders} setSortOrders={setSortOrders}
         groupFields={groupFields} setGroupFields={setGroupFields} groupOrders={groupOrders} setGroupOrders={setGroupOrders}
         query={query} setQuery={setQuery}
+        handleSearch={setSearchQuery}
       />
       {
         !onlyShowGridView && 
@@ -78,7 +85,7 @@ const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
       {
         (view === 'grid') ? 
         <CropsGridView
-          crops={filteredCrops}
+          crops={searchFilteredCrops}
           cropsMetadataFields={cropsMetadataFields}
           linkTemplate={linkTemplate}
           // buttons={gridViewButtons}

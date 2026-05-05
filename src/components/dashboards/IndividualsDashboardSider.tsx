@@ -1,6 +1,6 @@
 import { FC, useMemo, useState } from "react";
 import { Layout, Menu, Typography } from "antd";
-import { IdcardOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
+import { CheckOutlined, IdcardOutlined, QuestionOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
 const { Sider } = Layout;
 
 import { MetadataFieldsType, UserRecord, Individual } from "../../types";
@@ -11,16 +11,19 @@ export const useIndividualsDashboardSiderState = (individuals: Individual[], ind
   const individualsBySiderKey: Record<string, Individual[]> = useMemo(() => ({
     "all-individuals": individuals,
     "created-by-me": user ? individuals.filter(individual => individual.created_by === user.id) : [],
-    // // ages
-    // ...individualsMetadataFields['age'].presetOptions!.reduce((acc: Record<string, Individual[]>, age: string) => {
-    //   acc['age/'+age] = individuals.filter(individual => individual.age === age);
-    //   return acc;
-    // }, {}),
-    // // sexes
-    // ...individualsMetadataFields['sex'].presetOptions!.reduce((acc: Record<string, Individual[]>, sex: string) => {
-    //   acc['sex/'+sex] = individuals.filter(individual => individual.sex === sex);
-    //   return acc;
-    // }, {}),
+    // by identification status
+    "is_identified": individuals.filter(individual => individual.is_identified === true),
+    "is_not_identified": individuals.filter(individual => individual.is_identified === false),
+    // ages
+    ...individualsMetadataFields['age'].presetOptions!.reduce((acc: Record<string, Individual[]>, age: string) => {
+      acc['age/'+age] = individuals.filter(individual => individual.age === age);
+      return acc;
+    }, {}),
+    // sexes
+    ...individualsMetadataFields['sex'].presetOptions!.reduce((acc: Record<string, Individual[]>, sex: string) => {
+      acc['sex/'+sex] = individuals.filter(individual => individual.sex === sex);
+      return acc;
+    }, {}),
     // custom tags
     ...individuals.reduce((acc: Record<string, Individual[]>, cur: Individual) => {
       for (const tag of cur.custom_tags) {
@@ -72,26 +75,58 @@ export const IndividualsDashboardSider: FC<IndividualsDashboardSiderProps> = ({
           //   key: 'recently-added',
           //   label: 'Recently added',
           // },
-          // {
-          //   key: 'by-age',
-          //   label: 'By age',
-          //   type: 'group',
-          //   children: individualsMetadataFields['age'].presetOptions!.map(age => ({
-          //     key: 'age/'+age,
-          //     label: <Typography.Text ellipsis={{tooltip: age}}>{age}</Typography.Text>,
-          //     extra: individualsBySiderKey['age/'+age].length,
-          //   })),
-          // },
-          // {
-          //   key: 'by-sex',
-          //   label: 'By sex',
-          //   type: 'group',
-          //   children: individualsMetadataFields['sex'].presetOptions!.map(sex => ({
-          //     key: 'sex/'+sex,
-          //     label: <Typography.Text ellipsis={{tooltip: sex}}>{sex}</Typography.Text>,
-          //     extra: individualsBySiderKey['sex/'+sex].length,
-          //   })),
-          // },
+          (
+            // Only show if is_identified field is available
+            individualsMetadataFields['is_identified'] ?
+            {
+              key: 'by-identification-status',
+              label: 'By identification status',
+              type: 'group',
+              children: [
+                {
+                  key: 'is_identified',
+                  label: individualsMetadataFields['is_identified'].displayBooleanValuesAs?.[1] ?? 'Identified',
+                  icon: <CheckOutlined />,
+                  extra: individualsBySiderKey['is_identified'].length,
+                },
+                {
+                  key: 'is_not_identified',
+                  label: individualsMetadataFields['is_identified'].displayBooleanValuesAs?.[0] ?? 'Not identified',
+                  icon: <QuestionOutlined />,
+                  extra: individualsBySiderKey['is_not_identified'].length,
+                },
+              ],
+            }
+            :
+            null
+          ),
+          {
+            key: 'by-age-sex',
+            label: 'By age and sex',
+            type: 'group',
+            children: [
+              {
+                key: 'by-age',
+                label: 'By age',
+                icon: individualsMetadataFields['age'].icon,
+                children: individualsMetadataFields['age'].presetOptions!.map(age => ({
+                  key: 'age/'+age,
+                  label: age,
+                  extra: individualsBySiderKey['age/'+age].length,
+                })),
+              },
+              {
+                key: 'by-sex',
+                label: 'By sex',
+                icon: individualsMetadataFields['sex'].icon,
+                children: individualsMetadataFields['sex'].presetOptions!.map(sex => ({
+                  key: 'sex/'+sex,
+                  label: sex,
+                  extra: individualsBySiderKey['sex/'+sex].length,
+                })),
+              },
+            ],
+          },
           (
             uniqueValuesPerField['custom_tags']?.length ?
             {
@@ -100,7 +135,7 @@ export const IndividualsDashboardSider: FC<IndividualsDashboardSiderProps> = ({
               type: 'group',
               children: uniqueValuesPerField['custom_tags'].map(x => ({
                 key: 'custom-tags/'+x,
-                label: <Typography.Text ellipsis={{tooltip: x}}>{x}</Typography.Text>,
+                label: <Typography.Text ellipsis={{tooltip: true}}>{x}</Typography.Text>,
                 icon: <TagOutlined />,
                 extra: individualsBySiderKey['custom-tags/'+x].length,
               })),

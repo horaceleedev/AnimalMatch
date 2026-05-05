@@ -106,7 +106,7 @@ const BasicVideosGridView: FC<BasicVideosGridViewProps> = ({
                 <Typography.Title
                   level={5}
                   className="video-title"
-                  ellipsis={{ tooltip: video.filename }}
+                  ellipsis={{ tooltip: true }}
                 >
                   {video.filename}
                 </Typography.Title>

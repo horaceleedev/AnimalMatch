@@ -1,6 +1,8 @@
 import React from 'react';
 import { Flex, Image } from 'antd';
 
+// import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
+
 import RecordMetadataForm from './RecordMetadataForm.tsx';
 import { cropsMetadataFields } from '../../metadata.tsx';
 import { Crop, RecordType } from '../../types.ts';
@@ -10,7 +12,7 @@ type CropDetailViewProps = {
   uniqueValuesPerField: Record<string, string[]>;
   videoLinkTemplate?: string;
   individualLinkTemplate?: string;
-  openModal?: (type: RecordType , id: string) => void;
+  openModal?: (type: RecordType, id: string) => void;
   updateCrop: (id: string, data: Partial<Crop>) => Promise<Crop>;
 }
 

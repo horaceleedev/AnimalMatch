@@ -7,7 +7,7 @@ import CropIcon from "../../assets/material_symbols/crop_24dp_5F6368_FILL0_wght4
 import { MetadataFieldsType, UserRecord, Crop } from "../../types";
 import "./DashboardSider.scss";
 
-export const useCropsDashboardSiderState = (crops: Crop[], cropsMetadataFields: MetadataFieldsType, user: UserRecord | null) => {
+export const useCropsDashboardSiderState = (crops: Crop[], _cropsMetadataFields: MetadataFieldsType, user: UserRecord | null) => {
   const [selectedSiderKey, setSelectedSiderKey] = useState("all-crops");
   const cropsBySiderKey: Record<string, Crop[]> = useMemo(() => ({
     "all-crops": crops,
@@ -42,7 +42,7 @@ interface CropsDashboardSiderProps {
   uniqueValuesPerField: Record<string, string[]>;
 }
 export const CropsDashboardSider: FC<CropsDashboardSiderProps> = ({
-  selectedSiderKey, setSelectedSiderKey, cropsBySiderKey, cropsMetadataFields, uniqueValuesPerField,
+  selectedSiderKey, setSelectedSiderKey, cropsBySiderKey, cropsMetadataFields: _cropsMetadataFields, uniqueValuesPerField,
 }) => {
   return (
     <Sider className="dashboard-sider" style={{ /* background: colorBgContainer */ }} width={220}>
@@ -74,7 +74,7 @@ export const CropsDashboardSider: FC<CropsDashboardSiderProps> = ({
           //   type: 'group',
           //   children: cropsMetadataFields['body_part'].presetOptions!.map(body_part => ({
           //     key: 'body_part/'+body_part,
-          //     label: <Typography.Text ellipsis={{tooltip: body_part}}>{body_part}</Typography.Text>,
+          //     label: <Typography.Text ellipsis={{tooltip: true}}>{body_part}</Typography.Text>,
           //     extra: cropsBySiderKey['body_part/'+body_part].length,
           //   })),
           // },
@@ -86,7 +86,7 @@ export const CropsDashboardSider: FC<CropsDashboardSiderProps> = ({
               type: 'group',
               children: uniqueValuesPerField['custom_tags'].map(x => ({
                 key: 'custom-tags/'+x,
-                label: <Typography.Text ellipsis={{tooltip: x}}>{x}</Typography.Text>,
+                label: <Typography.Text ellipsis={{tooltip: true}}>{x}</Typography.Text>,
                 icon: <TagOutlined />,
                 extra: cropsBySiderKey['custom-tags/'+x].length,
               })),

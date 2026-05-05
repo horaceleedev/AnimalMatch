@@ -14,12 +14,12 @@ const RecordActionsButton: React.FC<RecordActionsButtonProps> = ({recordType, re
   const { message, modal } = App.useApp();
 
   const copyLinkToRecord = async () => {
-    // relative path within this app (excluding the domain name and base path)
-    const pathname = ["", recordType + "s", recordId].join('/');
+    // Keep this path relative so deployments under a base path like /app/ are preserved.
+    const pathname = [recordType + "s", recordId].join('/');
     // determine the base URL e.g. `https://example.com/path/to/app/` from the base href
     // if available (e.g. `<base href="/path/to/app/">`), or default to the page's origin
     const base = document.getElementsByTagName("base")[0]?.href ?? window.location.origin;
-    const fullUrl = base + pathname;
+    const fullUrl = new URL(pathname, base).toString();
     try {
       await navigator.clipboard.writeText(fullUrl);
     } catch (e) {
@@ -103,7 +103,7 @@ const RecordActionsButton: React.FC<RecordActionsButtonProps> = ({recordType, re
           }
         }}
       >
-        <Button type="text" icon={<EllipsisOutlined />} style={style} />
+        <Button aria-label="More options" type="text" icon={<EllipsisOutlined />} style={style} />
       </Dropdown>
     </Tooltip>
   );

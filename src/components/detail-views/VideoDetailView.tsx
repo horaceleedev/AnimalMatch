@@ -75,7 +75,8 @@ const VideoDetailView: FC<VideoDetailViewProps> = ({
           individuals={individualsInVideo}
           individualsMetadataFields={individualsMetadataFields}
           linkTemplate={individualsLinkTemplate}
-          allowEditingAgeAndSex={true}
+          // TODO implement editing
+          // allowEditingAgeAndSex={true}
           openModal={openModal}
           sortFields={[]}
           sortOrders={[]}

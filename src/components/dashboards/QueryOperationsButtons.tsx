@@ -4,14 +4,12 @@ import type { SelectProps } from 'antd';
 import { QueryBuilderDnD } from '@react-querybuilder/dnd';
 import * as ReactDnD from 'react-dnd';
 import * as ReactDndHtml5Backend from 'react-dnd-html5-backend';
-import type { RuleGroupType, ValueEditorProps } from 'react-querybuilder';
+import type { RuleGroupType, RuleType, ValueEditorProps } from 'react-querybuilder';
 import { QueryBuilder } from 'react-querybuilder';
-// import { fields } from './fields';
-import 'react-querybuilder/dist/query-builder.scss';
+import 'react-querybuilder/dist/query-builder.css';
 import { AntDValueEditor, QueryBuilderAntD } from '@react-querybuilder/antd';
 import type { DefaultOptionType, LabelInValueType } from 'rc-select/lib/Select';
-
-import Icon, { ClearOutlined, CloseCircleOutlined, CloseOutlined, FilterOutlined, GroupOutlined } from "@ant-design/icons";
+import Icon, { ClearOutlined, CloseCircleOutlined, CloseOutlined, FilterOutlined, GroupOutlined, SearchOutlined } from "@ant-design/icons";
 import SwapVert from '../../assets/material_symbols/swap_vert_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
 import type { MetadataFieldsType } from "../../types.ts";
@@ -218,24 +216,29 @@ type QueryOperationsButtonsProps = {
   setGroupOrders: (x: ("asc" | "desc")[]) => void;
   query: RuleGroupType;
   setQuery: (x: RuleGroupType) => void;
+  handleSearch: (x: string) => void;
 }
 
 const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
   metadataFields, uniqueValuesPerField,
   sortFields, setSortFields, sortOrders, setSortOrders,
   groupFields, setGroupFields, groupOrders, setGroupOrders,
-  query, setQuery
+  query, setQuery,
+  handleSearch,
 }: QueryOperationsButtonsProps) => {
+  const firstFilterRule = useMemo(
+    () => query.rules.find((rule): rule is RuleType => !('rules' in rule)),
+    [query.rules]
+  );
   const filterLabel = useMemo(() => {
     if (query.rules.length === 0) return "Filter";
-    if (query.rules.length === 1) {
-      const firstRule = query.rules[0] as { field?: string } | undefined;
-      if (firstRule?.field && metadataFields[firstRule.field]) {
-        return `Filtered by ${metadataFields[firstRule.field].displayName}`;
+    if (query.rules.length === 1 && firstFilterRule) {
+      if (metadataFields[firstFilterRule.field]) {
+        return `Filtered by ${metadataFields[firstFilterRule.field].displayName}`;
       }
     }
     return `${query.rules.length} filters`;
-  }, [query.rules, metadataFields]);
+  }, [firstFilterRule, metadataFields, query.rules]);
 
   const handleSortFieldSelect = (val: string) => {
     setSortFields([val]);
@@ -268,8 +271,14 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
 
   return (
     <Space size="small" style={{ marginBottom: 10 }}>
-      {/* Search button */}
-      <Input.Search placeholder="Search" allowClear onSearch={() => {}} style={{ minWidth: 300 }} />
+      {/* Search input */}
+      <Input
+        placeholder="Search"
+        prefix={<SearchOutlined />}
+        allowClear
+        onChange={(e) => handleSearch(e.target.value)}
+        style={{ minWidth: 300 }}
+      />
 
       {/* Sort button and popover */}
       <Popover title={groupFields.length > 0 ? "Sort within groups by" : "Sort by"} content={
@@ -325,8 +334,8 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
           {(groupFields.length > 0) ? `Grouped by ${metadataFields[groupFields[0]].displayName}` : "Group"}
         </Button> */}
         <Button type="text" icon={<FilterOutlined />}
-          color={(query.rules.length > 0) ? "primary" : "default"}
-          variant={(query.rules.length > 0) ? "filled" : "text"}
+          color={query.rules.length > 0 ? "primary" : "default"}
+          variant={query.rules.length > 0 ? "filled" : "text"}
         >
           {filterLabel}
         </Button>

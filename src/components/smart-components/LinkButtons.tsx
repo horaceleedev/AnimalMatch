@@ -1,4 +1,4 @@
-import { Avatar, Card, Flex, Space, Typography } from "antd";
+import { Avatar, Card, Flex, Space, Tooltip, Typography } from "antd";
 import { generatePath, Link } from "react-router-dom";
 import { useIndividualsStoreWithCrops, useUsersStore, useVideoStore } from "../../DataStores";
 import { RecordType } from "../../types";
@@ -104,5 +104,23 @@ export const UserLabel: React.FC<{id: string}> = ({id}) => {
       </Avatar>
       <Typography.Title level={5} style={{margin: 0, fontSize: 12}}>{user.name}</Typography.Title>
     </Space>
+  );
+};
+
+export const UsersListLabel: React.FC<{ids: string[]}> = ({ids}) => {
+  // Displays a list of users in a compact way
+  const users = useUsersStore((state) => state.processedRecords).filter(u => ids.includes(u.id));
+
+  if (users.length === 0) return <></>;
+  return (
+    <Avatar.Group size="small" max={{count: 4, style: {background: '#555'}}}>
+      {users.map((user) => (
+        <Tooltip key={user.id} title={user.name}>
+          <Avatar size="small" style={{background: '#555'}}>
+            {user.name[0].toLocaleUpperCase()}
+          </Avatar>
+        </Tooltip>
+      ))}
+    </Avatar.Group>
   );
 };
