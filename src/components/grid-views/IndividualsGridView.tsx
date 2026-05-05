@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { MouseEvent, useCallback, useState } from 'react';
 import { generatePath, Link } from 'react-router-dom';
 import { Card, Select, Skeleton, Space, Tag, Tooltip } from 'antd';
 
+import type { RecordSelectionUi } from "../../hooks/useRecordSelectionUi.ts";
 import { Crop, Individual, MetadataFieldsType, RecordType } from '../../types.ts';
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
 import "./IndividualsGridView.scss";
@@ -36,6 +37,7 @@ interface BasicIndividualsGridViewProps {
   individuals: Individual[];
   individualsMetadataFields: MetadataFieldsType;
   isListView?: boolean;
+  selectionUi?: RecordSelectionUi;
   linkTemplate?: string;
   buttons?: (individual: Individual) => JSX.Element;
   allowEditingAgeAndSex?: boolean;
@@ -43,12 +45,33 @@ interface BasicIndividualsGridViewProps {
 };
 
 const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
-  individuals, individualsMetadataFields, isListView, linkTemplate = "/individuals/:individualId", buttons, allowEditingAgeAndSex, openModal,
+  individuals, individualsMetadataFields, isListView, selectionUi, linkTemplate = "/individuals/:individualId", buttons, allowEditingAgeAndSex, openModal,
 }: BasicIndividualsGridViewProps) => {
+  const selectionModeActive = selectionUi?.selectionModeActive ?? false;
+  const selectedItems = selectionUi?.selectedItems ?? new Set<string>();
+
+  const selectIndividual = useCallback(
+    (individualId: string) => (event: MouseEvent) => {
+      event.preventDefault();
+      selectionUi?.toggleItemSelection(individualId);
+    },
+    [selectionUi],
+  );
+
+  const openIndividual = useCallback(
+    (individualId: string) => (event: MouseEvent) => {
+      if (!openModal) return;
+      event.preventDefault();
+      openModal("individual", individualId);
+    },
+    [openModal],
+  );
+
   return (
-    <div className={isListView ? "individuals-list" : "individuals-grid"}>
-      {
-        individuals.map(individual => (
+    <div className="gallery-view">
+      <div className={isListView ? "individuals-list" : "individuals-grid"}>
+        {
+          individuals.map(individual => (
           /* <Card hoverable styles={{ body: { padding: 0, overflow: 'hidden' } }}>
             <Flex justify="space-between">
               <Flex>
@@ -76,12 +99,12 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
           <Link
             key={individual.id}
             to={generatePath(linkTemplate, { individualId: individual.id })}
-            onClick={(e) => {
-              if (!openModal) return;
-              e.preventDefault();
-              openModal("individual", individual.id);
-            }}
-            className="individual-card-wrapper"
+            onClick={(selectionModeActive ? selectIndividual : openIndividual)(individual.id)}
+            className={`individual-card-wrapper ${
+              selectionModeActive && selectedItems.has(individual.id)
+                ? "selected"
+                : ""
+            }`}
           >
             <Card hoverable bordered={true} size="small" cover={
               <div style={{display: 'flex', overflow: 'scroll', height: 150, columnGap: 5, borderRadius: 5}}>
@@ -138,8 +161,9 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
               />
             </Card>
           </Link>
-        ))
-      }
+          ))
+        }
+      </div>
     </div>
   );
 };

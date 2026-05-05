@@ -4,6 +4,48 @@ import { Individual, LocationInfo, MetadataFieldsType, Video } from "../types";
 
 const isNonNullString = (value: unknown): value is string => typeof value === "string";
 
+export type SharedStringValue = { value: string | undefined; isMixed: boolean };
+export type SharedStringArrayValue = { value: string[]; isMixed: boolean };
+
+export const getSortedUniqueStrings = (values: unknown[]) =>
+  Array.from(new Set(values.filter(isNonNullString))).sort((a, b) => a.localeCompare(b));
+
+export const getSharedStringValue = (values: unknown[]): SharedStringValue => {
+  if (values.length === 0) {
+    return { value: undefined, isMixed: false };
+  }
+
+  const normalizedValues = values.map((value) => (typeof value === "string" ? value : undefined));
+  const firstValue = normalizedValues[0];
+  const allMatch = normalizedValues.every((value) => value === firstValue);
+
+  return {
+    value: allMatch ? firstValue : undefined,
+    isMixed: !allMatch,
+  };
+};
+
+export const getSharedStringArrayValue = (values: unknown[]): SharedStringArrayValue => {
+  if (values.length === 0) {
+    return { value: [], isMixed: false };
+  }
+
+  const normalizedValues = values.map((value) =>
+    Array.isArray(value) ? getSortedUniqueStrings(value) : [],
+  );
+  const firstValue = normalizedValues[0];
+  const allMatch = normalizedValues.every(
+    (normalizedValue) =>
+      normalizedValue.length === firstValue.length &&
+      normalizedValue.every((entry, index) => entry === firstValue[index]),
+  );
+
+  return {
+    value: allMatch ? firstValue : [],
+    isMixed: !allMatch,
+  };
+};
+
 export const getUniqueLocationsFromVideos = (videos: Video[]) => {
   const numVideosPerUniqueLocation = countBy(videos, x => JSON.stringify([x.lat, x.long]));
   const uniqueLocations = Object.entries(numVideosPerUniqueLocation).map(([latLongString, numVideos]) => {
@@ -24,7 +66,7 @@ export const getUniqueLocationsFromIndividuals = (individuals: Individual[], all
     return [];
   }
 
-  let videos: Video[] = []; // list of videos where the individuals appear in
+  const videos: Video[] = []; // list of videos where the individuals appear in
   for (const indiv of individuals) {
     for (const videoId of indiv.videos) {
       const video = allVideos.find(v => v.id === videoId);
@@ -49,8 +91,11 @@ export const getUniqueLocationsFromIndividuals = (individuals: Individual[], all
   return uniqueLocations;
 }
 
-export const getUniqueValuesPerField = (metadataFields: MetadataFieldsType, processedRecords: Record<string, any>[]) => {
-  let uniqueValuesPerField: Record<string, string[]> = {}; // an object where each key is a field name and its associated value is a list of unique values for that field
+export const getUniqueValuesPerField = (
+  metadataFields: MetadataFieldsType,
+  processedRecords: Record<string, unknown>[],
+) => {
+  const uniqueValuesPerField: Record<string, string[]> = {}; // an object where each key is a field name and its associated value is a list of unique values for that field
   Object.entries(metadataFields).forEach(([fieldValue, field]) => {
     if (field.type === 'select') {
       // Use preset options if available
@@ -59,20 +104,35 @@ export const getUniqueValuesPerField = (metadataFields: MetadataFieldsType, proc
         return;
       }
 
-      const uniqueValues = Array.from(
-        new Set(processedRecords.map(x => x[fieldValue]).filter(isNonNullString))
-      );
-      const uniqueValuesSorted = [...uniqueValues].sort((a, b) => a.localeCompare(b));
+      const uniqueValuesSorted = getSortedUniqueStrings(processedRecords.map(x => x[fieldValue]));
       uniqueValuesPerField[fieldValue] = uniqueValuesSorted;
       console.log(uniqueValuesSorted);
     } else if (field.type === 'multiselect') {
-      const uniqueValues = Array.from(
-        new Set(processedRecords.flatMap(x => x[fieldValue] ?? []).filter(isNonNullString))
+      const uniqueValuesSorted = getSortedUniqueStrings(
+        processedRecords.flatMap(x => x[fieldValue] ?? []),
       );
-      const uniqueValuesSorted = [...uniqueValues].sort((a, b) => a.localeCompare(b));
       uniqueValuesPerField[fieldValue] = uniqueValuesSorted;
       // console.log(uniqueValuesSorted);
     }
   });
   return uniqueValuesPerField;
 }
+
+export const getMultiselectValueCounts = <T extends Record<string, unknown>>(
+  records: T[],
+  fieldValue: keyof T & string,
+) => {
+  const counts: Record<string, number> = {};
+
+  for (const record of records) {
+    const values = record[fieldValue];
+    if (!Array.isArray(values)) continue;
+
+    for (const value of values) {
+      if (!isNonNullString(value)) continue;
+      counts[value] = (counts[value] ?? 0) + 1;
+    }
+  }
+
+  return counts;
+};

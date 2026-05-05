@@ -87,7 +87,7 @@ export const UserLabel: React.FC<{id: string}> = ({id}) => {
 export const UsersListLabel: React.FC<{ids: string[]}> = ({ids}) => {
   // Displays a list of users in a compact way
   const users = useUsersStore((state) => state.processedRecords).filter(u => ids.includes(u.id));
-  
+
   if (users.length === 0) return <></>;
   return (
     <Avatar.Group size="small" max={{count: 4, style: {background: '#555'}}}>

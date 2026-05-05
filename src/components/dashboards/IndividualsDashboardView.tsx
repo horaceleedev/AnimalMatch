@@ -10,6 +10,7 @@ import ViewList from '../../assets/material_symbols/view_list_24dp_5F6368_FILL0_
 import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
 import BasicMapView from '../ui/BasicMapView.tsx';
+import { useRecordSelectionUi } from '../../hooks/useRecordSelectionUi.ts';
 import { getUniqueLocationsFromIndividuals } from '../../utils/utils.ts';
 import useSearchFilter from '../../hooks/useSearchFilter.ts';
 import { Individual, MetadataFieldsType, Video } from '../../types.ts';
@@ -88,6 +89,12 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
     individualsMetadataFields,
   );
 
+  const filteredIndividualIds = useMemo(
+    () => searchFilteredIndividuals.map((individual) => individual.id),
+    [searchFilteredIndividuals],
+  );
+  const selectionUi = useRecordSelectionUi("individual", filteredIndividualIds);
+
   const uniqueLocations = useMemo(() => {
     return getUniqueLocationsFromIndividuals(searchFilteredIndividuals, videos);
   }, [searchFilteredIndividuals, videos]);
@@ -95,11 +102,13 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
   return (
     <>
       <QueryOperationsButtons
+        selectionUi={selectionUi}
         metadataFields={individualsMetadataFields} uniqueValuesPerField={uniqueValuesPerField}
         sortFields={sortFields} setSortFields={setSortFields} sortOrders={sortOrders} setSortOrders={setSortOrders}
         groupFields={groupFields} setGroupFields={setGroupFields} groupOrders={groupOrders} setGroupOrders={setGroupOrders}
         query={query} setQuery={setQuery}
         handleSearch={setSearchQuery}
+        showBatchEdit
       />
       {
         !onlyShowListView && 
@@ -110,6 +119,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
         <IndividualsGridView
           individuals={searchFilteredIndividuals}
           individualsMetadataFields={individualsMetadataFields}
+          selectionUi={selectionUi}
           linkTemplate={linkTemplate}
           buttons={listViewButtons}
           sortFields={sortFields}
@@ -128,6 +138,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
               <IndividualsGridView
                 individuals={searchFilteredIndividuals}
                 individualsMetadataFields={individualsMetadataFields}
+                selectionUi={selectionUi}
                 linkTemplate={linkTemplate}
                 buttons={listViewButtons}
                 sortFields={sortFields}

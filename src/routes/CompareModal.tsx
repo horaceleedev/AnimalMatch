@@ -277,9 +277,9 @@ const CompareModal: FC = () => {
 
   let rightPanel;
   if (compareId) {
-    let rightPanelVideosLinkTemplate = routeSplits.slice(0,5).join('/') + "/v/:videoId";
-    let rightPanelIndividualsLinkTemplate = routeSplits.slice(0,5).join('/') + "/i/:individualId";
-    let rightPanelCropsLinkTemplate = routeSplits.slice(0,5).join('/') + "/c/:cropId";
+    const rightPanelVideosLinkTemplate = routeSplits.slice(0,5).join('/') + "/v/:videoId";
+    const rightPanelIndividualsLinkTemplate = routeSplits.slice(0,5).join('/') + "/i/:individualId";
+    const rightPanelCropsLinkTemplate = routeSplits.slice(0,5).join('/') + "/c/:cropId";
 
     if (compareVideoDetailProps) {
       rightPanel = (

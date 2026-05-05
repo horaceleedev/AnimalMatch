@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 // This is an example of an end-to-end Playwright test.
 // Unlike the Vitest component tests, we do not mock app internals here; we load the app in a real browser and assert on what the user sees.
-// Here it is very simple but this often means mocking the database layer rather than the UI layer, 
+// Here it is very simple but this often means mocking the database layer rather than the UI layer,
 // We can set up specific scenarios and test the real behaviour of the app in those scenario.
 // Examples might be filling out forms, testing navigation betwen pages, testing user permissions etc. (what can a logged out/logged in/admin user see and do?)
 // TODO(ADW): We need to setup msw (or similar) to mock the pocketbase before we tackle sophisticated e2e.

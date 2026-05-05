@@ -29,7 +29,7 @@ const VideoAnnotatorModal: React.FC = () => {
   const navigate = useNavigate();
   const { videoId } = useParams<"videoId">();
   console.log(videoId)
-  
+
   // Get videos for navigation (previous/next video) from outlet context (passed from VideosDashboardPage)
   const outletContext = useOutletContext<{
     videos?: Video[],

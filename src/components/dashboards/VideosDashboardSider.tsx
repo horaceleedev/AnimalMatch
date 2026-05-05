@@ -1,53 +1,30 @@
-import { FC, useMemo, useState } from "react";
+import { FC } from "react";
 import { Layout, Menu, Typography } from "antd";
 import { PlaySquareOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
 const { Sider } = Layout;
 
 import AnnotationStatusLabel from "../ui/AnnotationStatusLabel";
-import { MetadataFieldsType, UserRecord, Video } from "../../types";
+import { MetadataFieldsType, Video } from "../../types";
 import "./DashboardSider.scss";
-
-export const useVideosDashboardSiderState = (videos: Video[], videoMetadataFields: MetadataFieldsType, user: UserRecord | null) => {
-  const [selectedSiderKey, setSelectedSiderKey] = useState("all-videos");
-  const videosBySiderKey: Record<string, Video[]> = useMemo(() => ({
-    "all-videos": videos,
-    "assigned-to-me": user ? videos.filter(video => video.assignees.includes(user.id)) : [],
-    // annotation statuses
-    ...videoMetadataFields['annotation_status'].presetOptions!.reduce((acc: Record<string, Video[]>, status: string) => {
-      acc[status] = videos.filter(video => video.annotation_status === status);
-      return acc;
-    }, {}),
-    // custom tags
-    ...videos.reduce((acc: Record<string, Video[]>, cur: Video) => {
-      for (const tag of cur.custom_tags) {
-        const tagWithPrefix = "custom-tags/" + tag;
-        if (!(tagWithPrefix in acc)) acc[tagWithPrefix] = [];
-        acc[tagWithPrefix].push(cur);
-      }
-      return acc;
-    }, {}),
-  }), [videos, user]);
-  const videosFiltered = useMemo(() => 
-    videosBySiderKey[selectedSiderKey],
-    [videosBySiderKey, selectedSiderKey]
-  );
-  return [selectedSiderKey, setSelectedSiderKey, videosBySiderKey, videosFiltered] as const;
-};
 
 interface VideosDashboardSiderProps {
   selectedSiderKey: string;
-  onSelectSiderKey: (key: string) => void;
   videosBySiderKey: Record<string, Video[]>;
   videoMetadataFields: MetadataFieldsType;
   uniqueValuesPerField: Record<string, string[]>;
+  onChange?: (info: { key: string }) => void;
 }
 export const VideosDashboardSider: FC<VideosDashboardSiderProps> = ({
   selectedSiderKey,
-  onSelectSiderKey,
   videosBySiderKey,
   videoMetadataFields,
   uniqueValuesPerField,
+  onChange,
 }) => {
+  function onClick({ key }: { key: string }) {
+    onChange?.({ key });
+  }
+
   return (
     <Sider
       className="dashboard-sider"
@@ -113,7 +90,7 @@ export const VideosDashboardSider: FC<VideosDashboardSiderProps> = ({
               }
             : null,
         ]}
-        onClick={({ key }: { key: string }) => onSelectSiderKey(key)}
+        onClick={onClick}
       />
     </Sider>
   );
