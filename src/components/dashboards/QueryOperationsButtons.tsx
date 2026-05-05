@@ -114,7 +114,7 @@ const renderSelectedValue = (
 const RenderAwareValueEditor = (props: ValueEditorProps) => {
   const renderType = (props.fieldData as QueryBuilderFieldData | undefined)?.renderType;
 
-  if (!renderType || (props.type !== 'select' && props.type !== 'multiselect')) {
+  if (props.type !== 'select' && props.type !== 'multiselect') {
     return <AntDValueEditor {...props} />;
   }
 
@@ -126,9 +126,10 @@ const RenderAwareValueEditor = (props: ValueEditorProps) => {
     value: String(option.value),
     label: option.label ?? option.name ?? option.value,
   }));
-  const labelRender: NonNullable<SelectProps['labelRender']> = option =>
-    renderSelectedValue(renderType, option);
-  const tagRender: NonNullable<SelectProps['tagRender']> = ({ value, closable, onClose }) => (
+  const labelRender: NonNullable<SelectProps['labelRender']> | undefined = renderType
+    ? option => renderSelectedValue(renderType, option)
+    : undefined;
+  const tagRender: NonNullable<SelectProps['tagRender']> | undefined = renderType ? ({ value, closable, onClose }) => (
     <span
       onMouseDown={event => {
         event.preventDefault();
@@ -151,7 +152,7 @@ const RenderAwareValueEditor = (props: ValueEditorProps) => {
           null
       }
     </span>
-  );
+  ) : undefined;
 
   return (
     <span title={props.title} className={props.className}>
@@ -170,7 +171,7 @@ const RenderAwareValueEditor = (props: ValueEditorProps) => {
           props.handleOnChange(nextValue);
         }}
         options={normalizedOptions}
-        optionRender={option => renderDropdownOption(renderType, option.data)}
+        optionRender={renderType ? option => renderDropdownOption(renderType, option.data) : undefined}
         labelRender={labelRender}
         tagRender={props.type === 'multiselect' ? tagRender : undefined}
       />
