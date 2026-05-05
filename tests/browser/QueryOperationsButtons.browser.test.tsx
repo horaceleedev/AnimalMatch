@@ -119,6 +119,17 @@ const getQueryState = (): RuleGroupType =>
 const getSearchState = (): string =>
   document.querySelector('[data-testid="search-state"]')?.textContent ?? '';
 
+const clickVisibleSearchClearIcon = () => {
+  const clearIcon = document.querySelector(
+    '.ant-input-clear-icon:not(.ant-input-clear-icon-hidden)'
+  ) as HTMLElement | null;
+
+  if (!clearIcon) throw new Error('Search clear icon not found');
+  clearIcon.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, composed: true }));
+  clearIcon.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, composed: true }));
+  clearIcon.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
+};
+
 const setInputValue = (input: HTMLInputElement, value: string) => {
   const valueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
   if (!valueSetter) throw new Error('Could not find the HTMLInputElement value setter');
@@ -190,6 +201,25 @@ test('clears search input and forwards the empty state', async () => {
   expect(getSearchState()).toBe('lion');
 
   setInputValue(searchInput, '');
+  expect(getSearchState()).toBe('');
+});
+
+test('clears search input through the clear icon', async () => {
+  await renderWithProviders(
+    <QueryOperationsButtonsHarness
+      metadataFields={textFirstMetadataFields}
+      uniqueValuesPerField={uniqueValuesPerField}
+    />,
+  );
+
+  const searchInput = document.querySelector('input[placeholder="Search"]') as HTMLInputElement | null;
+  if (!searchInput) throw new Error('Search input not found');
+
+  setInputValue(searchInput, 'lion');
+  expect(getSearchState()).toBe('lion');
+
+  clickVisibleSearchClearIcon();
+  await Promise.resolve();
   expect(getSearchState()).toBe('');
 });
 
@@ -304,6 +334,27 @@ test('hides value editor for "is empty" operators', async () => {
   expect(getQueryState()).toEqual(expect.objectContaining({
     combinator: 'and',
     rules: [expect.objectContaining({ field: 'habitat', operator: 'null', valueSource: 'value' })],
+  }));
+  expect(document.querySelector('.rule-value input, .rule-value textarea, .rule-value .ant-select')).toBeNull();
+});
+
+test('hides value editor for "is not empty" operators', async () => {
+  const screen = await renderWithProviders(
+    <QueryOperationsButtonsHarness
+      metadataFields={selectFirstMetadataFields}
+      uniqueValuesPerField={uniqueValuesPerField}
+    />,
+  );
+
+  await screen.getByRole('button', { name: 'Filter' }).click();
+  await screen.getByRole('button', { name: '+ Rule' }).click();
+
+  openRuleSelect('.rule-operators .ant-select-selector');
+  await screen.getByText('is not empty').click();
+
+  expect(getQueryState()).toEqual(expect.objectContaining({
+    combinator: 'and',
+    rules: [expect.objectContaining({ field: 'habitat', operator: 'notNull', valueSource: 'value' })],
   }));
   expect(document.querySelector('.rule-value input, .rule-value textarea, .rule-value .ant-select')).toBeNull();
 });
