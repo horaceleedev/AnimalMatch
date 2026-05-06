@@ -14,7 +14,8 @@
     "test:browser": "vitest --config vitest.browser.config.ts run",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:all": "npm run test && npm run test:browser && npm run test:e2e"
+    "test:all": "npm run test && npm run test:browser && npm run test:e2e",
+    "sync:elephant-crop-slides": "node scripts/sync-elephant-crop-slide-nums.js"
   },
   "dependencies": {
     "@ant-design/icons": "^5.6.1",
