@@ -5,7 +5,7 @@ import PocketBase from 'pocketbase';
 
 const DEFAULT_BASE_URL = 'http://127.0.0.1:8090';
 const DEFAULT_AUTH_COLLECTION = 'users';
-const DEFAULT_DATA_DIR = path.resolve(process.cwd(), '../test2');
+const DEFAULT_DATA_DIR = path.resolve(process.cwd(), '../test3');
 const DEFAULT_SCHEMA_PATH = path.resolve(process.cwd(), '../pb_elephant_schema.json');
 const IMPORT_TAG_PREFIX = 'import:test2:';
 const DEFAULT_MISMATCH_SUMMARY_PATH = path.resolve(process.cwd(), '../mismatch_summary_1.txt');
