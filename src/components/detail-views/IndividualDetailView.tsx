@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Flex, Select, Space, Tabs, theme, type TabsProps } from "antd";
+import { Button, Flex, Tabs, theme, type TabsProps } from "antd";
 import StickyBox from 'react-sticky-box';
 import { generatePath, Link } from 'react-router-dom';
 
@@ -10,10 +10,10 @@ import { Individual, LocationInfo, RecordType, Video } from '../../types.ts';
 import BasicMapView from '../ui/BasicMapView.tsx';
 import RecordMetadataForm from './RecordMetadataForm.tsx';
 import CropsDashboardView from '../dashboards/CropsDashboardView.tsx';
+import BodyPartSelect, { ANY_BODY_PART } from '../crops/BodyPartSelect.tsx';
 import "./IndividualDetailView.scss";
 
 const numCropsToShow = 10;
-const ANY_BODY_PART = "any body part";
 
 type IndividualDetailViewProps = {
   individual: Individual;
@@ -53,11 +53,15 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
     [videosWithIndividual]
   );
 
-  const bodyPartOptions = [ANY_BODY_PART, ...(cropsUniqueValuesPerField['body_part'] ?? [])];
+  const bodyPartOptions = cropsUniqueValuesPerField['body_part'] ?? [];
   const [selectedBodyPart, setSelectedBodyPart] = useState(ANY_BODY_PART);
   const availableBodyParts = useMemo(
     () => new Set(individual.crops.map(crop => crop.body_part)),
     [individual.crops]
+  );
+  const filteredPreviewCrops = useMemo(
+    () => individual.crops.filter(crop => selectedBodyPart === ANY_BODY_PART || crop.body_part === selectedBodyPart),
+    [individual.crops, selectedBodyPart]
   );
 
   const {
@@ -74,23 +78,15 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
     <div className="individual-detail-view">
       {/* Images display */}
       {/* Body part selector */}
-      <Space>
-        <span>Show crops of:</span>
-        <Select
-          variant="borderless"
-          popupMatchSelectWidth={false}
-          defaultValue={ANY_BODY_PART}
-          options={
-            bodyPartOptions.map(bodyPart => ({ value: bodyPart, label: bodyPart, disabled: bodyPart !== ANY_BODY_PART && !availableBodyParts.has(bodyPart) }))
-          }
-          value={selectedBodyPart}
-          onChange={(value) => setSelectedBodyPart(value)}
-        />
-      </Space>
+      <BodyPartSelect
+        bodyPartOptions={bodyPartOptions}
+        selectedBodyPart={selectedBodyPart}
+        setSelectedBodyPart={setSelectedBodyPart}
+        availableBodyParts={availableBodyParts}
+      />
       <Flex gap={5} style={{marginTop: 10, marginBottom: 20, width: 'fit-content', maxWidth: '100%', overflow: 'scroll'}}>
         {
-          individual.crops
-            .filter(crop => (selectedBodyPart === ANY_BODY_PART || crop.body_part === selectedBodyPart))
+          filteredPreviewCrops
             .slice(0, numCropsToShow)
             .map(crop => (
               <Link
@@ -108,13 +104,13 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
         }
         {
           // Show button to view more crops if truncated
-          (individual.crops.length > numCropsToShow) &&
+          (filteredPreviewCrops.length > numCropsToShow) &&
           <Button
             color="default"
             variant="link"
             style={{alignSelf: 'center'}}
             onClick={() => setActiveTabKey('crops')}
-          >+{individual.crops.length - numCropsToShow} more</Button>
+          >+{filteredPreviewCrops.length - numCropsToShow} more</Button>
         }
       </Flex>
       <Tabs

@@ -10,6 +10,7 @@ import ViewList from '../../assets/material_symbols/view_list_24dp_5F6368_FILL0_
 import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
 import BasicMapView from '../ui/BasicMapView.tsx';
+import BodyPartSelect, { ANY_BODY_PART } from '../crops/BodyPartSelect.tsx';
 import { getUniqueLocationsFromIndividuals } from '../../utils/utils.ts';
 import useSearchFilter from '../../hooks/useSearchFilter.ts';
 import { Individual, MetadataFieldsType, Video } from '../../types.ts';
@@ -63,6 +64,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
   const [groupFields, setGroupFields] = useState<string[]>(defaultGroupFields);
   const [groupOrders, setGroupOrders] = useState<("asc" | "desc")[]>(defaultGroupOrders);
   const [query, _setQuery] = useState(initialQuery);
+  const [selectedBodyPart, setSelectedBodyPart] = useState(ANY_BODY_PART);
 
   const setQuery = (newQuery: RuleGroupType) => {
     if (newQuery.rules.length > 1) {
@@ -88,6 +90,11 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
     individualsMetadataFields,
   );
 
+  const bodyPartOptions = useMemo(
+    () => Array.from(new Set(individuals.flatMap(individual => individual.crops.map(crop => crop.body_part)))).sort(),
+    [individuals]
+  );
+
   const uniqueLocations = useMemo(() => {
     return getUniqueLocationsFromIndividuals(searchFilteredIndividuals, videos);
   }, [searchFilteredIndividuals, videos]);
@@ -101,6 +108,13 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
         query={query} setQuery={setQuery}
         handleSearch={setSearchQuery}
       />
+      <div style={{marginTop: 8}}>
+        <BodyPartSelect
+          bodyPartOptions={bodyPartOptions}
+          selectedBodyPart={selectedBodyPart}
+          setSelectedBodyPart={setSelectedBodyPart}
+        />
+      </div>
       {
         !onlyShowListView && 
         <Tabs defaultActiveKey="list" items={viewsTabsItems} onChange={setView} />
@@ -116,6 +130,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
           sortOrders={sortOrders}
           groupFields={groupFields}
           groupOrders={groupOrders}
+          cropBodyPart={selectedBodyPart}
         />
         :
         (
@@ -134,6 +149,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
                 sortOrders={sortOrders}
                 groupFields={groupFields}
                 groupOrders={groupOrders}
+                cropBodyPart={selectedBodyPart}
               />
             </Splitter.Panel>
             <Splitter.Panel style={{paddingLeft: 12}}>
