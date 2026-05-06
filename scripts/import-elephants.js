@@ -6,7 +6,7 @@ import PocketBase from 'pocketbase';
 const DEFAULT_BASE_URL = 'http://127.0.0.1:8090';
 const DEFAULT_AUTH_COLLECTION = 'users';
 const DEFAULT_DATA_DIR = path.resolve(process.cwd(), '../test2');
-const DEFAULT_SCHEMA_PATH = path.resolve(process.cwd(), '../pb_elephant_schema_2.json');
+const DEFAULT_SCHEMA_PATH = path.resolve(process.cwd(), '../pb_elephant_schema.json');
 const IMPORT_TAG_PREFIX = 'import:test2:';
 const DEFAULT_MISMATCH_SUMMARY_PATH = path.resolve(process.cwd(), '../mismatch_summary_1.txt');
 const DEFAULT_WARNING_SUMMARY_PATH = path.resolve(process.cwd(), '../warning_summary.txt');
@@ -144,6 +144,14 @@ function normalizeSex(value) {
   return mapping[value] || null;
 }
 
+function normalizeNumber(value) {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
 function inferAgeFromText(...values) {
   const text = values.filter(Boolean).join(' ').toLowerCase();
   if (text.includes('infant')) return 'infant';
@@ -164,6 +172,10 @@ function inferSexFromText(...values) {
 
 function joinList(values) {
   return unique(values).join(', ');
+}
+
+function joinIssueList(values) {
+  return unique(values).join('\n');
 }
 
 function cleanTag(value) {
@@ -503,7 +515,7 @@ function buildVideoIssues({ uniqueIds, mismatchSummary, warningSummary, linkInTx
     }
   }
 
-  return joinList(issues);
+  return joinIssueList(issues);
 }
 
 function buildIndividualIssues({ slide, identityRecord, videoLinks, mismatchSummary, warningSummary }) {
@@ -551,7 +563,7 @@ function buildIndividualIssues({ slide, identityRecord, videoLinks, mismatchSumm
     issues.push(`${mismatchCount} linked videos flagged in mismatch summary.`);
   }
 
-  return joinList(issues);
+  return joinIssueList(issues);
 }
 
 function normalizeDataset(slides, schema, summaryData) {
@@ -699,9 +711,10 @@ function normalizeDataset(slides, schema, summaryData) {
         imageName: `${slugify(slide.id_name)}_${picture.output_filename}`,
         individualName: slide.id_name,
         sourceVideoFilename: cropVideoFilename,
+        slide_num: normalizeNumber(picture.slide_num),
         slide_numbers: slide.slide_numbers || [],
         crop_coordinates: cropFields.has('crop_coordinates') ? [0, 0, 0, 0] : undefined,
-        custom_tags: cropFields.has('custom_tags') ? [importTag, REVIEW_TAG] : undefined,
+        custom_tags: cropFields.has('custom_tags') ? [REVIEW_TAG] : undefined,
       });
     }
   }
@@ -712,7 +725,7 @@ function normalizeDataset(slides, schema, summaryData) {
     cropFields,
     videos: [...videosByFilename.values()].map((video) => ({
       ...video,
-      issues: joinList(video.issues || []),
+      issues: joinIssueList(video.issues || []),
     })).sort((a, b) => a.filename.localeCompare(b.filename)),
     individuals: normalizedIndividuals.sort((a, b) => a.name.localeCompare(b.name)),
     crops: normalizedCrops,
@@ -973,7 +986,7 @@ async function ensureCropRecords({ pb, dataset, dryRun, verbose, individualIdsBy
       height,
     };
     setIfFieldExists(payload, dataset.cropFields, 'crop_coordinates', crop.crop_coordinates);
-    const slideNum = crop.slide_numbers.length === 1 ? crop.slide_numbers[0] : null;
+    const slideNum = crop.slide_num ?? (crop.slide_numbers.length <= 1 ? crop.slide_numbers[0] : null);
     setIfFieldExists(payload, dataset.cropFields, 'slide_num', slideNum);
 
     if (verbose) {
