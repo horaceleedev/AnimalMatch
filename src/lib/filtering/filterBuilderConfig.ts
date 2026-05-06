@@ -126,7 +126,15 @@ export const buildQueryBuilderFields = (
     };
 
     if (field.type === 'select' || field.type === 'multiselect') {
-      output.values = (uniqueValuesPerField[fieldValue] ?? []).map(x => ({ name: x, value: x }));
+      output.values = (uniqueValuesPerField[fieldValue] ?? []).map(x => ({ name: x, value: x, label: x }));
+    }
+    if (field.type === 'boolean') {
+      output.values = [
+        // @ts-ignore (temporary hack - name and value are expected to be strings)
+        { name: true, value: true, label: field.displayBooleanValuesAs?.[1] ?? 'True' },
+        // @ts-ignore (temporary hack - name and value are expected to be strings)
+        { name: false, value: false, label: field.displayBooleanValuesAs?.[0] ?? 'False' },
+      ];
     }
 
     return output;
