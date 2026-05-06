@@ -186,6 +186,15 @@ function normalizeTags(values) {
   return unique((values || []).map(cleanTag).filter(Boolean));
 }
 
+function reviewTagsForIssues(tags, issues) {
+  const baseTags = normalizeTags(tags).filter((tag) => tag !== REVIEW_TAG);
+  const hasIssues = Array.isArray(issues)
+    ? issues.some((issue) => String(issue || '').trim())
+    : Boolean(String(issues || '').trim());
+
+  return hasIssues ? unique([...baseTags, REVIEW_TAG]) : baseTags;
+}
+
 function fieldMap(schema, collectionName) {
   const collection = schema.find((item) => item.name === collectionName);
   if (!collection) {
@@ -623,7 +632,7 @@ function normalizeDataset(slides, schema, summaryData) {
         uniqueIds: [],
         location_name: videoLink.location_name || null,
         recording_date: toIsoUtc(videoLink.recording_date),
-        custom_tags: [REVIEW_TAG],
+        custom_tags: [],
         filepath: videoLink.link_in_txt || null,
         longitude: videoLink.longitude ?? null,
         latitude: videoLink.latitude ?? null,
@@ -668,6 +677,13 @@ function normalizeDataset(slides, schema, summaryData) {
 
     const individualNotes = buildIndividualNotes(slide, identityRecord, individualFields);
     const individualVideoFilenames = unique(videoLinks.map((videoLink) => videoLink.filename || videoLink.unique_id));
+    const individualIssues = buildIndividualIssues({
+      slide,
+      identityRecord,
+      videoLinks,
+      mismatchSummary: summaryData.mismatchByUniqueId,
+      warningSummary: summaryData.warningSummary,
+    }) || null;
     normalizedIndividuals.push({
       slideDir: dirName,
       name: slide.id_name,
@@ -679,14 +695,8 @@ function normalizeDataset(slides, schema, summaryData) {
       family_group: unique(identityRecord.family_group || []),
       bond_group: unique(identityRecord.bond_group || []),
       videoFilenames: individualVideoFilenames,
-      custom_tags: [REVIEW_TAG],
-      issues: buildIndividualIssues({
-        slide,
-        identityRecord,
-        videoLinks,
-        mismatchSummary: summaryData.mismatchByUniqueId,
-        warningSummary: summaryData.warningSummary,
-      }) || null,
+      custom_tags: reviewTagsForIssues([], individualIssues),
+      issues: individualIssues,
     });
 
     const linkedVideoFilenames = unique(videoLinks.map((videoLink) => videoLink.filename || videoLink.unique_id));
@@ -714,7 +724,7 @@ function normalizeDataset(slides, schema, summaryData) {
         slide_num: normalizeNumber(picture.slide_num),
         slide_numbers: slide.slide_numbers || [],
         crop_coordinates: cropFields.has('crop_coordinates') ? [0, 0, 0, 0] : undefined,
-        custom_tags: cropFields.has('custom_tags') ? [REVIEW_TAG] : undefined,
+        custom_tags: cropFields.has('custom_tags') ? [] : undefined,
       });
     }
   }
@@ -723,10 +733,14 @@ function normalizeDataset(slides, schema, summaryData) {
     videoFields,
     individualFields,
     cropFields,
-    videos: [...videosByFilename.values()].map((video) => ({
-      ...video,
-      issues: joinIssueList(video.issues || []),
-    })).sort((a, b) => a.filename.localeCompare(b.filename)),
+    videos: [...videosByFilename.values()].map((video) => {
+      const issues = joinIssueList(video.issues || []);
+      return {
+        ...video,
+        custom_tags: reviewTagsForIssues(video.custom_tags, issues),
+        issues,
+      };
+    }).sort((a, b) => a.filename.localeCompare(b.filename)),
     individuals: normalizedIndividuals.sort((a, b) => a.name.localeCompare(b.name)),
     crops: normalizedCrops,
     warnings,
