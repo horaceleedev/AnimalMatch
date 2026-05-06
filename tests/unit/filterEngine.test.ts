@@ -328,6 +328,18 @@ const videoCases: FilterCase<Video>[] = [
     expectedIds: ['v4'],
   },
   {
+    name: 'matches multiselect exact equality with multiple elements',
+    records: videos,
+    query: andQuery(rule('custom_tags', '=', ['rare', 'herd'])),
+    expectedIds: ['v2'],
+  },
+  {
+    name: 'matches multiselect exact equality with order sensitivity',
+    records: videos,
+    query: andQuery(rule('custom_tags', '=', ['herd', 'rare'])),
+    expectedIds: [],
+  },
+  {
     name: 'matches multiselect in',
     records: videos,
     query: andQuery(rule('custom_tags', 'in', ['rare', 'cliff'])),
@@ -338,6 +350,12 @@ const videoCases: FilterCase<Video>[] = [
     records: videos,
     query: andQuery(rule('custom_tags', 'notIn', ['rare'])),
     expectedIds: ['v1', 'v3'],
+  },
+  {
+    name: 'matches multiselect all-tags with custom $all operator',
+    records: videos,
+    query: andQuery(rule('custom_tags', '$all', ['rare', 'herd'])),
+    expectedIds: ['v2'],
   },
   {
     name: 'matches multiselect is-empty through empty-array normalization',
@@ -430,6 +448,12 @@ const individualCases: FilterCase<Individual>[] = [
     expectedIds: ['i2', 'i3', 'i4'],
   },
   {
+    name: 'matches multiselect all-tags with custom $all operator',
+    records: individuals,
+    query: andQuery(rule('custom_tags', '$all', ['rare', 'camera-shy'])),
+    expectedIds: ['i3'],
+  },
+  {
     name: 'matches multiselect is-empty through empty-array normalization',
     records: individuals,
     query: andQuery(rule('custom_tags', 'null', null)),
@@ -500,6 +524,12 @@ const cropCases: FilterCase<Crop>[] = [
     records: crops,
     query: andQuery(rule('custom_tags', 'in', ['rare', 'review'])),
     expectedIds: ['c3', 'c4'],
+  },
+  {
+    name: 'matches multiselect all-tags with custom $all operator',
+    records: crops,
+    query: andQuery(rule('custom_tags', '$all', ['rare', 'blurry'])),
+    expectedIds: ['c3'],
   },
   {
     name: 'matches multiselect is-empty through empty-array normalization',
