@@ -35,8 +35,8 @@ describe('buildQueryBuilderFields', () => {
     expect(assigneesField?.renderType).toBe('user_label');
     expect(assigneesField?.valueEditorType).toBe('multiselect');
     expect(assigneesField?.values).toEqual([
-      { name: 'user-1', value: 'user-1' },
-      { name: 'user-2', value: 'user-2' },
+      { name: 'user-1', value: 'user-1', label: 'user-1' },
+      { name: 'user-2', value: 'user-2', label: 'user-2' },
     ]);
   });
 
@@ -68,12 +68,12 @@ describe('buildQueryBuilderFields', () => {
     const customTagsField = fields.find(field => field.name === 'custom_tags');
 
     expect(bodyPartField?.values).toEqual([
-      { name: 'face', value: 'face' },
-      { name: 'ear', value: 'ear' },
+      { name: 'face', value: 'face', label: 'face' },
+      { name: 'ear', value: 'ear', label: 'ear' },
     ]);
     expect(customTagsField?.values).toEqual([
-      { name: 'clear', value: 'clear' },
-      { name: 'review', value: 'review' },
+      { name: 'clear', value: 'clear', label: 'clear' },
+      { name: 'review', value: 'review', label: 'review' },
     ]);
   });
 });
