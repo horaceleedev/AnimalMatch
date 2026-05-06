@@ -1,4 +1,4 @@
-import { formatQuery, type RuleGroupType } from 'react-querybuilder';
+import { defaultRuleProcessorMongoDB, formatQuery, type RuleGroupType } from 'react-querybuilder';
 import sift from 'sift';
 
 export type QueryDefinition = RuleGroupType;
@@ -6,6 +6,15 @@ export type QueryDefinition = RuleGroupType;
 const hasGroupNot = (group: QueryDefinition): boolean =>
   Boolean(group.not) ||
   group.rules.some(rule => 'rules' in rule && hasGroupNot(rule));
+
+const ruleProcessor = (rule: any) => {
+  // Handle custom $all operator
+  // This operator is used for tag fields to check if all specified tags are present in the record's tags array.
+  if (rule.operator === '$all') {
+    return `{ "${rule.field}": { "$all": ${JSON.stringify(rule.value)} } }`;
+  }
+  return defaultRuleProcessorMongoDB(rule);
+};
 
 export const filterByQuery = <T extends Record<string, unknown>>(
   records: T[],
@@ -17,7 +26,7 @@ export const filterByQuery = <T extends Record<string, unknown>>(
     console.warn('Query group inversion (not) is not supported by mongodb export. Ignoring "not".');
   }
 
-  const mongoQueryText = formatQuery(query, 'mongodb');
+  const mongoQueryText = formatQuery(query, { format: 'mongodb', ruleProcessor });
   let mongoQuery: Record<string, unknown>;
 
   try {

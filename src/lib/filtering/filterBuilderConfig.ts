@@ -58,9 +58,9 @@ const ENUM_OPERATORS: QueryBuilderOperator[] = [
 ];
 
 const TAG_OPERATORS: QueryBuilderOperator[] = [
-  { label: 'has', value: '=' },
-  { label: 'does not have', value: '!=' },
   { label: 'has any of', value: 'in' },
+  { label: 'has all of', value: '$all' }, // custom operator handled in filterEngine.ts
+  { label: 'is exactly', value: '=' },
   { label: 'has none of', value: 'notIn' },
   { label: 'is empty', value: 'null' },
   { label: 'is not empty', value: 'notNull' },
@@ -100,7 +100,7 @@ const defaultOperatorByCategory: Record<FieldCategory, string> = {
   date: '=',
   boolean: '=',
   enum: '=',
-  tags: '=',
+  tags: 'in',
 };
 
 export const buildQueryBuilderFields = (
