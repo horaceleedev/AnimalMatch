@@ -50,21 +50,21 @@ const VideosTableView: FC<VideosTableViewProps> = ({ videos, videoMetadataFields
       }),
       editor: CUSTOM_EDITOR_NAME, // testing
     },
-    ...Object.entries(videoMetadataFields).map(([fieldValue, value]) => {
+    ...Object.entries(videoMetadataFields).map(([fieldName, metadataField]) => {
       let cellTemplate;
-      if (value.renderType === 'user_label') {
+      if (metadataField.renderType === 'user_label') {
         // Rendering a list of users
         cellTemplate = Template(
           ({ value }: Partial<ColumnDataSchemaModel>) => <UsersListLabel ids={value as string[]} />
         );
-      } else if (value.renderType === 'annotation_status_label') {
+      } else if (metadataField.renderType === 'annotation_status_label') {
         cellTemplate = Template(
           ({ value }: Partial<ColumnDataSchemaModel>) => <AnnotationStatusLabel status={value as string} />
         );
       }
       return {
-        prop: fieldValue,
-        name: value.displayName,
+        prop: fieldName,
+        name: metadataField.displayName,
         autoSize: true,
         cellTemplate: cellTemplate,
       };

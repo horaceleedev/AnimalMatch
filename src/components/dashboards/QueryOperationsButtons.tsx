@@ -26,10 +26,10 @@ const FieldSelector: React.FC<FieldSelectorProps> = ({
   value, onChange,
 }: FieldSelectorProps) => {
   const fieldOptions = useMemo(
-    () => Object.entries(metadataFields).map(([fieldValue, field]) => ({
-      value: fieldValue,
-      label: field.displayName,
-      icon: field.icon,
+    () => Object.entries(metadataFields).map(([fieldName, metadataField]) => ({
+      value: fieldName,
+      label: metadataField.displayName,
+      icon: metadataField.icon,
     })),
     [metadataFields]
   );
@@ -68,32 +68,32 @@ type CustomQueryBuilderProps = {
 const CustomQueryBuilder = ({metadataFields, uniqueValuesPerField, query, setQuery}: CustomQueryBuilderProps) => {
   const fields = useMemo(() => {
     if (Object.keys(uniqueValuesPerField).length === 0) return [];
-    return Object.entries(metadataFields).map(([fieldValue, field]) => {
+    return Object.entries(metadataFields).map(([fieldName, metadataField]) => {
       let output: Field = {
-        name: fieldValue,
-        label: field.displayName,
-        icon: field.icon,
-        datatype: field.type,
-        inputType: field.inputType,
-        valueEditorType: field.valueEditorType,
+        name: fieldName,
+        label: metadataField.displayName,
+        icon: metadataField.icon,
+        datatype: metadataField.type,
+        inputType: metadataField.inputType,
+        valueEditorType: metadataField.valueEditorType,
         operators: [{ name: '=', value: '=', label: '=' }],
         defaultOperator: '=',
       }
-      // if (field.inputType === 'text') {
+      // if (metadataField.inputType === 'text') {
       //   output.defaultOperator = 'contains';
       // }
-      if (field.valueEditorType === 'select' || field.valueEditorType === 'multiselect') {
-        output.values = uniqueValuesPerField[fieldValue].map(x => ({ name: x, value: x, label: x }));
+      if (metadataField.valueEditorType === 'select' || metadataField.valueEditorType === 'multiselect') {
+        output.values = uniqueValuesPerField[fieldName].map(x => ({ name: x, value: x, label: x }));
       }
-      if (field.type === 'boolean') {
+      if (metadataField.type === 'boolean') {
         output.values = [
           // @ts-ignore (temporary hack - name and value are expected to be strings)
-          { name: true, value: true, label: field.displayBooleanValuesAs?.[1] ?? 'True' },
+          { name: true, value: true, label: metadataField.displayBooleanValuesAs?.[1] ?? 'True' },
           // @ts-ignore (temporary hack - name and value are expected to be strings)
-          { name: false, value: false, label: field.displayBooleanValuesAs?.[0] ?? 'False' },
+          { name: false, value: false, label: metadataField.displayBooleanValuesAs?.[0] ?? 'False' },
         ];
       }
-      if (field.type === 'rich_text') {
+      if (metadataField.type === 'rich_text') {
         output.datatype = 'text';
       }
       return output
