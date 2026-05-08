@@ -4,6 +4,7 @@ import { Card, Select, Skeleton, Space, Tag, Tooltip } from 'antd';
 
 import { Crop, Individual, MetadataFieldsType, RecordType } from '../../types.ts';
 import { ANY_BODY_PART } from '../crops/BodyPartSelect.tsx';
+import { filterCropsByBodyPart } from '../crops/bodyPartFilters.ts';
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
 import "./IndividualsGridView.scss";
 
@@ -88,8 +89,7 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
             <Card hoverable bordered={true} size="small" cover={
               <div style={{display: 'flex', overflow: 'scroll', height: 150, columnGap: 5, borderRadius: 5}}>
                 {
-                  individual.crops
-                    .filter(crop => cropBodyPart === ANY_BODY_PART || crop.body_part === cropBodyPart)
+                  filterCropsByBodyPart(individual.crops, cropBodyPart)
                     .map(crop => (<CropWithSkeleton crop={crop} key={crop.id} />))
                 }
               </div>

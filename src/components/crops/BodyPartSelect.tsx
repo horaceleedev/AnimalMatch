@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { Select, Space } from 'antd';
 
-export const ANY_BODY_PART = "any body part";
+import { getBodyPartOptions, isBodyPartOptionDisabled } from './bodyPartFilters';
+export { ANY_BODY_PART } from './bodyPartFilters';
 
 type BodyPartSelectProps = {
   bodyPartOptions: string[];
@@ -18,10 +19,7 @@ const BodyPartSelect: React.FC<BodyPartSelectProps> = ({
   availableBodyParts,
   label = "Show crops of:",
 }: BodyPartSelectProps) => {
-  const options = useMemo(() => {
-    const uniqueBodyParts = Array.from(new Set(bodyPartOptions.filter(Boolean)));
-    return [ANY_BODY_PART, ...uniqueBodyParts.filter(bodyPart => bodyPart !== ANY_BODY_PART)];
-  }, [bodyPartOptions]);
+  const options = useMemo(() => getBodyPartOptions(bodyPartOptions), [bodyPartOptions]);
 
   return (
     <Space>
@@ -35,7 +33,7 @@ const BodyPartSelect: React.FC<BodyPartSelectProps> = ({
           options.map(bodyPart => ({
             value: bodyPart,
             label: bodyPart,
-            disabled: Boolean(availableBodyParts && bodyPart !== ANY_BODY_PART && !availableBodyParts.has(bodyPart)),
+            disabled: isBodyPartOptionDisabled(bodyPart, availableBodyParts),
           }))
         }
       />

@@ -11,6 +11,7 @@ import BasicMapView from '../ui/BasicMapView.tsx';
 import RecordMetadataForm from './RecordMetadataForm.tsx';
 import CropsDashboardView from '../dashboards/CropsDashboardView.tsx';
 import BodyPartSelect, { ANY_BODY_PART } from '../crops/BodyPartSelect.tsx';
+import { filterCropsByBodyPart } from '../crops/bodyPartFilters.ts';
 import "./IndividualDetailView.scss";
 
 const numCropsToShow = 10;
@@ -60,7 +61,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
     [individual.crops]
   );
   const filteredPreviewCrops = useMemo(
-    () => individual.crops.filter(crop => selectedBodyPart === ANY_BODY_PART || crop.body_part === selectedBodyPart),
+    () => filterCropsByBodyPart(individual.crops, selectedBodyPart),
     [individual.crops, selectedBodyPart]
   );
 

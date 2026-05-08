@@ -11,6 +11,7 @@ import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
 import BasicMapView from '../ui/BasicMapView.tsx';
 import BodyPartSelect, { ANY_BODY_PART } from '../crops/BodyPartSelect.tsx';
+import { getBodyPartOptionsFromIndividuals } from '../crops/bodyPartFilters.ts';
 import { getUniqueLocationsFromIndividuals } from '../../utils/utils.ts';
 import useSearchFilter from '../../hooks/useSearchFilter.ts';
 import { Individual, MetadataFieldsType, Video } from '../../types.ts';
@@ -91,7 +92,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
   );
 
   const bodyPartOptions = useMemo(
-    () => Array.from(new Set(individuals.flatMap(individual => individual.crops.map(crop => crop.body_part)))).sort(),
+    () => getBodyPartOptionsFromIndividuals(individuals),
     [individuals]
   );
 
