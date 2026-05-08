@@ -51,10 +51,11 @@ const IndividualsTableView: FC<IndividualsTableViewProps> = ({ individuals, indi
           ({ value }: Partial<ColumnDataSchemaModel>) => <UserLabel id={value as string} />
         );
       }
-      if (metadataField.displayBooleanValuesAs) {
+      const displayBooleanValuesAs = metadataField.displayBooleanValuesAs;
+      if (displayBooleanValuesAs) {
         cellTemplate = Template(
           ({ value }: Partial<ColumnDataSchemaModel>) => (
-            <span>{value ? metadataField.displayBooleanValuesAs[1] : metadataField.displayBooleanValuesAs[0]}</span>
+            <span>{value ? displayBooleanValuesAs[1] : displayBooleanValuesAs[0]}</span>
           )
         );
       }
