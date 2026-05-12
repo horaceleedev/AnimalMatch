@@ -298,6 +298,72 @@ test('creates a text rule and clears it from the filter popover', async () => {
   await expect.element(screen.getByRole('button', { name: 'Filter' })).toBeVisible();
 });
 
+test('shows the first nested field label when there is exactly one filter rule inside a group', async () => {
+  const screen = await renderWithProviders(
+    <QueryOperationsButtonsHarness
+      initialQuery={{
+        combinator: 'and',
+        rules: [
+          {
+            combinator: 'and',
+            rules: [
+              {
+                field: 'notes',
+                operator: 'contains',
+                value: 'lion',
+                valueSource: 'value',
+              },
+            ],
+          },
+        ],
+      }}
+      metadataFields={textFirstMetadataFields}
+      uniqueValuesPerField={uniqueValuesPerField}
+    />,
+  );
+
+  await expect.element(screen.getByRole('button', { name: 'Filtered by Notes' })).toBeVisible();
+});
+
+test('counts nested filter rules recursively in the filter button label', async () => {
+  const screen = await renderWithProviders(
+    <QueryOperationsButtonsHarness
+      initialQuery={{
+        combinator: 'and',
+        rules: [
+          {
+            field: 'notes',
+            operator: 'contains',
+            value: 'lion',
+            valueSource: 'value',
+          },
+          {
+            combinator: 'or',
+            rules: [
+              {
+                field: 'habitat',
+                operator: '=',
+                value: 'forest',
+                valueSource: 'value',
+              },
+              {
+                field: 'habitat',
+                operator: '=',
+                value: 'savanna',
+                valueSource: 'value',
+              },
+            ],
+          },
+        ],
+      }}
+      metadataFields={textFirstMetadataFields}
+      uniqueValuesPerField={uniqueValuesPerField}
+    />,
+  );
+
+  await expect.element(screen.getByRole('button', { name: '3 filters' })).toBeVisible();
+});
+
 test('switches select filters to multi-value mode for "is any of"', async () => {
   const screen = await renderWithProviders(
     <QueryOperationsButtonsHarness

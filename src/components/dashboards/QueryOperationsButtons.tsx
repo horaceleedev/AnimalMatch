@@ -264,6 +264,26 @@ type QueryOperationsButtonsProps = {
   handleSearch: (x: string) => void;
 }
 
+// Button label reflects nested filter rules, not just top-level query groups.
+const getFirstLeafRule = (group: RuleGroupType): RuleType | undefined => {
+  for (const rule of group.rules) {
+    if ('rules' in rule) {
+      const nestedRule = getFirstLeafRule(rule);
+      if (nestedRule) return nestedRule;
+    } else {
+      return rule;
+    }
+  }
+
+  return undefined;
+};
+
+const countLeafRules = (group: RuleGroupType): number =>
+  group.rules.reduce(
+    (count, rule) => count + ('rules' in rule ? countLeafRules(rule) : 1),
+    0
+  );
+
 const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
   metadataFields, uniqueValuesPerField,
   sortFields, setSortFields, sortOrders, setSortOrders,
@@ -271,19 +291,21 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
   query, setQuery,
   handleSearch,
 }: QueryOperationsButtonsProps) => {
+  const filterRuleCount = useMemo(() => countLeafRules(query), [query]);
   const firstFilterRule = useMemo(
-    () => query.rules.find((rule): rule is RuleType => !('rules' in rule)),
-    [query.rules]
+    () => getFirstLeafRule(query),
+    [query]
   );
   const filterLabel = useMemo(() => {
-    if (query.rules.length === 0) return "Filter";
-    if (query.rules.length === 1 && firstFilterRule) {
+    if (filterRuleCount === 0) return "Filter";
+    if (filterRuleCount === 1 && firstFilterRule) {
       if (metadataFields[firstFilterRule.field]) {
         return `Filtered by ${metadataFields[firstFilterRule.field].displayName}`;
       }
+      return '1 filter';
     }
-    return `${query.rules.length} filters`;
-  }, [firstFilterRule, metadataFields, query.rules]);
+    return `${filterRuleCount} filters`;
+  }, [filterRuleCount, firstFilterRule, metadataFields]);
 
   const handleSortFieldSelect = (val: string) => {
     setSortFields([val]);
@@ -352,7 +374,7 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
         <Space style={{ width: '100%', justifyContent: 'space-between' }}>
           <span>Filter</span>
           {
-            query.rules.length > 0 &&
+            filterRuleCount > 0 &&
               <Button size="small" icon={<ClearOutlined />} onClick={clearFilters}>
                 Clear all
               </Button>
@@ -379,8 +401,8 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
           {(groupFields.length > 0) ? `Grouped by ${metadataFields[groupFields[0]].displayName}` : "Group"}
         </Button> */}
         <Button type="text" icon={<FilterOutlined />}
-          color={query.rules.length > 0 ? "primary" : "default"}
-          variant={query.rules.length > 0 ? "filled" : "text"}
+          color={filterRuleCount > 0 ? "primary" : "default"}
+          variant={filterRuleCount > 0 ? "filled" : "text"}
         >
           {filterLabel}
         </Button>
