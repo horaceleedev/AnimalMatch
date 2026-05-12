@@ -229,6 +229,29 @@ const crops = [
   }),
 ];
 
+const dateBoundaryVideos = [
+  makeVideo({
+    id: 'dv1',
+    recording_date: '2025-12-31 23:59:59',
+  }),
+  makeVideo({
+    id: 'dv2',
+    recording_date: '2026-01-01 00:00:00',
+  }),
+  makeVideo({
+    id: 'dv3',
+    recording_date: '2026-01-01 01:00:00',
+  }),
+  makeVideo({
+    id: 'dv4',
+    recording_date: '2026-01-02 00:00:00',
+  }),
+  makeVideo({
+    id: 'dv5',
+    recording_date: '',
+  }),
+];
+
 const rule = (field: string, operator: string, value: RuleType['value']): RuleType => ({
   field,
   operator,
@@ -602,6 +625,41 @@ describe('filterByQuery', () => {
     it.each(videoCases)('$name', ({ records, query, expectedIds }) => {
       expect(getIds(filterByQuery(records, query))).toEqual(expectedIds);
     });
+  });
+
+  describe('date filters', () => {
+    it('matches "on" across the full calendar day for timestamp-backed fields', () => {
+      expect(getIds(filterByQuery(dateBoundaryVideos, andQuery(rule('recording_date', '=', '2026-01-01'))))).toEqual([
+        'dv2',
+        'dv3',
+      ]);
+    });
+
+    it('matches "before" exclusively before the selected day boundary', () => {
+      expect(getIds(filterByQuery(dateBoundaryVideos, andQuery(rule('recording_date', '<', '2026-01-01'))))).toEqual([
+        'dv1',
+      ]);
+    });
+
+    it('matches "after" from the selected day boundary onward', () => {
+      expect(getIds(filterByQuery(dateBoundaryVideos, andQuery(rule('recording_date', '>=', '2026-01-01'))))).toEqual([
+        'dv2',
+        'dv3',
+        'dv4',
+      ]);
+    });
+
+    it('supports day-based ranges by combining "after" and "before"', () => {
+      expect(
+        getIds(
+          filterByQuery(
+            dateBoundaryVideos,
+            andQuery(rule('recording_date', '>=', '2026-01-01'), rule('recording_date', '<', '2026-01-02'))
+          )
+        )
+      ).toEqual(['dv2', 'dv3']);
+    });
+
   });
 
   describe('individual filters', () => {

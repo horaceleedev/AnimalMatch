@@ -31,16 +31,9 @@ const NUMBER_OPERATORS: QueryBuilderOperator[] = [
 ];
 
 const DATE_OPERATORS: QueryBuilderOperator[] = [
-  { label: 'is', value: '=' },
-  { label: 'is not', value: '!=' },
-  { label: 'after', value: '>' },
-  { label: 'on or after', value: '>=' },
+  { label: 'on', value: '=' },
+  { label: 'after', value: '>=' },
   { label: 'before', value: '<' },
-  { label: 'on or before', value: '<=' },
-  { label: 'between', value: 'between' },
-  { label: 'not between', value: 'notBetween' },
-  { label: 'is empty', value: 'null' },
-  { label: 'is not empty', value: 'notNull' },
 ];
 
 const BOOLEAN_OPERATORS: QueryBuilderOperator[] = [

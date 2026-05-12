@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
-import { Button, Input, Popover, Select, Space } from "antd";
+import dayjs from 'dayjs';
+import { Button, DatePicker, Input, Popover, Select, Space } from "antd";
 import type { SelectProps } from 'antd';
 import { QueryBuilderDnD } from '@react-querybuilder/dnd';
 import * as ReactDnD from 'react-dnd';
@@ -135,12 +136,30 @@ const renderSelectedValue = (
 const RenderAwareValueEditor = (props: ValueEditorProps) => {
   const renderType = (props.fieldData as QueryBuilderFieldData | undefined)?.renderType;
 
-  if (props.type !== 'select' && props.type !== 'multiselect') {
-    return <AntDValueEditor {...props} />;
-  }
-
   if (props.operator === 'null' || props.operator === 'notNull') {
     return null;
+  }
+
+  if (props.inputType === 'date') {
+    const value =
+      typeof props.value === 'string' && props.value
+        ? dayjs(props.value, 'YYYY-MM-DD', true)
+        : null;
+
+    return (
+      <span title={props.title} className={props.className}>
+        <DatePicker
+          disabled={props.disabled}
+          format="YYYY-MM-DD"
+          value={value?.isValid() ? value : null}
+          onChange={(_, dateString) => props.handleOnChange(dateString)}
+        />
+      </span>
+    );
+  }
+
+  if (props.type !== 'select' && props.type !== 'multiselect') {
+    return <AntDValueEditor {...props} />;
   }
 
   const normalizedOptions = (props.values ?? []).map(option => ({

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { userEvent } from '@vitest/browser/context';
 import { expect, test } from 'vitest';
 import type { RuleGroupType, RuleType } from 'react-querybuilder';
 
@@ -104,6 +105,14 @@ const renderAwareSelectMetadataFields: MetadataFieldsType = {
     displayName: 'Notes',
     type: 'text',
     inputType: 'text',
+  },
+};
+
+const dateMetadataFields: MetadataFieldsType = {
+  recording_date: {
+    displayName: 'Recording date',
+    type: 'date',
+    inputType: 'date',
   },
 };
 
@@ -361,6 +370,98 @@ test('hides value editor for "is not empty" operators', async () => {
     rules: [expect.objectContaining({ field: 'habitat', operator: 'notNull', valueSource: 'value' })],
   }));
   expect(document.querySelector('.rule-value input, .rule-value textarea, .rule-value .ant-select')).toBeNull();
+});
+
+test('shows only day-based operators for date fields', async () => {
+  const screen = await renderWithProviders(
+    <QueryOperationsButtonsHarness
+      metadataFields={dateMetadataFields}
+      uniqueValuesPerField={{}}
+    />,
+  );
+
+  await screen.getByRole('button', { name: 'Filter' }).click();
+  await screen.getByRole('button', { name: '+ Rule' }).click();
+
+  openRuleSelect('.rule-operators .ant-select-selector');
+
+  console.log(
+    'date-operator-options',
+    Array.from(document.querySelectorAll('[role="option"]')).map(option => option.textContent?.trim() ?? '')
+  );
+
+  await expect.element(screen.getByRole('option', { name: 'on' })).toBeVisible();
+  await expect.element(screen.getByRole('option', { name: 'after' })).toBeVisible();
+  await expect.element(screen.getByRole('option', { name: 'before' })).toBeVisible();
+  const dropdownOptionLabels = Array.from(document.querySelectorAll('[role="option"]')).map(
+    option => option.textContent?.trim() ?? ''
+  );
+  expect(dropdownOptionLabels).not.toContain('is empty');
+  expect(dropdownOptionLabels).not.toContain('is not empty');
+  expect(dropdownOptionLabels).not.toContain('between');
+  expect(dropdownOptionLabels).not.toContain('on or after');
+  expect(dropdownOptionLabels).not.toContain('on or before');
+});
+
+test('serializes date rules with day-based operators', async () => {
+  const screen = await renderWithProviders(
+    <QueryOperationsButtonsHarness
+      metadataFields={dateMetadataFields}
+      uniqueValuesPerField={{}}
+    />,
+  );
+
+  await screen.getByRole('button', { name: 'Filter' }).click();
+  await screen.getByRole('button', { name: '+ Rule' }).click();
+
+  // Ant's date picker refuses to behave like any kind of normal input, so this
+  // test has to use real browser interactions just to commit a date...
+  const dateInput = getValueEditorInput();
+  await userEvent.click(dateInput);
+  await userEvent.fill(dateInput, '2026-01-01');
+  await userEvent.keyboard('{Enter}');
+
+  expect(getQueryState()).toEqual(expect.objectContaining({
+    combinator: 'and',
+    rules: [
+      expect.objectContaining({
+        field: 'recording_date',
+        operator: '=',
+        value: '2026-01-01',
+        valueSource: 'value',
+      }),
+    ],
+  }));
+
+  openRuleSelect('.rule-operators .ant-select-selector');
+  await screen.getByText('after').click();
+
+  expect(getQueryState()).toEqual(expect.objectContaining({
+    combinator: 'and',
+    rules: [
+      expect.objectContaining({
+        field: 'recording_date',
+        operator: '>=',
+        value: '2026-01-01',
+        valueSource: 'value',
+      }),
+    ],
+  }));
+
+  openRuleSelect('.rule-operators .ant-select-selector');
+  await screen.getByText('before').click();
+
+  expect(getQueryState()).toEqual(expect.objectContaining({
+    combinator: 'and',
+    rules: [
+      expect.objectContaining({
+        field: 'recording_date',
+        operator: '<',
+        value: '2026-01-01',
+        valueSource: 'value',
+      }),
+    ],
+  }));
 });
 
 test('preserves render-aware labels when select filters switch to multi-value mode', async () => {

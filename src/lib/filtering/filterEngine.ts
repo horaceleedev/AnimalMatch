@@ -1,7 +1,16 @@
+import dayjs from 'dayjs';
 import { defaultRuleProcessorMongoDB, formatQuery, type RuleGroupType } from 'react-querybuilder';
 import sift from 'sift';
 
+import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from '../../metadata';
+
 export type QueryDefinition = RuleGroupType;
+
+const DATE_FIELD_NAMES = new Set(
+  [...Object.entries(videoMetadataFields), ...Object.entries(individualsMetadataFields), ...Object.entries(cropsMetadataFields)]
+    .filter(([, field]) => field.type === 'date')
+    .map(([fieldName]) => fieldName)
+);
 
 const hasGroupNot = (group: QueryDefinition): boolean =>
   Boolean(group.not) ||
@@ -37,7 +46,7 @@ export const filterByQuery = <T extends Record<string, unknown>>(
   }
 
   try {
-    const normalizedQuery = normalizeMongoQueryStrings(mongoQuery);
+    const normalizedQuery = normalizeMongoQueryStrings(normalizeDateQueryOperators(mongoQuery));
     const normalizedRecords = records.map(record => normalizeRecordStrings(record));
     const matcher = sift(normalizedQuery);
     return records.filter((_, index) => matcher(normalizedRecords[index]));
@@ -60,6 +69,59 @@ const normalizeRecordStrings = (value: unknown): unknown => {
     }
     return output;
   }
+  return value;
+};
+
+const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+const isDateOnlyString = (value: unknown): value is string =>
+  typeof value === 'string' && DATE_ONLY_PATTERN.test(value);
+
+const nextDayString = (value: string): string =>
+  dayjs(value).add(1, 'day').format('YYYY-MM-DD');
+
+const normalizeDateFieldQuery = (value: unknown): unknown => {
+  if (isDateOnlyString(value)) {
+    return {
+      $gte: value,
+      $lt: nextDayString(value),
+    };
+  }
+
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const output: Record<string, unknown> = {};
+
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      if (k === '$eq' && isDateOnlyString(v)) {
+        output.$gte = v;
+        output.$lt = nextDayString(v);
+        continue;
+      }
+
+      output[k] = normalizeDateQueryOperators(v);
+    }
+
+    return output;
+  }
+
+  return value;
+};
+
+const normalizeDateQueryOperators = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map(normalizeDateQueryOperators);
+
+  if (value && typeof value === 'object') {
+    const output: Record<string, unknown> = {};
+
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      output[k] = DATE_FIELD_NAMES.has(k)
+        ? normalizeDateFieldQuery(v)
+        : normalizeDateQueryOperators(v);
+    }
+
+    return output;
+  }
+
   return value;
 };
 

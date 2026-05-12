@@ -58,6 +58,23 @@ describe('buildQueryBuilderFields', () => {
     ]);
   });
 
+  it('uses day-based operators for date fields', () => {
+    const fields = buildQueryBuilderFields(videoMetadataFields, {});
+    const recordingDateField = fields.find(field => field.name === 'recording_date');
+
+    expect(recordingDateField?.defaultOperator).toBe('=');
+    expect(recordingDateField?.operators?.map(operator => operator.value)).toEqual([
+      '=',
+      '>=',
+      '<',
+    ]);
+    expect(recordingDateField?.operators?.map(operator => operator.label)).toEqual([
+      'on',
+      'after',
+      'before',
+    ]);
+  });
+
   it('populates configured option values for select and multiselect crop fields', () => {
     const fields = buildQueryBuilderFields(cropsMetadataFields, {
       body_part: ['face', 'ear'],
