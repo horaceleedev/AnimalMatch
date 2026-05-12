@@ -48,7 +48,7 @@ export const filterByQuery = <T extends Record<string, unknown>>(
 };
 
 const normalizeRecordStrings = (value: unknown): unknown => {
-  if (typeof value === 'string') return value.toLowerCase();
+  if (typeof value === 'string') return value === '' ? null : value.toLowerCase();
   if (Array.isArray(value)) {
     if (value.length === 0) return null; // Normalise empty arrays to null for isEmpty operator
     return value.map(normalizeRecordStrings);

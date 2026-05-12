@@ -163,8 +163,8 @@ const individuals = [
     name: 'Duma',
     created_by: 'user-3',
     videos: [],
-    age: 'unknown age',
-    sex: 'unknown/other sex',
+    age: '',
+    sex: '',
     notes: '',
     custom_tags: ['released'],
   }),
@@ -412,6 +412,18 @@ const individualCases: FilterCase<Individual>[] = [
     expectedIds: ['i1', 'i2', 'i4'],
   },
   {
+    name: 'matches text is-empty through empty-string normalization',
+    records: individuals,
+    query: andQuery(rule('notes', 'null', null)),
+    expectedIds: ['i4'],
+  },
+  {
+    name: 'matches text is-not-empty through empty-string normalization',
+    records: individuals,
+    query: andQuery(rule('notes', 'notNull', null)),
+    expectedIds: ['i1', 'i2', 'i3'],
+  },
+  {
     name: 'matches select equality',
     records: individuals,
     query: andQuery(rule('age', '=', 'adult')),
@@ -428,6 +440,18 @@ const individualCases: FilterCase<Individual>[] = [
     records: individuals,
     query: andQuery(rule('created_by', 'in', ['user-1', 'user-3'])),
     expectedIds: ['i1', 'i3', 'i4'],
+  },
+  {
+    name: 'matches select is-empty through empty-string normalisation',
+    records: individuals,
+    query: andQuery(rule('age', 'null', null)),
+    expectedIds: ['i4'],
+  },
+  {
+    name: 'matches select is-not-empty through empty-string normalisation',
+    records: individuals,
+    query: andQuery(rule('sex', 'notNull', null)),
+    expectedIds: ['i1', 'i2', 'i3'],
   },
   {
     name: 'matches multiselect exact equality',
