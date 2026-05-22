@@ -1,6 +1,6 @@
 import { blue, gray, green, orange } from '@ant-design/colors';
 
-import Icon, { CalendarOutlined, ClockCircleOutlined, ColumnHeightOutlined, ColumnWidthOutlined, FileTextOutlined, IdcardOutlined, NumberOutlined, PlaySquareOutlined, TagsOutlined, UserOutlined } from "@ant-design/icons";
+import Icon, { CalendarOutlined, ClockCircleOutlined, ColumnHeightOutlined, ColumnWidthOutlined, FileTextOutlined, IdcardOutlined, NumberOutlined, PlaySquareOutlined, StarFilled, TagsOutlined, UserOutlined } from "@ant-design/icons";
 import Location from './assets/material_symbols/location_on_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Forest from './assets/material_symbols/forest_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import CalendarMonth from './assets/material_symbols/calendar_month_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -276,5 +276,11 @@ export const cropsMetadataFields: MetadataFieldsType = {
     type: 'number',
     inputType: 'number',
     isUneditable: true,
+  },
+  'is_featured': {
+    displayName: 'Featured',
+    icon: <StarFilled style={{ color: '#faad14' }} />,
+    type: 'boolean',
+    displayBooleanValuesAs: ['Not featured', 'Featured'],
   },
 };

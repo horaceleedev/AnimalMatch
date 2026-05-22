@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
 import { generatePath, Link } from 'react-router-dom';
-import { Card, Select, Skeleton, Space, Tag, Tooltip } from 'antd';
+import { Button, Card, Select, Skeleton, Space, Tag, Tooltip } from 'antd';
+import { StarFilled, StarOutlined } from '@ant-design/icons';
 
 import { Crop, Individual, MetadataFieldsType, RecordType } from '../../types.ts';
+import { useCropsStore } from '../../DataStores.tsx';
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
 import "./IndividualsGridView.scss";
 
-// const imgStyle: React.CSSProperties = {
-//   display: 'block',
-//   width: 200,
-// };
+const FEATURED_BORDER_COLOR = '#faad14';
 
 const CropWithSkeleton: React.FC<{ crop: Crop }> = ({ crop }) => {
   const [loaded, setLoaded] = useState(false);
+  const updateCrop = useCropsStore((state) => state.update);
   const scaledCropWidth = crop.height > 0
     ? Math.round((crop.width / crop.height) * 150)
     : 150; // fallback
 
   return (
-    <div>
+    <div style={{ position: 'relative', flexShrink: 0 }}>
       {!loaded && (
         <Skeleton.Node active style={{height: 150, width: scaledCropWidth}} />
       )}
@@ -26,8 +26,38 @@ const CropWithSkeleton: React.FC<{ crop: Crop }> = ({ crop }) => {
         src={crop.imageUrl}
         onLoad={() => setLoaded(true)}
         onError={() => setLoaded(true)}
-        style={{display: loaded ? "block" : "none", height: 150, borderRadius: 5}}
+        style={{
+          display: loaded ? "block" : "none",
+          height: 150,
+          borderRadius: 5,
+          outline: crop.is_featured ? `2px solid ${FEATURED_BORDER_COLOR}` : undefined,
+        }}
       />
+      {loaded && (
+        <Tooltip title={crop.is_featured ? 'Remove from featured' : 'Mark as featured'}>
+          <Button
+            type="text"
+            size="small"
+            icon={
+              crop.is_featured
+                ? <StarFilled style={{ color: FEATURED_BORDER_COLOR }} />
+                : <StarOutlined style={{ color: 'white' }} />
+            }
+            style={{
+              position: 'absolute',
+              top: 5,
+              right: 5,
+              background: 'rgba(0,0,0,0.35)',
+              borderRadius: 4,
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              updateCrop(crop.id, { is_featured: !crop.is_featured });
+            }}
+          />
+        </Tooltip>
+      )}
     </div>
   );
 };

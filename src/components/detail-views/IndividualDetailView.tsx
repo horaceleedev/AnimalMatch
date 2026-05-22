@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { Button, Flex, Select, Space, Tabs, theme, type TabsProps } from "antd";
+import { Button, Flex, Select, Space, Tabs, theme, Tooltip, type TabsProps } from "antd";
+import { StarFilled, StarOutlined } from "@ant-design/icons";
 import StickyBox from 'react-sticky-box';
 import { generatePath, Link } from 'react-router-dom';
 
@@ -10,8 +11,10 @@ import { Individual, LocationInfo, RecordType, Video } from '../../types.ts';
 import BasicMapView from '../ui/BasicMapView.tsx';
 import RecordMetadataForm from './RecordMetadataForm.tsx';
 import CropsDashboardView from '../dashboards/CropsDashboardView.tsx';
+import { useCropsStore } from '../../DataStores.tsx';
 import "./IndividualDetailView.scss";
 
+const FEATURED_BORDER_COLOR = '#faad14';
 const numCropsToShow = 10;
 const ANY_BODY_PART = "any body part";
 
@@ -60,6 +63,8 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
     [individual.crops]
   );
 
+  const updateCrop = useCropsStore((state) => state.update);
+
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -102,7 +107,37 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                   openModal("crop", crop.id);
                 }}
               >
-                <img src={crop.imageUrl} height={150} className="individual-preview-image" />
+                <div style={{ position: 'relative', flexShrink: 0 }}>
+                  <img
+                    src={crop.imageUrl}
+                    height={150}
+                    className="individual-preview-image"
+                    style={{ outline: crop.is_featured ? `2px solid ${FEATURED_BORDER_COLOR}` : undefined, borderRadius: 4 }}
+                  />
+                  <Tooltip title={crop.is_featured ? 'Remove from featured' : 'Mark as featured'}>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={
+                        crop.is_featured
+                          ? <StarFilled style={{ color: FEATURED_BORDER_COLOR }} />
+                          : <StarOutlined style={{ color: 'white' }} />
+                      }
+                      style={{
+                        position: 'absolute',
+                        top: 5,
+                        right: 5,
+                        background: 'rgba(0,0,0,0.35)',
+                        borderRadius: 4,
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        updateCrop(crop.id, { is_featured: !crop.is_featured });
+                      }}
+                    />
+                  </Tooltip>
+                </div>
               </Link>
             ))
         }

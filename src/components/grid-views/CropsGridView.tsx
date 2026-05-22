@@ -1,10 +1,14 @@
 import React from 'react'
 import { generatePath, Link } from "react-router-dom";
-import { Card, Flex, Space, Tag, Tooltip, Typography } from "antd";
+import { Button, Card, Flex, Space, Tag, Tooltip, Typography } from "antd";
+import { StarFilled, StarOutlined } from "@ant-design/icons";
 
 import type { Crop, MetadataFieldsType, RecordType } from "../../types.ts";
+import { useCropsStore } from "../../DataStores.tsx";
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
 import "./CropsGridView.scss"
+
+const FEATURED_BORDER_COLOR = '#faad14';
 
 interface BasicCropsGridViewProps {
   crops: Crop[];
@@ -17,6 +21,8 @@ interface BasicCropsGridViewProps {
 const BasicCropsGridView: React.FC<BasicCropsGridViewProps> = ({
   crops, cropsMetadataFields, linkTemplate = "/crops/:cropId", openModal,
 }: BasicCropsGridViewProps) => {
+  const updateCrop = useCropsStore((state) => state.update);
+
   return (
     <div className="crops-grid">
       {
@@ -32,11 +38,39 @@ const BasicCropsGridView: React.FC<BasicCropsGridViewProps> = ({
           >
             <Card
               hoverable
-              style={{ overflow: 'hidden' }}
+              style={{
+                overflow: 'hidden',
+                outline: crop.is_featured ? `2px solid ${FEATURED_BORDER_COLOR}` : undefined,
+              }}
               styles={{ body: { padding: 0 } }}
             >
               <Flex vertical justify="space-between">
-                <img src={crop.imageUrl} />
+                <div style={{ position: 'relative' }}>
+                  <img src={crop.imageUrl} style={{ display: 'block', width: '100%' }} />
+                  <Tooltip title={crop.is_featured ? 'Remove from featured' : 'Mark as featured'}>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={
+                        crop.is_featured
+                          ? <StarFilled style={{ color: FEATURED_BORDER_COLOR }} />
+                          : <StarOutlined style={{ color: 'white' }} />
+                      }
+                      style={{
+                        position: 'absolute',
+                        top: 6,
+                        right: 6,
+                        background: 'rgba(0,0,0,0.35)',
+                        borderRadius: 4,
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        updateCrop(crop.id, { is_featured: !crop.is_featured });
+                      }}
+                    />
+                  </Tooltip>
+                </div>
                 <Flex vertical style={{ padding: '8px 12px 12px 12px', width: '100%' }}>
                   <Space wrap size={4}>
                     {
