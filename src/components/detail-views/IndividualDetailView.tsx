@@ -10,7 +10,7 @@ import { Individual, LocationInfo, RecordType, Video } from '../../types.ts';
 import BasicMapView from '../ui/BasicMapView.tsx';
 import RecordMetadataForm from './RecordMetadataForm.tsx';
 import CropsDashboardView from '../dashboards/CropsDashboardView.tsx';
-import BodyPartSelect, { ANY_BODY_PART } from '../crops/BodyPartSelect.tsx';
+import BodyPartSelect from '../crops/BodyPartSelect.tsx';
 import { filterCropsByBodyPart, getAvailableBodyParts } from '../crops/bodyPartFilters.ts';
 import "./IndividualDetailView.scss";
 
@@ -55,7 +55,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
   );
 
   const bodyPartOptions = cropsUniqueValuesPerField['body_part'] ?? [];
-  const [selectedBodyPart, setSelectedBodyPart] = useState(ANY_BODY_PART);
+  const [selectedBodyPart, setSelectedBodyPart] = useState('');
   const availableBodyParts = useMemo(
     () => getAvailableBodyParts(individual.crops),
     [individual.crops]

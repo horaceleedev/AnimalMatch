@@ -10,7 +10,7 @@ import ViewList from '../../assets/material_symbols/view_list_24dp_5F6368_FILL0_
 import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
 import BasicMapView from '../ui/BasicMapView.tsx';
-import BodyPartSelect, { ANY_BODY_PART } from '../crops/BodyPartSelect.tsx';
+import BodyPartSelect from '../crops/BodyPartSelect.tsx';
 import { getAvailableBodyParts } from '../crops/bodyPartFilters.ts';
 import { getUniqueLocationsFromIndividuals } from '../../utils/utils.ts';
 import useSearchFilter from '../../hooks/useSearchFilter.ts';
@@ -66,7 +66,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
   const [groupFields, setGroupFields] = useState<string[]>(defaultGroupFields);
   const [groupOrders, setGroupOrders] = useState<("asc" | "desc")[]>(defaultGroupOrders);
   const [query, _setQuery] = useState(initialQuery);
-  const [selectedBodyPart, setSelectedBodyPart] = useState(ANY_BODY_PART);
+  const [selectedBodyPart, setSelectedBodyPart] = useState('');
 
   const setQuery = (newQuery: RuleGroupType) => {
     if (newQuery.rules.length > 1) {

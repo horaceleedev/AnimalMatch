@@ -3,7 +3,6 @@ import { generatePath, Link } from 'react-router-dom';
 import { Card, Select, Skeleton, Space, Tag, Tooltip } from 'antd';
 
 import { Crop, Individual, MetadataFieldsType, RecordType } from '../../types.ts';
-import { ANY_BODY_PART } from '../crops/BodyPartSelect.tsx';
 import { filterCropsByBodyPart } from '../crops/bodyPartFilters.ts';
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
 import "./IndividualsGridView.scss";
@@ -46,7 +45,7 @@ interface BasicIndividualsGridViewProps {
 };
 
 const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
-  individuals, individualsMetadataFields, isListView, linkTemplate = "/individuals/:individualId", buttons, allowEditingAgeAndSex, openModal, cropBodyPart = ANY_BODY_PART,
+  individuals, individualsMetadataFields, isListView, linkTemplate = "/individuals/:individualId", buttons, allowEditingAgeAndSex, openModal, cropBodyPart,
 }: BasicIndividualsGridViewProps) => {
   return (
     <div className={isListView ? "individuals-list" : "individuals-grid"}>

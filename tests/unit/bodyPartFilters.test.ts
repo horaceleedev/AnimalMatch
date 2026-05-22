@@ -53,13 +53,15 @@ describe('body part filter helpers', () => {
     expect(isBodyPartOptionDisabled('ear')).toBe(false);
   });
 
-  it('returns every crop when any body part is selected', () => {
+  it('returns every crop when no specific body part is selected', () => {
     const crops = [
       makeCrop({ id: 'full-body-1', body_part: 'full body' }),
       makeCrop({ id: 'face-1', body_part: 'face' }),
     ];
 
     expect(filterCropsByBodyPart(crops, ANY_BODY_PART)).toBe(crops);
+    expect(filterCropsByBodyPart(crops, '')).toBe(crops);
+    expect(filterCropsByBodyPart(crops)).toBe(crops);
   });
 
   it('returns only crops that match the selected body part', () => {

@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react';
 import { Select, Space } from 'antd';
 
-import { getBodyPartOptions, isBodyPartOptionDisabled } from './bodyPartFilters';
-export { ANY_BODY_PART } from './bodyPartFilters';
+import { ANY_BODY_PART, getBodyPartOptions, isBodyPartOptionDisabled } from './bodyPartFilters';
 
 type BodyPartSelectProps = {
   bodyPartOptions: string[];
@@ -27,8 +26,8 @@ const BodyPartSelect: React.FC<BodyPartSelectProps> = ({
       <Select
         variant="borderless"
         popupMatchSelectWidth={false}
-        value={selectedBodyPart}
-        onChange={setSelectedBodyPart}
+        value={selectedBodyPart || ANY_BODY_PART}
+        onChange={(value) => setSelectedBodyPart(value === ANY_BODY_PART ? '' : value)}
         options={
           options.map(bodyPart => ({
             value: bodyPart,

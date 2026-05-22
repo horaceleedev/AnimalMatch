@@ -12,8 +12,8 @@ export const isBodyPartOptionDisabled = (
   availableBodyParts?: Set<string>,
 ): boolean => Boolean(availableBodyParts && bodyPart !== ANY_BODY_PART && !availableBodyParts.has(bodyPart));
 
-export const filterCropsByBodyPart = (crops: Crop[], selectedBodyPart: string): Crop[] => {
-  if (selectedBodyPart === ANY_BODY_PART) return crops;
+export const filterCropsByBodyPart = (crops: Crop[], selectedBodyPart?: string): Crop[] => {
+  if (!selectedBodyPart || selectedBodyPart === ANY_BODY_PART) return crops;
   return crops.filter(crop => crop.body_part === selectedBodyPart);
 };
 
