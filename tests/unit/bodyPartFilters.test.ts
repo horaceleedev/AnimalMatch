@@ -3,11 +3,12 @@ import { describe, expect, it } from 'vitest';
 import {
   ANY_BODY_PART,
   filterCropsByBodyPart,
+  filterIndividualsByBodyPart,
   getAvailableBodyParts,
   getBodyPartOptions,
   isBodyPartOptionDisabled,
 } from '../../src/components/crops/bodyPartFilters';
-import type { Crop } from '../../src/types';
+import type { Crop, Individual } from '../../src/types';
 
 const makeCrop = (overrides: Partial<Crop>): Crop => ({
   collectionId: 'crops',
@@ -29,6 +30,23 @@ const makeCrop = (overrides: Partial<Crop>): Crop => ({
   crop_coordinates: [0, 0, 1, 1],
   width: 150,
   height: 150,
+  ...overrides,
+});
+
+const makeIndividual = (overrides: Partial<Individual>): Individual => ({
+  collectionId: 'individuals',
+  collectionName: 'individuals',
+  created: '',
+  updated: '',
+  id: overrides.id ?? 'individual-1',
+  name: overrides.name ?? 'Individual 1',
+  created_by: 'user-1',
+  videos: ['video-1'],
+  age: 'adult',
+  sex: 'female',
+  notes: '',
+  custom_tags: [],
+  crops: [],
   ...overrides,
 });
 
@@ -83,5 +101,23 @@ describe('body part filter helpers', () => {
     ];
 
     expect(getAvailableBodyParts(crops)).toEqual(new Set(['face', 'ear']));
+  });
+
+  it('keeps only individuals that have a crop matching the selected body part', () => {
+    const individuals = [
+      makeIndividual({ id: 'i1', crops: [makeCrop({ id: 'c1', body_part: 'face' })] }),
+      makeIndividual({ id: 'i2', crops: [makeCrop({ id: 'c2', body_part: 'ear' })] }),
+      makeIndividual({ id: 'i3', crops: [] }),
+    ];
+
+    expect(filterIndividualsByBodyPart(individuals, 'face').map(individual => individual.id)).toEqual(['i1']);
+  });
+
+  it('returns all individuals when no specific body part is selected', () => {
+    const individuals = [makeIndividual({ id: 'i1', crops: [] })];
+
+    expect(filterIndividualsByBodyPart(individuals, ANY_BODY_PART)).toBe(individuals);
+    expect(filterIndividualsByBodyPart(individuals, '')).toBe(individuals);
+    expect(filterIndividualsByBodyPart(individuals)).toBe(individuals);
   });
 });

@@ -1,4 +1,4 @@
-import type { Crop } from '../../types';
+import type { Crop, Individual } from '../../types';
 
 export const ANY_BODY_PART = "any body part";
 
@@ -20,3 +20,11 @@ export const filterCropsByBodyPart = (crops: Crop[], selectedBodyPart?: string):
 export const getAvailableBodyParts = (crops: Crop[]): Set<string> => (
   new Set(crops.map(crop => crop.body_part).filter(Boolean))
 );
+
+export const filterIndividualsByBodyPart = (
+  individuals: Individual[],
+  selectedBodyPart?: string,
+): Individual[] => {
+  if (!selectedBodyPart || selectedBodyPart === ANY_BODY_PART) return individuals;
+  return individuals.filter(individual => individual.crops.some(crop => crop.body_part === selectedBodyPart));
+};
