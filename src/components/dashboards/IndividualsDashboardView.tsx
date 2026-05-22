@@ -11,7 +11,7 @@ import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
 import BasicMapView from '../ui/BasicMapView.tsx';
 import BodyPartSelect, { ANY_BODY_PART } from '../crops/BodyPartSelect.tsx';
-import { getBodyPartOptionsFromIndividuals } from '../crops/bodyPartFilters.ts';
+import { getAvailableBodyParts } from '../crops/bodyPartFilters.ts';
 import { getUniqueLocationsFromIndividuals } from '../../utils/utils.ts';
 import useSearchFilter from '../../hooks/useSearchFilter.ts';
 import { Individual, MetadataFieldsType, Video } from '../../types.ts';
@@ -44,6 +44,7 @@ interface IndividualsDashboardViewProps {
   individuals: Individual[];
   videos: Video[];
   uniqueValuesPerField: Record<string, string[]>;
+  bodyPartOptions: string[];
   individualsMetadataFields: MetadataFieldsType;
   onlyShowListView?: boolean;
   linkTemplate?: string;
@@ -52,7 +53,7 @@ interface IndividualsDashboardViewProps {
   defaultGroupOrders?: ("asc" | "desc")[];
 }
 const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
-  individuals, videos, uniqueValuesPerField, individualsMetadataFields,
+  individuals, videos, uniqueValuesPerField, bodyPartOptions, individualsMetadataFields,
   onlyShowListView, linkTemplate, listViewButtons,
   defaultGroupFields, defaultGroupOrders,
 }: IndividualsDashboardViewProps) => {
@@ -91,8 +92,8 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
     individualsMetadataFields,
   );
 
-  const bodyPartOptions = useMemo(
-    () => getBodyPartOptionsFromIndividuals(individuals),
+  const availableBodyParts = useMemo(
+    () => getAvailableBodyParts(individuals.flatMap(individual => individual.crops)),
     [individuals]
   );
 
@@ -114,6 +115,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
           bodyPartOptions={bodyPartOptions}
           selectedBodyPart={selectedBodyPart}
           setSelectedBodyPart={setSelectedBodyPart}
+          availableBodyParts={availableBodyParts}
         />
       </div>
       {

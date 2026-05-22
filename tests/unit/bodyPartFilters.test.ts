@@ -3,11 +3,11 @@ import { describe, expect, it } from 'vitest';
 import {
   ANY_BODY_PART,
   filterCropsByBodyPart,
+  getAvailableBodyParts,
   getBodyPartOptions,
-  getBodyPartOptionsFromIndividuals,
   isBodyPartOptionDisabled,
 } from '../../src/components/crops/bodyPartFilters';
-import type { Crop, Individual } from '../../src/types';
+import type { Crop } from '../../src/types';
 
 const makeCrop = (overrides: Partial<Crop>): Crop => ({
   collectionId: 'crops',
@@ -29,23 +29,6 @@ const makeCrop = (overrides: Partial<Crop>): Crop => ({
   crop_coordinates: [0, 0, 1, 1],
   width: 150,
   height: 150,
-  ...overrides,
-});
-
-const makeIndividual = (overrides: Partial<Individual>): Individual => ({
-  collectionId: 'individuals',
-  collectionName: 'individuals',
-  created: '',
-  updated: '',
-  id: overrides.id ?? 'individual-1',
-  name: overrides.name ?? 'Individual 1',
-  created_by: 'user-1',
-  videos: ['video-1'],
-  age: 'adult',
-  sex: 'female',
-  notes: '',
-  custom_tags: [],
-  crops: [],
   ...overrides,
 });
 
@@ -89,24 +72,14 @@ describe('body part filter helpers', () => {
     expect(filterCropsByBodyPart(crops, 'face').map(crop => crop.id)).toEqual(['face-1', 'face-2']);
   });
 
-  it('derives sorted unique body-part options from individuals', () => {
-    const individuals = [
-      makeIndividual({
-        id: 'individual-1',
-        crops: [
-          makeCrop({ id: 'face-1', body_part: 'face' }),
-          makeCrop({ id: 'ear-1', body_part: 'ear' }),
-        ],
-      }),
-      makeIndividual({
-        id: 'individual-2',
-        crops: [
-          makeCrop({ id: 'face-2', body_part: 'face' }),
-          makeCrop({ id: 'full-body-2', body_part: 'full body' }),
-        ],
-      }),
+  it('derives the set of available body parts present in the given crops', () => {
+    const crops = [
+      makeCrop({ id: 'face-1', body_part: 'face' }),
+      makeCrop({ id: 'face-2', body_part: 'face' }),
+      makeCrop({ id: 'ear-1', body_part: 'ear' }),
+      makeCrop({ id: 'empty-1', body_part: '' }),
     ];
 
-    expect(getBodyPartOptionsFromIndividuals(individuals)).toEqual(['ear', 'face', 'full body']);
+    expect(getAvailableBodyParts(crops)).toEqual(new Set(['face', 'ear']));
   });
 });

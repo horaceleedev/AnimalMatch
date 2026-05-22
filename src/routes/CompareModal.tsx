@@ -383,6 +383,7 @@ const CompareModal: FC = () => {
               }
               videos={videos}
               uniqueValuesPerField={individualsUniqueValuesPerField}
+              bodyPartOptions={cropsUniqueValuesPerField['body_part'] ?? []}
               individualsMetadataFields={individualsMetadataFields}
               onlyShowListView={true}
               linkTemplate={routerLocation.pathname + "/:individualId"}

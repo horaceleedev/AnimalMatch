@@ -104,6 +104,7 @@ describe('IndividualsDashboardView', () => {
         individuals={individuals}
         videos={[makeVideo()]}
         uniqueValuesPerField={{}}
+        bodyPartOptions={['full body', 'face', 'ear']}
         individualsMetadataFields={individualsMetadataFields}
       />
     );
