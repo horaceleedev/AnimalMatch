@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { Splitter, Tabs, type TabsProps } from "antd";
+import { Splitter, Tabs, Typography, type TabsProps } from "antd";
 import Icon from "@ant-design/icons";
 import { RuleGroupType, type RuleType } from 'react-querybuilder';
 
@@ -11,6 +11,8 @@ import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
 import IndividualsTableView from '../table-views/IndividualsTableView.tsx';
 import BasicMapView from '../ui/BasicMapView.tsx';
+import BodyPartSelect from '../crops/BodyPartSelect.tsx';
+import { filterIndividualsByBodyPart, getAvailableBodyParts } from '../crops/bodyPartFilters.ts';
 import { getUniqueLocationsFromIndividuals } from '../../utils/utils.ts';
 import useSearchFilter from '../../hooks/useSearchFilter.ts';
 import { Individual, MetadataFieldsType, Video } from '../../types.ts';
@@ -43,16 +45,18 @@ interface IndividualsDashboardViewProps {
   individuals: Individual[];
   videos: Video[];
   uniqueValuesPerField: Record<string, string[]>;
+  bodyPartOptions: string[];
   individualsMetadataFields: MetadataFieldsType;
   onlyShowListView?: boolean;
+  listDescription?: string;
   linkTemplate?: string;
   listViewButtons?: (individual: Individual) => JSX.Element;
   defaultGroupFields?: string[];
   defaultGroupOrders?: ("asc" | "desc")[];
 }
 const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
-  individuals, videos, uniqueValuesPerField, individualsMetadataFields,
-  onlyShowListView, linkTemplate, listViewButtons,
+  individuals, videos, uniqueValuesPerField, bodyPartOptions, individualsMetadataFields,
+  onlyShowListView, listDescription, linkTemplate, listViewButtons,
   defaultGroupFields, defaultGroupOrders,
 }: IndividualsDashboardViewProps) => {
   const [view, setView] = useState(viewsTabsItems[0].key);
@@ -64,6 +68,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
   const [groupFields, setGroupFields] = useState<string[]>(defaultGroupFields);
   const [groupOrders, setGroupOrders] = useState<("asc" | "desc")[]>(defaultGroupOrders);
   const [query, _setQuery] = useState(initialQuery);
+  const [selectedBodyPart, setSelectedBodyPart] = useState('');
 
   const setQuery = (newQuery: RuleGroupType) => {
     if (newQuery.rules.length > 1) {
@@ -89,6 +94,23 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
     individualsMetadataFields,
   );
 
+  const availableBodyParts = useMemo(
+    () => getAvailableBodyParts(individuals.flatMap(individual => individual.crops)),
+    [individuals]
+  );
+
+  const visibleIndividuals = useMemo(
+    () => filterIndividualsByBodyPart(searchFilteredIndividuals, selectedBodyPart),
+    [searchFilteredIndividuals, selectedBodyPart]
+  );
+  const hiddenCount = searchFilteredIndividuals.length - visibleIndividuals.length;
+  const hiddenMessage = selectedBodyPart
+    ? `${hiddenCount} out of ${searchFilteredIndividuals.length} individuals are hidden by selection of body part "${selectedBodyPart}"`
+    : '';
+  const description = [listDescription, hiddenMessage].filter(Boolean).join(' ');
+
+  // The map intentionally shows all (search-filtered) individuals' locations,
+  // regardless of the selected body part.
   const uniqueLocations = useMemo(() => {
     return getUniqueLocationsFromIndividuals(searchFilteredIndividuals, videos);
   }, [searchFilteredIndividuals, videos]);
@@ -102,14 +124,26 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
         query={query} setQuery={setQuery}
         handleSearch={setSearchQuery}
       />
+      <div style={{marginTop: 8, marginBottom: 8}}>
+        <BodyPartSelect
+          bodyPartOptions={bodyPartOptions}
+          selectedBodyPart={selectedBodyPart}
+          setSelectedBodyPart={setSelectedBodyPart}
+          availableBodyParts={availableBodyParts}
+        />
+      </div>
       {
-        !onlyShowListView && 
+        !onlyShowListView &&
         <Tabs defaultActiveKey="list" items={viewsTabsItems} onChange={setView} />
       }
       {
-        (view === 'list') ? 
+        description &&
+        <Typography.Paragraph type="secondary" style={{marginBottom: 8}}>{description}</Typography.Paragraph>
+      }
+      {
+        (view === 'list') ?
         <IndividualsGridView
-          individuals={searchFilteredIndividuals}
+          individuals={visibleIndividuals}
           individualsMetadataFields={individualsMetadataFields}
           linkTemplate={linkTemplate}
           buttons={listViewButtons}
@@ -117,6 +151,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
           sortOrders={sortOrders}
           groupFields={groupFields}
           groupOrders={groupOrders}
+          cropBodyPart={selectedBodyPart}
         />
         :
         (
@@ -131,7 +166,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
           <Splitter>
             <Splitter.Panel defaultSize="40%" min="20%" max="70%" style={{height: 600, overflow: 'scroll', paddingRight: 12}}>
               <IndividualsGridView
-                individuals={searchFilteredIndividuals}
+                individuals={visibleIndividuals}
                 individualsMetadataFields={individualsMetadataFields}
                 linkTemplate={linkTemplate}
                 buttons={listViewButtons}
@@ -139,6 +174,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
                 sortOrders={sortOrders}
                 groupFields={groupFields}
                 groupOrders={groupOrders}
+                cropBodyPart={selectedBodyPart}
               />
             </Splitter.Panel>
             <Splitter.Panel style={{paddingLeft: 12}}>

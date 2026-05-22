@@ -3,6 +3,7 @@ import { generatePath, Link } from 'react-router-dom';
 import { Card, Select, Skeleton, Space, Tag, Tooltip } from 'antd';
 
 import { Crop, Individual, MetadataFieldsType, RecordType } from '../../types.ts';
+import { filterCropsByBodyPart } from '../crops/bodyPartFilters.ts';
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
 import "./IndividualsGridView.scss";
 
@@ -40,10 +41,11 @@ interface BasicIndividualsGridViewProps {
   buttons?: (individual: Individual) => JSX.Element;
   allowEditingAgeAndSex?: boolean;
   openModal?: (type: RecordType, id: string) => void;
+  cropBodyPart?: string;
 };
 
 const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
-  individuals, individualsMetadataFields, isListView, linkTemplate = "/individuals/:individualId", buttons, allowEditingAgeAndSex, openModal,
+  individuals, individualsMetadataFields, isListView, linkTemplate = "/individuals/:individualId", buttons, allowEditingAgeAndSex, openModal, cropBodyPart,
 }: BasicIndividualsGridViewProps) => {
   return (
     <div className={isListView ? "individuals-list" : "individuals-grid"}>
@@ -86,7 +88,8 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
             <Card hoverable bordered={true} size="small" cover={
               <div style={{display: 'flex', overflow: 'scroll', height: 150, columnGap: 5, borderRadius: 5}}>
                 {
-                  individual.crops.map(crop => (<CropWithSkeleton crop={crop} key={crop.id} />))
+                  filterCropsByBodyPart(individual.crops, cropBodyPart)
+                    .map(crop => (<CropWithSkeleton crop={crop} key={crop.id} />))
                 }
               </div>
             }>
