@@ -110,7 +110,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
         query={query} setQuery={setQuery}
         handleSearch={setSearchQuery}
       />
-      <div style={{marginTop: 8}}>
+      <div style={{marginTop: 8, marginBottom: 8}}>
         <BodyPartSelect
           bodyPartOptions={bodyPartOptions}
           selectedBodyPart={selectedBodyPart}
