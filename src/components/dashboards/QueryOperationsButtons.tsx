@@ -35,10 +35,10 @@ const FieldSelector: React.FC<FieldSelectorProps> = ({
   value, onChange,
 }: FieldSelectorProps) => {
   const fieldOptions = useMemo(
-    (): FieldOption[] => Object.entries(metadataFields).map(([fieldValue, field]) => ({
-      value: fieldValue,
-      label: field.displayName,
-      icon: field.icon,
+    (): FieldOption[] => Object.entries(metadataFields).map(([fieldName, metadataField]) => ({
+      value: fieldName,
+      label: metadataField.displayName,
+      icon: metadataField.icon,
     })),
     [metadataFields]
   );

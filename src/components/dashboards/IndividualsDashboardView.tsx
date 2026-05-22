@@ -9,6 +9,7 @@ import ViewList from '../../assets/material_symbols/view_list_24dp_5F6368_FILL0_
 
 import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
+import IndividualsTableView from '../table-views/IndividualsTableView.tsx';
 import BasicMapView from '../ui/BasicMapView.tsx';
 import { getUniqueLocationsFromIndividuals } from '../../utils/utils.ts';
 import { filterByQuery } from '../../lib/filtering/filterEngine.ts';
@@ -99,7 +100,11 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
         :
         (
           (view === 'table') ?
-          <p>Not implemented yet</p>
+          <IndividualsTableView
+            individuals={searchFilteredIndividuals}
+            individualsMetadataFields={individualsMetadataFields}
+            linkTemplate={linkTemplate}
+          />
           :
           (uniqueLocations.length > 0) &&
           <Splitter>

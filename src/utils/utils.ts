@@ -51,26 +51,26 @@ export const getUniqueLocationsFromIndividuals = (individuals: Individual[], all
 
 export const getUniqueValuesPerField = (metadataFields: MetadataFieldsType, processedRecords: Record<string, any>[]) => {
   let uniqueValuesPerField: Record<string, string[]> = {}; // an object where each key is a field name and its associated value is a list of unique values for that field
-  Object.entries(metadataFields).forEach(([fieldValue, field]) => {
-    if (field.type === 'select') {
+  Object.entries(metadataFields).forEach(([fieldName, metadataField]) => {
+    if (metadataField.type === 'select') {
       // Use preset options if available
-      if (field.presetOptions) {
-        uniqueValuesPerField[fieldValue] = field.presetOptions;
+      if (metadataField.presetOptions) {
+        uniqueValuesPerField[fieldName] = metadataField.presetOptions;
         return;
       }
 
       const uniqueValues = Array.from(
-        new Set(processedRecords.map(x => x[fieldValue]).filter(isNonNullString))
+        new Set(processedRecords.map(x => x[fieldName]).filter(isNonNullString))
       );
       const uniqueValuesSorted = [...uniqueValues].sort((a, b) => a.localeCompare(b));
-      uniqueValuesPerField[fieldValue] = uniqueValuesSorted;
+      uniqueValuesPerField[fieldName] = uniqueValuesSorted;
       console.log(uniqueValuesSorted);
-    } else if (field.type === 'multiselect') {
+    } else if (metadataField.type === 'multiselect') {
       const uniqueValues = Array.from(
-        new Set(processedRecords.flatMap(x => x[fieldValue] ?? []).filter(isNonNullString))
+        new Set(processedRecords.flatMap(x => x[fieldName] ?? []).filter(isNonNullString))
       );
       const uniqueValuesSorted = [...uniqueValues].sort((a, b) => a.localeCompare(b));
-      uniqueValuesPerField[fieldValue] = uniqueValuesSorted;
+      uniqueValuesPerField[fieldName] = uniqueValuesSorted;
       // console.log(uniqueValuesSorted);
     }
   });

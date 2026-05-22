@@ -100,33 +100,33 @@ export const buildQueryBuilderFields = (
   metadataFields: MetadataFieldsType,
   uniqueValuesPerField: Record<string, string[]>
 ): Field[] =>
-  Object.entries(metadataFields).map(([fieldValue, field]) => {
-    const category = metadataTypeToCategory(field.type);
+  Object.entries(metadataFields).map(([fieldName, metadataField]) => {
+    const category = metadataTypeToCategory(metadataField.type);
     const valueEditorType =
-      category === 'enum' && field.valueEditorType === 'select'
+      category === 'enum' && metadataField.valueEditorType === 'select'
         ? ((operator: string) => (MULTI_VALUE_OPERATORS.has(operator) ? 'multiselect' : 'select')) as Field['valueEditorType']
-        : (field.valueEditorType as Field['valueEditorType']);
+        : (metadataField.valueEditorType as Field['valueEditorType']);
     const output: Field = {
-      name: fieldValue,
-      label: field.displayName,
-      icon: field.icon,
-      datatype: field.type === 'rich_text' ? 'text' : field.type,
-      inputType: field.inputType,
-      renderType: field.renderType,
+      name: fieldName,
+      label: metadataField.displayName,
+      icon: metadataField.icon,
+      datatype: metadataField.type === 'rich_text' ? 'text' : metadataField.type,
+      inputType: metadataField.inputType,
+      renderType: metadataField.renderType,
       valueEditorType,
       defaultOperator: defaultOperatorByCategory[category],
       operators: operatorsByCategory[category],
     };
 
-    if (field.type === 'select' || field.type === 'multiselect') {
-      output.values = (uniqueValuesPerField[fieldValue] ?? []).map(x => ({ name: x, value: x, label: x }));
+    if (metadataField.type === 'select' || metadataField.type === 'multiselect') {
+      output.values = (uniqueValuesPerField[fieldName] ?? []).map(x => ({ name: x, value: x, label: x }));
     }
-    if (field.type === 'boolean') {
+    if (metadataField.type === 'boolean') {
       output.values = [
         // @ts-ignore (temporary hack - name and value are expected to be strings)
-        { name: true, value: true, label: field.displayBooleanValuesAs?.[1] ?? 'True' },
+        { name: true, value: true, label: metadataField.displayBooleanValuesAs?.[1] ?? 'True' },
         // @ts-ignore (temporary hack - name and value are expected to be strings)
-        { name: false, value: false, label: field.displayBooleanValuesAs?.[0] ?? 'False' },
+        { name: false, value: false, label: metadataField.displayBooleanValuesAs?.[0] ?? 'False' },
       ];
     }
 
