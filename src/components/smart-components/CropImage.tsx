@@ -62,7 +62,7 @@ const CropImage: React.FC<CropImageProps> = ({
       {loaded && (
         <Tooltip title={crop.is_featured ? 'Remove from featured' : 'Mark as featured'}>
           <Button
-            className={`crop-featured-button${crop.is_featured ? ' is-featured' : ''}`}
+            className="crop-featured-button"
             type="text"
             size="small"
             icon={

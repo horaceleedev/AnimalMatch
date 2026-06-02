@@ -4,13 +4,8 @@
     transition: opacity var(--ant-motion-duration-slow);
   }
 
-  // Show the toggle button while hovering the crop...
+  // Only show the toggle button (filled or outline) while hovering the crop.
   &:hover .crop-featured-button {
-    opacity: 1;
-  }
-
-  // ...and always show it (filled) when the crop is featured.
-  .crop-featured-button.is-featured {
     opacity: 1;
   }
 }
