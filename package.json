@@ -54,8 +54,8 @@
     "@types/react": "^18.3.28",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^6.0.1",
-    "@vitest/browser": "4.1.5",
-    "@vitest/browser-playwright": "4.1.5",
+    "@vitest/browser": "^4.1.5",
+    "@vitest/browser-playwright": "^4.1.5",
     "@webgpu/types": "^0.1.69",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^5.2.0",
@@ -67,7 +67,7 @@
     "typescript-eslint": "^8.59.1",
     "vite": "^8.0.10",
     "vite-plugin-svgr": "^5.2.0",
-    "vitest": "4.1.5",
-    "vitest-browser-react": "2.2.0"
+    "vitest": "^4.1.5",
+    "vitest-browser-react": "^2.2.0"
   }
 }
