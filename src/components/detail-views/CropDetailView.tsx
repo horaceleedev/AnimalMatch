@@ -1,14 +1,12 @@
 import React from 'react';
-import { Button, Flex, Image, Tooltip } from 'antd';
-import { StarFilled, StarOutlined } from '@ant-design/icons';
+import { Flex } from 'antd';
 
 // import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
 import RecordMetadataForm from './RecordMetadataForm.tsx';
+import CropImage from '../smart-components/CropImage.tsx';
 import { cropsMetadataFields } from '../../metadata.tsx';
 import { Crop, RecordType } from '../../types.ts';
-
-const FEATURED_BORDER_COLOR = '#faad14';
 
 type CropDetailViewProps = {
   crop: Crop;
@@ -30,36 +28,12 @@ const CropDetailView: React.FC<CropDetailViewProps> = ({
   return (
     <>
       <Flex justify="center" style={{marginBottom: 10}}>
-        <div style={{ position: 'relative', display: 'inline-block' }}>
-          <Image
-            src={crop.imageUrl}
-            style={{
-              height: 300,
-              objectFit: 'contain',
-              outline: crop.is_featured ? `2px solid ${FEATURED_BORDER_COLOR}` : undefined,
-              borderRadius: 4,
-            }}
-          />
-          <Tooltip title={crop.is_featured ? 'Remove from featured' : 'Mark as featured'}>
-            <Button
-              type="text"
-              size="small"
-              icon={
-                crop.is_featured
-                  ? <StarFilled style={{ color: FEATURED_BORDER_COLOR }} />
-                  : <StarOutlined style={{ color: 'white' }} />
-              }
-              style={{
-                position: 'absolute',
-                top: 6,
-                right: 6,
-                background: 'rgba(0,0,0,0.35)',
-                borderRadius: 4,
-              }}
-              onClick={() => updateCrop(crop.id, { is_featured: !crop.is_featured })}
-            />
-          </Tooltip>
-        </div>
+        <CropImage
+          crop={crop}
+          preview
+          wrapperStyle={{ display: 'inline-block' }}
+          imageStyle={{ height: 300, objectFit: 'contain', borderRadius: 4 }}
+        />
       </Flex>
       <RecordMetadataForm
         processedRecord={crop}
