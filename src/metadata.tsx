@@ -57,18 +57,6 @@ export const videoMetadataFields: MetadataFieldsType = {
     type: 'rich_text',
     inputType: 'text',
   },
-  'month_of_SD_retrieval': {
-    displayName: 'Month of SD retrieval',
-    icon: <CalendarOutlined />,
-    type: 'select',
-    valueEditorType: 'select',
-  },
-  'habitat': {
-    displayName: 'Habitat',
-    icon: <Icon component={Forest} />,
-    type: 'select',
-    valueEditorType: 'select',
-  },
   'utm_easting': {
     displayName: 'UTM easting',
     icon: <Icon component={Location} />,
@@ -78,18 +66,6 @@ export const videoMetadataFields: MetadataFieldsType = {
   'utm_northing': {
     displayName: 'UTM northing',
     icon: <Icon component={Location} />,
-    type: 'number',
-    inputType: 'number',
-  },
-  'altitude': {
-    displayName: 'Altitude',
-    icon: <Icon component={Altitude} />,
-    type: 'number',
-    inputType: 'number',
-  },
-  'num_individuals': {
-    displayName: 'Number of individuals',
-    icon: <NumberOutlined />,
     type: 'number',
     inputType: 'number',
   },
