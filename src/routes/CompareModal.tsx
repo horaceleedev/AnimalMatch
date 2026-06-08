@@ -172,9 +172,10 @@ const CompareModal: FC = () => {
       title: 'Do you want to merge these two individuals?',
       content: 'This action cannot be undone.',
       onOk: () => {
-        return new Promise((resolve, reject) => {
-          setTimeout(Math.random() > 0.5 ? resolve : reject, 1000);
-        }).catch(() => console.log('Oops errors!'));
+        alert("Not implemented yet");
+        // return new Promise((resolve, reject) => {
+        //   setTimeout(Math.random() > 0.5 ? resolve : reject, 1000);
+        // }).catch(() => console.log('Oops errors!'));
       },
       onCancel: () => {},
     });
@@ -190,9 +191,10 @@ const CompareModal: FC = () => {
         />
       </>,
       onOk: () => {
-        return new Promise((resolve, reject) => {
-          setTimeout(Math.random() > 0.5 ? resolve : reject, 1000);
-        }).catch(() => console.log('Oops errors!'));
+        alert("Not implemented yet");
+        // return new Promise((resolve, reject) => {
+        //   setTimeout(Math.random() > 0.5 ? resolve : reject, 1000);
+        // }).catch(() => console.log('Oops errors!'));
       },
       onCancel: () => {},
     });

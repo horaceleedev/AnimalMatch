@@ -1,12 +1,59 @@
 # AnimalMatch frontend
 
+AnimalMatch is a web application designed to make wildlife individual identification faster and easier. It helps researchers and conservation teams annotate animals in videos, find matching individuals, and keep profiles and metadata organised in one place.
+
+> [!NOTE]
+> This codebase is still in active development. The database schema is subject to change and we may introduce breaking changes between updates.
+
+## Features
+
+**🗂️ Organise your data**
+- 📁 Keep records organised in one place, with separate sections for videos, individuals, and image crops.
+- 🔎 Find what you need quickly using search and grouping.
+- 🖼️ Browse records in the way that best supports your workflow, including gallery/grid views, tables, and map views where available.
+
+**✍️ Annotate individuals**
+- ✂️ Extract image crops for each individual directly in the app using a built-in cropping tool.
+- 🏷️ Tag each individual with useful characteristics (for example age, sex, and distinctive visual features).
+- 📝 Open record detail views to review key information and update metadata as your annotations progress.
+
+**🔍 Match and review**
+- 🎯 Find potential matches of the same individual across different videos, and narrow results using tags/metadata.
+- ↔️ Compare possible matches side by side to help with identification and review.
+- 🔗 Move easily between related records (for example, from a video to an individual seen in it).
+
+**🤝 Collaborate**
+- 👥 Collaborate in one shared workspace with multiple user accounts.
+- 🔗 Share direct links to records with collaborators.
+- ⚡ Stay up to date with real-time data updates across your team.
+
+
+### Coming soon:
+- Individual profile merging
+- Advanced metadata filtering
+- Support for source images (currently, only source videos are supported)
+
+
+## User guide
+
+1. Download the prebuilt frontend from the [Releases](https://github.com/horaceleedev/AnimalMatch/releases) page
+
+TODO add instructions for installing and setting up backend, and serving frontend
+
+
+## Frontend overview
 This frontend web app is implemented with React and TypeScript + SASS + HTML. Here are some other key libraries used:
 * UI component library: [Ant Design](https://ant.design/)
 * Client-side routing: [React Router v6](https://reactrouter.com/6.30.2)
 * Global state management: [Zustand](https://github.com/pmndrs/zustand)
 * JS utility library: [es-toolkit](https://es-toolkit.dev) (similar to Lodash)
 
+Note: the source code for the VideoAnnotator component is not included in this repo at the moment, but the component is included in the prebuilt frontend on the [Releases](https://github.com/horaceleedev/AnimalMatch/releases) page.
+
 ## Development setup
+Follow the instructions below only if you plan to modify/customise the frontend.
+If you are using AnimalMatch as-is, you can skip this section and go to the [User guide](#user-guide).
+
 ### Prerequisites
 - Make sure you have [npm](https://docs.npmjs.com/about-npm) installed beforehand. If you do not have `npm` installed, we recommend installing [nvm (Node Version Manager)](https://github.com/nvm-sh/nvm#install--update-script) first and then running `nvm install node` to install `npm` and `node`.
 - Clone this repo, `cd` into this directory and then run `npm install` to install the project dependencies
@@ -15,10 +62,9 @@ This frontend web app is implemented with React and TypeScript + SASS + HTML. He
 1. Make sure you have completed the prerequisite steps above, and `cd`'ed into this directory if you haven't already done so
 2. Start the development server using `npm run dev`. Once the server is running, open `localhost:5173` in your browser to access the development version of the frontend
 
-For now you might need to comment out the video annotation route ([lines 125-128](https://github.com/horaceleedev/AnimalMatch/blob/d6a739edaba43a068124cd8c73ba0b876a6cb32c/src/main.tsx#L125-L128) in main.tsx) in order for the frontend to work.
-
 ### Production build
-TODO
+1. Make sure you have completed the prerequisite steps above, and `cd`'ed into this directory if you haven't already done so
+2. Run `npm run build` to create a production build in the `dist` folder.
 
 ## Testing
 
@@ -49,53 +95,13 @@ Note:
   - InnerModal
   - etc
 
-# Original README created by Vite (TODO remove this later):
+## Contact
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Please submit any bug reports and feature requests on the [Issues](https://github.com/horaceleedev/AnimalMatch/issues) page.
 
-Currently, two official plugins are available:
+If you have any questions or feedback, feel free to contact [Horace Lee](mailto:horace.lee@eng.ox.ac.uk).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## Expanding the ESLint configuration
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
-
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## Acknowledgements
+Development and maintenance of AnimalMatch has been supported by the [Visual AI](https://www.robots.ox.ac.uk/~vgg/projects/visualai/) research grant (UKRI Grant EP/T028572/1) as well as Schmidt Sciences, LLC.
