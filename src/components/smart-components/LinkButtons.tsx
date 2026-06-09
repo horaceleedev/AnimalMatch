@@ -8,12 +8,34 @@ interface LinkButtonProps {
   id: string;
   linkTemplate?: string;
   openModal?: (type: RecordType, id: string) => void;
+  disableNavigation?: boolean;
 };
 
-export const IndividualLinkButton: React.FC<LinkButtonProps> = ({ id, linkTemplate = "/individuals/:individualId", openModal }: LinkButtonProps) => {
+export const IndividualLinkButton: React.FC<LinkButtonProps> = ({
+  id,
+  linkTemplate = "/individuals/:individualId",
+  openModal,
+  disableNavigation,
+}: LinkButtonProps) => {
   // TODO see if there is an efficient implementation without loading all individuals
   const { individuals } = useIndividualsStoreWithCrops();
   const individual = individuals.find(i => i.id === id);
+
+  const content = (
+    <Card
+      hoverable={!disableNavigation}
+      size="small"
+      style={{ overflow: 'hidden' }}
+      styles={{ body: { padding: 0 } }}
+    >
+      <Flex gap="small" align="center">
+        <img src={individual?.crops[0]?.imageUrl} height={26} style={{margin: 3, borderRadius: 5}} />
+        <Typography.Title level={5} style={{margin: 0, fontSize: 12}}>{individual?.name}</Typography.Title>
+      </Flex>
+    </Card>
+  );
+
+  if (disableNavigation) return content;
 
   return (
     <Link
@@ -25,23 +47,34 @@ export const IndividualLinkButton: React.FC<LinkButtonProps> = ({ id, linkTempla
         openModal("individual", id);
       }}
     >
-      <Card
-        hoverable
-        size="small"
-        style={{ overflow: 'hidden' }}
-        styles={{ body: { padding: 0 } }}
-      >
-        <Flex gap="small" align="center">
-          <img src={individual?.crops[0]?.imageUrl} height={26} style={{margin: 3, borderRadius: 5}} />
-          <Typography.Title level={5} style={{margin: 0, fontSize: 12}}>{individual?.name}</Typography.Title>
-        </Flex>
-      </Card>
+      {content}
     </Link>
   );
 };
 
-export const VideoLinkButton: React.FC<LinkButtonProps> = ({ id, linkTemplate = "/videos/:videoId", openModal }: LinkButtonProps) => {
+export const VideoLinkButton: React.FC<LinkButtonProps> = ({
+  id,
+  linkTemplate = "/videos/:videoId",
+  openModal,
+  disableNavigation,
+}: LinkButtonProps) => {
   const video = useVideoStore((state) => state.processedRecords.find(v => v.id === id));
+
+  const content = (
+    <Card
+      hoverable={!disableNavigation}
+      size="small"
+      style={{ overflow: 'hidden' }}
+      styles={{ body: { padding: 0 } }}
+    >
+      <Flex gap="small" align="center">
+        <img src={video?.thumbnailUrl} height={26} style={{margin: 3, borderRadius: 5}} />
+        <Typography.Title level={5} style={{margin: 0, fontSize: 12}}>{video?.filename}</Typography.Title>
+      </Flex>
+    </Card>
+  );
+
+  if (disableNavigation) return content;
 
   return (
     <Link
@@ -53,17 +86,7 @@ export const VideoLinkButton: React.FC<LinkButtonProps> = ({ id, linkTemplate = 
         openModal("video", id);
       }}
     >
-      <Card
-        hoverable
-        size="small"
-        style={{ overflow: 'hidden' }}
-        styles={{ body: { padding: 0 } }}
-      >
-        <Flex gap="small" align="center">
-          <img src={video?.thumbnailUrl} height={26} style={{margin: 3, borderRadius: 5}} />
-          <Typography.Title level={5} style={{margin: 0, fontSize: 12}}>{video?.filename}</Typography.Title>
-        </Flex>
-      </Card>
+      {content}
     </Link>
   );
 };
@@ -87,7 +110,7 @@ export const UserLabel: React.FC<{id: string}> = ({id}) => {
 export const UsersListLabel: React.FC<{ids: string[]}> = ({ids}) => {
   // Displays a list of users in a compact way
   const users = useUsersStore((state) => state.processedRecords).filter(u => ids.includes(u.id));
-  
+
   if (users.length === 0) return <></>;
   return (
     <Avatar.Group size="small" max={{count: 4, style: {background: '#555'}}}>

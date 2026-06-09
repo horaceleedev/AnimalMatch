@@ -1,3 +1,26 @@
 .ant-popover-open {
   background: rgba(0, 0, 0, 0.06);
 }
+
+.render-aware-select.ant-select-single .ant-select-selector {
+  overflow: hidden;
+}
+
+.render-aware-select.ant-select-single .ant-select-selection-item {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.render-aware-select.ant-select-single .ant-card {
+  max-width: 100%;
+}
+
+.render-aware-select.ant-select-single .ant-card-body {
+  overflow: hidden;
+}
+
+.render-aware-select.ant-select-single .ant-typography {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

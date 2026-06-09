@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { Tabs, type TabsProps } from "antd";
 import Icon, { AppstoreOutlined } from "@ant-design/icons";
-import { RuleGroupType, type RuleType } from 'react-querybuilder';
+import { RuleGroupType } from 'react-querybuilder';
 
 import Table from '../../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
@@ -9,6 +9,7 @@ import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import CropsGridView from '../grid-views/CropsGridView.tsx';
 import useSearchFilter from '../../hooks/useSearchFilter.ts';
 import { Crop, MetadataFieldsType, RecordType } from '../../types.ts';
+import { filterByQuery } from '../../lib/filtering/filterEngine.ts';
 
 const viewsTabsItems: TabsProps['items'] = [
   {
@@ -28,11 +29,6 @@ const viewsTabsItems: TabsProps['items'] = [
   // },
 ];
 const initialQuery: RuleGroupType = { combinator: 'and', rules: [] };
-const getFirstRule = (query: RuleGroupType): RuleType | undefined => {
-  const firstRule = query.rules[0];
-  if (!firstRule || 'rules' in firstRule) return undefined; // if the first rule is missing or is a nested rule group
-  return firstRule;
-};
 
 interface CropsDashboardViewProps {
   crops: Crop[];
@@ -59,25 +55,9 @@ const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
   const [sortOrders, setSortOrders] = useState<("asc" | "desc")[]>([]);
   const [groupFields, setGroupFields] = useState<string[]>(defaultGroupFields);
   const [groupOrders, setGroupOrders] = useState<("asc" | "desc")[]>(defaultGroupOrders);
-  const [query, _setQuery] = useState(initialQuery);
-
-  const setQuery = (newQuery: RuleGroupType) => {
-    if (newQuery.rules.length > 1) {
-      alert('Max 1 filter supported at the moment');
-      return;
-    }
-    if (newQuery.rules.length > 0 && !getFirstRule(newQuery)) {
-      alert('Groups not supported at the moment');
-      return;
-    }
-    _setQuery(newQuery);
-  };
+  const [query, setQuery] = useState(initialQuery);
   const filteredCrops = useMemo(() => {
-    const firstRule = getFirstRule(query);
-    return crops.filter((crop) => {
-      if (!firstRule) return true;
-      return crop[firstRule.field as keyof Crop] == firstRule.value;
-    });
+    return filterByQuery(crops, query);
   }, [crops, query]);
 
   const { filteredRecords: searchFilteredCrops, setSearchQuery } = useSearchFilter(
