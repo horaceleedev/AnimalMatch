@@ -5,6 +5,7 @@ import { Card, Flex, Space, Tag, Tooltip, Typography } from "antd";
 import type { Crop, MetadataFieldsType, RecordType } from "../../types.ts";
 import CropImage from '../smart-components/CropImage.tsx';
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
+import CropWithSkeleton from './CropWithSkeleton.tsx';
 import "./CropsGridView.scss"
 
 interface BasicCropsGridViewProps {

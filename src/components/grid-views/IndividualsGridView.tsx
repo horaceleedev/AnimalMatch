@@ -5,7 +5,13 @@ import { Card, Select, Space, Tag, Tooltip } from 'antd';
 import { Individual, MetadataFieldsType, RecordType } from '../../types.ts';
 import CropImage from '../smart-components/CropImage.tsx';
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
+import CropWithSkeleton from './CropWithSkeleton.tsx';
 import "./IndividualsGridView.scss";
+
+// const imgStyle: React.CSSProperties = {
+//   display: 'block',
+//   width: 200,
+// };
 
 interface BasicIndividualsGridViewProps {
   individuals: Individual[];
