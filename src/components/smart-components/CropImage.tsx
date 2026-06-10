@@ -14,6 +14,8 @@ type CropImageProps = {
   preview?: boolean;
   // Show a skeleton placeholder until the image loads, used by the individuals grid.
   withSkeleton?: boolean;
+  // Height of the skeleton placeholder; should match the rendered image height.
+  skeletonHeight?: number;
   imageStyle?: React.CSSProperties;
   wrapperStyle?: React.CSSProperties;
   // Applied to the underlying image element (e.g. hover effects).
@@ -24,6 +26,7 @@ const CropImage: React.FC<CropImageProps> = ({
   crop,
   preview = false,
   withSkeleton = false,
+  skeletonHeight = 150,
   imageStyle,
   wrapperStyle,
   imageClassName,
@@ -36,13 +39,13 @@ const CropImage: React.FC<CropImageProps> = ({
   const [loaded, setLoaded] = useState(!withSkeleton);
 
   const scaledCropWidth = crop.height > 0
-    ? Math.round((crop.width / crop.height) * 150)
-    : 150; // fallback
+    ? Math.round((crop.width / crop.height) * skeletonHeight)
+    : skeletonHeight; // fallback
 
   return (
     <div className="crop-image" style={{ position: 'relative', ...wrapperStyle }}>
       {withSkeleton && !loaded && (
-        <Skeleton.Node active style={{ height: 150, width: scaledCropWidth }} />
+        <Skeleton.Node active style={{ height: skeletonHeight, width: scaledCropWidth }} />
       )}
       {preview ? (
         <Image src={crop.imageUrl} className={imageClassName} style={imageStyle} />
