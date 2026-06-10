@@ -26,6 +26,10 @@ const headerMenuItems = [
     label: <Link to={`individuals`}>Individuals</Link>,
   },
   {
+    key: 'import',
+    label: <Link to={`import`}>Import</Link>,
+  },
+  {
     key: 'project-settings',
     label: 'Project Settings',
   },
