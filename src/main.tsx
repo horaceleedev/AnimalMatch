@@ -12,6 +12,7 @@ import ErrorPage from "./routes/ErrorPage.tsx";
 import VideosDashboardPage from "./routes/VideosDashboardPage.tsx";
 import IndividualsDashboardPage from "./routes/IndividualsDashboardPage.tsx";
 import CropsDashboardPage from './routes/CropsDashboardPage.tsx';
+import ImportsPage from './routes/ImportsPage.tsx';
 import CompareModal from './routes/CompareModal.tsx';
 import VideoAnnotatorModal from './routes/VideoAnnotatorModal.tsx';
 import { AuthProvider } from './DataStores.tsx';
@@ -137,6 +138,10 @@ const router = createBrowserRouter([
           },
           ...comparisonSubroutes,
         ],
+      },
+      {
+        path: "import",
+        element: <ImportsPage />,
       },
     ],
   },
