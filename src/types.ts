@@ -87,6 +87,7 @@ export interface CropRecord extends RecordModel {
   crop_coordinates: [number, number, number, number]; // l, t, w, h normalized
   width: number; // width of crop image in px
   height: number; // height of crop image in px
+  is_featured: boolean;
 };
 export interface Crop extends CropRecord {
   imageUrl: string;

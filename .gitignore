@@ -30,3 +30,5 @@ __screenshots__/
 *.njsproj
 *.sln
 *.sw?
+
+pb_data*

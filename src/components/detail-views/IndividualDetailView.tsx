@@ -6,6 +6,7 @@ import { generatePath, Link } from 'react-router-dom';
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from '../../metadata.tsx';
 import VideosGridView from '../grid-views/VideosGridView.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
+import CropImage from '../smart-components/CropImage.tsx';
 import { Individual, LocationInfo, RecordType, Video } from '../../types.ts';
 import BasicMapView from '../ui/BasicMapView.tsx';
 import RecordMetadataForm from './RecordMetadataForm.tsx';
@@ -102,7 +103,12 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
                   openModal("crop", crop.id);
                 }}
               >
-                <img src={crop.imageUrl} height={150} className="individual-preview-image" />
+                <CropImage
+                  crop={crop}
+                  wrapperStyle={{ flexShrink: 0 }}
+                  imageClassName="individual-preview-image"
+                  imageStyle={{ height: 150, borderRadius: 4 }}
+                />
               </Link>
             ))
         }
