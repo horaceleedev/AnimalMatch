@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Card, Flex, Progress, Space, Table, Tag, Typography } from "antd";
+import { Button, Card, Flex, Progress, Space, Table, Tag, Tooltip, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { DeleteOutlined, FolderOpenOutlined, UploadOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, FolderOpenOutlined, LoadingOutlined, UploadOutlined, WarningOutlined } from "@ant-design/icons";
 import { nanoid } from "nanoid";
 
 import DashboardContent from "../components/dashboards/DashboardContent";
 import type { ImportVideo, ImportVideoStatus } from "../importTypes";
 import { mockVideoUploadAdapter } from "../importUploadAdapters";
+import { isValidVideoForImport } from "../lib/importVideoValidation";
 
 const { Text, Title } = Typography;
 
@@ -31,9 +32,8 @@ const createImportVideo = (file: FileWithRelativePath): ImportVideo => {
     filename: file.name,
     fileSize: file.size,
     relativePath: file.webkitRelativePath || undefined,
-    status: "ready",
+    status: "validating",
     progressPercent: 0,
-    isValid: true,
   };
 };
 
@@ -48,6 +48,38 @@ const canUploadVideo = (video: ImportVideo) => (
   video.isValid && (video.status === "ready" || video.status === "failed")
 );
 
+const getValidationTag = (video: ImportVideo) => {
+  if (video.status === "validating" || video.isValid === undefined) {
+    return <Tag icon={<LoadingOutlined spin />} color="processing">checking video</Tag>;
+  }
+
+  if (video.isValid === false) {
+    return (
+      <Tooltip title={video.validationMessage}>
+        <Tag icon={<CloseCircleOutlined />} color="error">invalid</Tag>
+      </Tooltip>
+    );
+  }
+
+  if (video.validationMessage) {
+    return (
+      <Tooltip title={video.validationMessage}>
+        <Tag icon={<WarningOutlined />} color="warning">optimise on upload</Tag>
+      </Tooltip>
+    );
+  }
+
+  return (
+    <Tooltip title="This video is compatible with AnimalMatch.">
+      <Tag icon={<CheckCircleOutlined />} color="success">valid</Tag>
+    </Tooltip>
+  );
+};
+
+const shouldShowUploadStatus = (video: ImportVideo) => (
+  video.status === "uploading" || video.status === "uploaded" || (video.status === "failed" && video.isValid)
+);
+
 const ImportsPage: React.FC = () => {
   const [videos, setVideos] = useState<ImportVideo[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -58,15 +90,45 @@ const ImportsPage: React.FC = () => {
     folderInputRef.current?.setAttribute("directory", "");
   }, []);
 
+  const updateVideo = (localId: string, changes: Partial<ImportVideo>) => {
+    setVideos((currentVideos) => currentVideos.map((video) => (
+      video.localId === localId ? { ...video, ...changes } : video
+    )));
+  };
+
+  const validateVideo = async (video: ImportVideo) => {
+    try {
+      const result = await isValidVideoForImport(video.file);
+
+      updateVideo(video.localId, {
+        status: result.isValid ? "ready" : "failed",
+        isValid: result.isValid,
+        validationMessage: result.message,
+      });
+    } catch {
+      updateVideo(video.localId, {
+        status: "failed",
+        isValid: false,
+        validationMessage: "Video validation failed.",
+      });
+    }
+  };
+
+  const validateVideos = async (videosToValidate: ImportVideo[]) => {
+    for (const video of videosToValidate) {
+      await validateVideo(video);
+    }
+  };
+
   const addFiles = (files: FileList | null) => {
     if (!files) return;
 
-    setVideos((currentVideos) => [
-      ...currentVideos,
-      ...Array.from(files)
-        .filter(isMp4File)
-        .map((file) => createImportVideo(file as FileWithRelativePath)),
-    ]);
+    const videosToAdd = Array.from(files)
+      .filter(isMp4File)
+      .map((file) => createImportVideo(file as FileWithRelativePath));
+
+    setVideos((currentVideos) => [...currentVideos, ...videosToAdd]);
+    void validateVideos(videosToAdd);
   };
 
   const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,12 +138,6 @@ const ImportsPage: React.FC = () => {
 
   const removeVideo = (localId: string) => {
     setVideos((currentVideos) => currentVideos.filter((video) => video.localId !== localId));
-  };
-
-  const updateVideo = (localId: string, changes: Partial<ImportVideo>) => {
-    setVideos((currentVideos) => currentVideos.map((video) => (
-      video.localId === localId ? { ...video, ...changes } : video
-    )));
   };
 
   const uploadVideo = async (video: ImportVideo) => {
@@ -143,9 +199,10 @@ const ImportsPage: React.FC = () => {
       dataIndex: "status",
       render: (status: ImportVideoStatus, video) => (
         <Space direction="vertical" size={0}>
-          <Tag color={statusColors[status]}>{status}</Tag>
-          {(video.validationMessage || video.errorMessage) && (
-            <Text type="danger">{video.validationMessage || video.errorMessage}</Text>
+          {getValidationTag(video)}
+          {shouldShowUploadStatus(video) && <Tag color={statusColors[status]}>{status}</Tag>}
+          {video.errorMessage && (
+            <Text type="danger">{video.errorMessage}</Text>
           )}
         </Space>
       ),
