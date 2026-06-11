@@ -2,9 +2,6 @@
 
 AnimalMatch is a web application designed to make wildlife individual identification faster and easier. It helps researchers and conservation teams annotate animals in videos, find matching individuals, and keep profiles and metadata organised in one place.
 
-> [!NOTE]
-> This codebase is still in active development. The database schema is subject to change and we may introduce breaking changes between updates.
-
 ## Features
 
 **🗂️ Organise your data**
@@ -35,6 +32,11 @@ AnimalMatch is a web application designed to make wildlife individual identifica
 
 
 ## User guide
+
+> [!NOTE]
+> This codebase is still in active development. The database schema is subject to change and we may introduce breaking changes between updates.
+
+We will be updating this section soon to provide some basic setup instructions. 
 
 1. Download the prebuilt frontend from the [Releases](https://github.com/horaceleedev/AnimalMatch/releases) page
 
