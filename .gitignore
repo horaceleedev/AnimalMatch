@@ -7,6 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+tmp
 .env
 node_modules
 dist
@@ -16,6 +17,9 @@ playwright-report
 test-results
 .vitest-attachments/
 __screenshots__/
+
+# PocketBase files
+pb_data/
 
 # TypeScript cache
 *.tsbuildinfo
