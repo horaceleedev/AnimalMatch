@@ -79,8 +79,12 @@ migrate((app) => {
       },
       { name: "location_name", type: "text" },
       { name: "recording_date", type: "date" },
+      { name: "month_of_SD_retrieval", type: "text" },
+      { name: "habitat", type: "text" },
       { name: "utm_easting", type: "number" },
       { name: "utm_northing", type: "number" },
+      { name: "altitude", type: "number" },
+      { name: "num_individuals", type: "number" },
       { name: "notes", type: "editor" },
       { name: "custom_tags", type: "json" },
       { name: "assignees", type: "relation", collectionId: collectionIds.users, maxSelect: 2147483647 },
@@ -103,13 +107,20 @@ migrate((app) => {
       { name: "created_by", type: "relation", collectionId: collectionIds.users, maxSelect: 1 },
       { name: "is_identified", type: "bool" },
       { name: "videos", type: "relation", collectionId: collectionIds.videos, maxSelect: 2147483647, required: true },
-      { name: "age", type: "text" },
-      { name: "sex", type: "text" },
+      { name: "age", type: "select", maxSelect: 1, values: ["infant", "juvenile", "adolescent", "adult", "unknown age"] },
+      { name: "sex", type: "select", maxSelect: 1, values: ["male", "female", "unknown/other sex"] },
       { name: "notes", type: "editor" },
       { name: "custom_tags", type: "json" },
     ],
   });
   app.save(individuals);
+
+  videos.fields.add(new RelationField({
+    name: "individuals",
+    collectionId: collectionIds.individuals,
+    maxSelect: 2147483647,
+  }));
+  app.save(videos);
 
   const crops = new Collection({
     id: collectionIds.crops,
@@ -138,6 +149,12 @@ migrate((app) => {
   });
   app.save(crops);
 }, (app) => {
+  try {
+    const videos = app.findCollectionByNameOrId("videos");
+    videos.fields.removeByName("individuals");
+    app.save(videos);
+  } catch {}
+
   for (const name of ["crops", "individuals", "videos"]) {
     try {
       app.delete(app.findCollectionByNameOrId(name));
