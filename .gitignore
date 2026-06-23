@@ -16,6 +16,7 @@ playwright-report
 test-results
 .vitest-attachments/
 __screenshots__/
+pb_data/
 
 # TypeScript cache
 *.tsbuildinfo
