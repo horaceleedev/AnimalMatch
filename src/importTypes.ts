@@ -12,6 +12,7 @@ export interface ImportVideo {
   file: File;
   filename: string;
   fileSize: number;
+  fileHash?: string;
   relativePath?: string;
   status: ImportVideoStatus;
   progressPercent: number;
