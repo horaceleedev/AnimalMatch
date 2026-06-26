@@ -48,7 +48,7 @@ const formatFileSize = (bytes: number) => {
 const formatShortHash = (hash: string) => hash.slice(0, 12);
 
 const getDuplicateKey = (video: ImportVideo) => (
-  video.sampleHash ? `${video.fileSize}:${video.sampleHash}` : undefined
+  video.fileHash ? `${video.fileSize}:${video.fileHash}` : undefined
 );
 
 // TODO: Before comparing against persisted videos, decide how web optimisation fits in.
@@ -65,7 +65,7 @@ const getDuplicateVideo = (video: ImportVideo, videos: ImportVideo[]) => {
 
 const canUploadVideo = (video: ImportVideo, videos: ImportVideo[]) => (
   video.isValid
-  && Boolean(video.sampleHash)
+  && Boolean(video.fileHash)
   && !getDuplicateVideo(video, videos)
   && (video.status === "ready" || video.status === "failed")
 );
@@ -109,7 +109,7 @@ const getStatusContent = (video: ImportVideo, videos: ImportVideo[]) => {
 
   if (duplicateVideo) return getDuplicateTag(duplicateVideo);
 
-  if (video.isValid !== false && !video.sampleHash) {
+  if (video.isValid !== false && !video.fileHash) {
     return <Tag icon={<LoadingOutlined spin />} color="processing">checking duplicates</Tag>;
   }
 
@@ -178,7 +178,7 @@ const ImportsPage: React.FC = () => {
       const result = await hashFileSample(video.file);
 
       updateVideo(video.localId, {
-        sampleHash: result.hash,
+        fileHash: result.hash,
       });
 
       return true;
@@ -265,8 +265,8 @@ const ImportsPage: React.FC = () => {
           <Space direction="vertical" size={0}>
             <Text strong>{video.filename}</Text>
             {video.relativePath && <Text type="secondary">{video.relativePath}</Text>}
-            {video.sampleHash && (
-              <Text type="secondary">sample hash: {formatShortHash(video.sampleHash)}</Text>
+            {video.fileHash && (
+              <Text type="secondary">file hash: {formatShortHash(video.fileHash)}</Text>
             )}
           </Space>
           <Button

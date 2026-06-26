@@ -12,7 +12,7 @@ export interface ImportVideo {
   file: File;
   filename: string;
   fileSize: number;
-  sampleHash?: string;
+  fileHash?: string;
   relativePath?: string;
   status: ImportVideoStatus;
   progressPercent: number;
