@@ -3,17 +3,14 @@ import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import proj4 from "proj4";
-import PocketBase, { ClientResponseError, RecordModel } from 'pocketbase';
+import { ClientResponseError, RecordModel } from 'pocketbase';
 import dayjs from 'dayjs';
 import { App } from 'antd';
 
 import type { Video, VideoRecord, LocationInfo, Individual, IndividualRecord, CropRecord, Crop, UserRecord, User } from "./types.ts";
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from "./metadata.tsx";
 import { getUniqueLocationsFromVideos, getUniqueValuesPerField } from './utils/utils.ts';
-
-const pocketBaseUrl = import.meta.env.VITE_DATABASE_URL || 'http://127.0.0.1:8090';
-
-const pb = new PocketBase(pocketBaseUrl);
+import { pb } from './lib/pocketBaseClient.ts';
 
 // Show a message when the realtime client disconnects / reconnects
 let isConnected: boolean | undefined = undefined;
