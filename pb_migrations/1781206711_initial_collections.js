@@ -5,17 +5,18 @@ const signedInRule = '@request.auth.id != ""';
 
 const collectionIds = {
   users: "_pb_users_auth_",
-  crops: "ycn645cy01kycy7",
-  individuals: "0xs6jxg6t0f3um0",
-  videos: "tb7vvfchjp5ux85",
+  crops: "am_crops",
+  individuals: "am_individuals",
+  videos: "am_videos",
 };
 
 const addFieldIfMissing = (collection, field) => {
   try {
-    collection.fields.getByName(field.name);
+    if (collection.fields.getByName(field.name)) return;
   } catch {
-    collection.fields.add(field);
   }
+
+  collection.fields.add(field);
 };
 
 const collectionExists = (app, nameOrId) => {
