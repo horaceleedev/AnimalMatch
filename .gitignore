@@ -19,6 +19,7 @@ test-results
 __screenshots__/
 
 # PocketBase files
+pocketbase
 pb_data/
 
 # TypeScript cache
