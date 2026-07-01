@@ -31,6 +31,7 @@ export interface VideoRecord extends RecordModel {
   updated: string;
   id: string;
   filename: string;
+  file_hash?: string;
   file: string;
   thumbnail: string;
   location_name: string;
