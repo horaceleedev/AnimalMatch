@@ -6,7 +6,7 @@ import { nanoid } from "nanoid";
 
 import DashboardContent from "../components/dashboards/DashboardContent";
 import type { ImportVideo, ImportVideoStatus } from "../importTypes";
-import { mockVideoUploadAdapter } from "../importUploadAdapters";
+import { pocketBaseVideoUploadAdapter } from "../importUploadAdapters";
 import { hashFileSample } from "../lib/fileHashing";
 import { isValidVideoForImport } from "../lib/importVideoValidation";
 
@@ -230,7 +230,7 @@ const ImportsPage: React.FC = () => {
     updateVideo(video.localId, { status: "uploading", progressPercent: 0, errorMessage: undefined });
 
     try {
-      await mockVideoUploadAdapter.uploadVideo(video, (progressPercent) => {
+      await pocketBaseVideoUploadAdapter.uploadVideo(video, (progressPercent) => {
         updateVideo(video.localId, { progressPercent });
       });
 
