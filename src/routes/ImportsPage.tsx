@@ -66,6 +66,7 @@ const getUploadedDuplicateVideo = (video: ImportVideo, uploadedVideos: Video[]) 
 
 const canUploadVideo = (video: ImportVideo, videos: ImportVideo[], uploadedVideos: Video[]) => (
   video.isValid
+  && !video.needsWebOptimisation
   && Boolean(video.fileHash)
   && !getDuplicateVideo(video, videos)
   && !getUploadedDuplicateVideo(video, uploadedVideos)
@@ -81,6 +82,14 @@ const getValidationTag = (video: ImportVideo) => {
     return (
       <Tooltip title={video.validationMessage}>
         <Tag icon={<CloseCircleOutlined />} color="error">invalid</Tag>
+      </Tooltip>
+    );
+  }
+
+  if (video.needsWebOptimisation) {
+    return (
+      <Tooltip title={video.validationMessage}>
+        <Tag icon={<WarningOutlined />} color="warning">needs web optimisation</Tag>
       </Tooltip>
     );
   }
@@ -113,6 +122,10 @@ const getUploadedDuplicateTag = (duplicateVideo: Video) => (
 );
 
 const getStatusContent = (video: ImportVideo, videos: ImportVideo[], uploadedVideos: Video[]) => {
+  if (video.status === "validating" || video.isValid === undefined) {
+    return getValidationTag(video);
+  }
+
   const duplicateVideo = getDuplicateVideo(video, videos);
 
   if (duplicateVideo) return getDuplicateTag(duplicateVideo);
@@ -120,7 +133,7 @@ const getStatusContent = (video: ImportVideo, videos: ImportVideo[], uploadedVid
   const uploadedDuplicateVideo = getUploadedDuplicateVideo(video, uploadedVideos);
   if (uploadedDuplicateVideo) return getUploadedDuplicateTag(uploadedDuplicateVideo);
 
-  if (video.isValid !== false && !video.fileHash) {
+  if (video.isValid !== false && !video.needsWebOptimisation && !video.fileHash) {
     return <Tag icon={<LoadingOutlined spin />} color="processing">checking duplicates</Tag>;
   }
 
@@ -131,12 +144,16 @@ const getProgressContent = (video: ImportVideo, videos: ImportVideo[], uploadedV
   const duplicateVideo = getDuplicateVideo(video, videos);
   const uploadedDuplicateVideo = getUploadedDuplicateVideo(video, uploadedVideos);
 
-  if (!hasUploadStarted && (video.isValid === false || duplicateVideo || uploadedDuplicateVideo)) {
+  if (!hasUploadStarted && (video.isValid === false || video.needsWebOptimisation || duplicateVideo || uploadedDuplicateVideo)) {
     return <Text type="secondary">-</Text>;
   }
 
   if (video.isValid === false) {
     return <Tag color="error">skipped</Tag>;
+  }
+
+  if (video.needsWebOptimisation) {
+    return <Tag color="warning">skipped</Tag>;
   }
 
   if (duplicateVideo || uploadedDuplicateVideo) {
@@ -175,14 +192,20 @@ const ImportsPage: React.FC = () => {
       updateVideo(video.localId, {
         status: result.isValid ? "ready" : "failed",
         isValid: result.isValid,
+        needsWebOptimisation: result.needsWebOptimisation,
         validationMessage: result.message,
       });
+
+      return result;
     } catch {
       updateVideo(video.localId, {
         status: "failed",
         isValid: false,
+        needsWebOptimisation: false,
         validationMessage: "Video validation failed.",
       });
+
+      return undefined;
     }
   };
 
@@ -199,6 +222,7 @@ const ImportsPage: React.FC = () => {
       updateVideo(video.localId, {
         status: "failed",
         isValid: false,
+        needsWebOptimisation: false,
         validationMessage: "Could not hash video source.",
       });
 
@@ -207,10 +231,10 @@ const ImportsPage: React.FC = () => {
   };
 
   const prepareVideo = async (video: ImportVideo) => {
-    const didHash = await hashVideoSource(video);
-    if (!didHash) return;
+    const validationResult = await validateVideo(video);
+    if (!validationResult?.isValid || validationResult.needsWebOptimisation) return;
 
-    await validateVideo(video);
+    await hashVideoSource(video);
   };
 
   const prepareVideos = (videosToPrepare: ImportVideo[]) => {
