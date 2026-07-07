@@ -9,6 +9,8 @@ import type { ImportVideo, ImportVideoStatus } from "../importTypes";
 import { pocketBaseVideoUploadAdapter } from "../importUploadAdapters";
 import { hashFileSample } from "../lib/fileHashing";
 import { isValidVideoForImport } from "../lib/importVideoValidation";
+import { useVideoStore } from "../DataStores";
+import type { Video } from "../types";
 
 const { Text, Title } = Typography;
 
@@ -47,26 +49,26 @@ const formatFileSize = (bytes: number) => {
 
 const formatShortHash = (hash: string) => hash.slice(0, 12);
 
-const getDuplicateKey = (video: ImportVideo) => (
-  video.fileHash ? `${video.fileSize}:${video.fileHash}` : undefined
-);
-
-// TODO: Before comparing against persisted videos, decide how web optimisation fits in.
-// Either store both pre- and post-optimisation hashes, or optimise before hashing.
 const getDuplicateVideo = (video: ImportVideo, videos: ImportVideo[]) => {
-  const duplicateKey = getDuplicateKey(video);
-  if (!duplicateKey) return undefined;
+  if (!video.fileHash) return undefined;
 
   const videoIndex = videos.findIndex((candidate) => candidate.localId === video.localId);
   if (videoIndex === -1) return undefined;
 
-  return videos.slice(0, videoIndex).find((candidate) => getDuplicateKey(candidate) === duplicateKey);
+  return videos.slice(0, videoIndex).find((candidate) => candidate.fileHash === video.fileHash);
 };
 
-const canUploadVideo = (video: ImportVideo, videos: ImportVideo[]) => (
+const getUploadedDuplicateVideo = (video: ImportVideo, uploadedVideos: Video[]) => {
+  if (!video.fileHash) return undefined;
+
+  return uploadedVideos.find((uploadedVideo) => uploadedVideo.file_hash === video.fileHash);
+};
+
+const canUploadVideo = (video: ImportVideo, videos: ImportVideo[], uploadedVideos: Video[]) => (
   video.isValid
   && Boolean(video.fileHash)
   && !getDuplicateVideo(video, videos)
+  && !getUploadedDuplicateVideo(video, uploadedVideos)
   && (video.status === "ready" || video.status === "failed")
 );
 
@@ -104,10 +106,19 @@ const getDuplicateTag = (duplicateVideo: ImportVideo) => (
   </Tooltip>
 );
 
-const getStatusContent = (video: ImportVideo, videos: ImportVideo[]) => {
+const getUploadedDuplicateTag = (duplicateVideo: Video) => (
+  <Tooltip title={`Already uploaded as ${duplicateVideo.filename} and will be skipped on upload.`}>
+    <Tag icon={<WarningOutlined />} color="warning">already uploaded</Tag>
+  </Tooltip>
+);
+
+const getStatusContent = (video: ImportVideo, videos: ImportVideo[], uploadedVideos: Video[]) => {
   const duplicateVideo = getDuplicateVideo(video, videos);
 
   if (duplicateVideo) return getDuplicateTag(duplicateVideo);
+
+  const uploadedDuplicateVideo = getUploadedDuplicateVideo(video, uploadedVideos);
+  if (uploadedDuplicateVideo) return getUploadedDuplicateTag(uploadedDuplicateVideo);
 
   if (video.isValid !== false && !video.fileHash) {
     return <Tag icon={<LoadingOutlined spin />} color="processing">checking duplicates</Tag>;
@@ -116,10 +127,11 @@ const getStatusContent = (video: ImportVideo, videos: ImportVideo[]) => {
   return getValidationTag(video);
 };
 
-const getProgressContent = (video: ImportVideo, videos: ImportVideo[], hasUploadStarted: boolean) => {
+const getProgressContent = (video: ImportVideo, videos: ImportVideo[], uploadedVideos: Video[], hasUploadStarted: boolean) => {
   const duplicateVideo = getDuplicateVideo(video, videos);
+  const uploadedDuplicateVideo = getUploadedDuplicateVideo(video, uploadedVideos);
 
-  if (!hasUploadStarted && (video.isValid === false || duplicateVideo)) {
+  if (!hasUploadStarted && (video.isValid === false || duplicateVideo || uploadedDuplicateVideo)) {
     return <Text type="secondary">-</Text>;
   }
 
@@ -127,7 +139,7 @@ const getProgressContent = (video: ImportVideo, videos: ImportVideo[], hasUpload
     return <Tag color="error">skipped</Tag>;
   }
 
-  if (duplicateVideo) {
+  if (duplicateVideo || uploadedDuplicateVideo) {
     return <Tag color="warning">skipped</Tag>;
   }
 
@@ -141,6 +153,7 @@ const shouldShowUploadStatus = (video: ImportVideo) => (
 const ImportsPage: React.FC = () => {
   const [videos, setVideos] = useState<ImportVideo[]>([]);
   const [hasUploadStarted, setHasUploadStarted] = useState(false);
+  const uploadedVideos = useVideoStore((state) => state.processedRecords);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
 
@@ -246,12 +259,12 @@ const ImportsPage: React.FC = () => {
   const uploadReadyVideos = async () => {
     setHasUploadStarted(true);
 
-    for (const video of videos.filter((video) => canUploadVideo(video, videos))) {
+    for (const video of videos.filter((video) => canUploadVideo(video, videos, uploadedVideos))) {
       await uploadVideo(video);
     }
   };
 
-  const uploadableVideoCount = videos.filter((video) => canUploadVideo(video, videos)).length;
+  const uploadableVideoCount = videos.filter((video) => canUploadVideo(video, videos, uploadedVideos)).length;
   const isUploading = videos.some((video) => video.status === "uploading");
   const uploadedVideoCount = videos.filter((video) => video.status === "uploaded").length;
   const totalSize = videos.reduce((sum, video) => sum + video.fileSize, 0);
@@ -290,7 +303,7 @@ const ImportsPage: React.FC = () => {
       dataIndex: "status",
       render: (status: ImportVideoStatus, video) => (
         <Space direction="vertical" size={0}>
-          {getStatusContent(video, videos)}
+          {getStatusContent(video, videos, uploadedVideos)}
           {shouldShowUploadStatus(video) && <Tag color={statusColors[status]}>{status}</Tag>}
           {video.errorMessage && (
             <Text type="danger">{video.errorMessage}</Text>
@@ -302,7 +315,7 @@ const ImportsPage: React.FC = () => {
     {
       title: "Progress",
       dataIndex: "progressPercent",
-      render: (_, video) => getProgressContent(video, videos, hasUploadStarted),
+      render: (_, video) => getProgressContent(video, videos, uploadedVideos, hasUploadStarted),
       width: 220,
     },
   ];
