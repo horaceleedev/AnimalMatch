@@ -64,6 +64,9 @@ If you are using AnimalMatch as-is, you can skip this section and go to the [Use
 1. Make sure you have completed the prerequisite steps above, and `cd`'ed into this directory if you haven't already done so
 2. Start the development server using `npm run dev`. Once the server is running, open `localhost:5173` in your browser to access the development version of the frontend
 
+### Local PocketBase backend
+See [`pb_migrations/README.md`](pb_migrations/README.md) for setting up a local PocketBase instance from migrations.
+
 ### Production build
 1. Make sure you have completed the prerequisite steps above, and `cd`'ed into this directory if you haven't already done so
 2. Run `npm run build` to create a production build in the `dist` folder.
@@ -102,8 +105,6 @@ Note:
 Please submit any bug reports and feature requests on the [Issues](https://github.com/horaceleedev/AnimalMatch/issues) page.
 
 If you have any questions or feedback, feel free to contact [Horace Lee](mailto:horace.lee@eng.ox.ac.uk).
-
-
 
 ## Acknowledgements
 Development and maintenance of AnimalMatch has been supported by the [Visual AI](https://www.robots.ox.ac.uk/~vgg/projects/visualai/) research grant (UKRI Grant EP/T028572/1) as well as Schmidt Sciences, LLC.
