@@ -11,11 +11,7 @@ const collectionIds = {
 };
 
 const addFieldIfMissing = (collection, field) => {
-  try {
-    if (collection.fields.getByName(field.name)) return;
-  } catch {
-  }
-
+  if (collection.fields.getByName(field.name)) return;
   collection.fields.add(field);
 };
 
