@@ -1,10 +1,4 @@
-interface OptimiseMp4Request {
-  id: string;
-  file: File;
-}
-
-interface OptimiseMp4Response {
-  id: string;
+export interface OptimiseMp4Response {
   file?: File;
   wasOptimised?: boolean;
   error?: string;
@@ -84,14 +78,41 @@ const findTopLevelBoxes = async (file: File) => {
   return boxes;
 };
 
-const patchStcoBox = (view: DataView, box: Mp4BoxLocation, delta: number) => {
-  const entryCountOffset = box.offset + box.headerSize + 4;
-  const entriesOffset = entryCountOffset + 4;
-  const entryCount = view.getUint32(entryCountOffset);
+// Only bytes in [minChunkOffset, maxChunkOffset) shift by delta when the moov is
+// relocated; a chunk offset outside that region (e.g. media data after the moov)
+// would be silently corrupted if patched, so it must reject instead.
+interface ChunkOffsetPatch {
+  delta: number;
+  minChunkOffset: number;
+  maxChunkOffset: number;
+}
+
+const readEntryCount = (view: DataView, box: Mp4BoxLocation, entrySize: number) => {
+  const entryCount = view.getUint32(box.offset + box.headerSize + 4);
+
+  if (box.offset + box.headerSize + 8 + entryCount * entrySize > box.offset + box.size) {
+    throw new Error(`Invalid MP4 box ${box.type}.`);
+  }
+
+  return entryCount;
+};
+
+const assertChunkOffsetInPatchableRange = (chunkOffset: number, patch: ChunkOffsetPatch) => {
+  if (chunkOffset < patch.minChunkOffset || chunkOffset >= patch.maxChunkOffset) {
+    throw new Error("MP4 chunk offsets reference data that cannot be safely relocated in the browser.");
+  }
+};
+
+const patchStcoBox = (view: DataView, box: Mp4BoxLocation, patch: ChunkOffsetPatch) => {
+  const entriesOffset = box.offset + box.headerSize + 8;
+  const entryCount = readEntryCount(view, box, 4);
 
   for (let index = 0; index < entryCount; index += 1) {
     const offset = entriesOffset + index * 4;
-    const patchedOffset = view.getUint32(offset) + delta;
+    const chunkOffset = view.getUint32(offset);
+    assertChunkOffsetInPatchableRange(chunkOffset, patch);
+
+    const patchedOffset = chunkOffset + patch.delta;
 
     if (patchedOffset > 0xffffffff) {
       throw new Error("MP4 chunk offsets are too large to optimise in the browser.");
@@ -101,19 +122,20 @@ const patchStcoBox = (view: DataView, box: Mp4BoxLocation, delta: number) => {
   }
 };
 
-const patchCo64Box = (view: DataView, box: Mp4BoxLocation, delta: number) => {
-  const entryCountOffset = box.offset + box.headerSize + 4;
-  const entriesOffset = entryCountOffset + 4;
-  const entryCount = view.getUint32(entryCountOffset);
-  const bigDelta = BigInt(delta);
+const patchCo64Box = (view: DataView, box: Mp4BoxLocation, patch: ChunkOffsetPatch) => {
+  const entriesOffset = box.offset + box.headerSize + 8;
+  const entryCount = readEntryCount(view, box, 8);
+  const bigDelta = BigInt(patch.delta);
 
   for (let index = 0; index < entryCount; index += 1) {
     const offset = entriesOffset + index * 8;
-    view.setBigUint64(offset, view.getBigUint64(offset) + bigDelta);
+    const chunkOffset = view.getBigUint64(offset);
+    assertChunkOffsetInPatchableRange(Number(chunkOffset), patch);
+    view.setBigUint64(offset, chunkOffset + bigDelta);
   }
 };
 
-const patchChunkOffsets = (moovBuffer: ArrayBuffer, delta: number) => {
+const patchChunkOffsets = (moovBuffer: ArrayBuffer, patch: ChunkOffsetPatch) => {
   const view = new DataView(moovBuffer);
 
   const patchBoxes = (startOffset: number, endOffset: number) => {
@@ -124,9 +146,9 @@ const patchChunkOffsets = (moovBuffer: ArrayBuffer, delta: number) => {
       if (!box) return;
 
       if (box.type === "stco") {
-        patchStcoBox(view, box, delta);
+        patchStcoBox(view, box, patch);
       } else if (box.type === "co64") {
-        patchCo64Box(view, box, delta);
+        patchCo64Box(view, box, patch);
       } else if (containerBoxTypes.has(box.type)) {
         const childStartOffset = box.offset + box.headerSize + (box.type === "meta" ? 4 : 0);
         patchBoxes(childStartOffset, box.offset + box.size);
@@ -160,10 +182,19 @@ const optimiseMp4ForFastStart = async (file: File) => {
     throw new Error("Unsupported MP4 box layout for browser web optimisation.");
   }
 
-  const patchedMoovBuffer = patchChunkOffsets(
-    await file.slice(moovBox.offset, moovBox.offset + moovBox.size).arrayBuffer(),
-    moovBox.size,
-  );
+  const moovBuffer = await file.slice(moovBox.offset, moovBox.offset + moovBox.size).arrayBuffer();
+
+  // A size field of 0 means "extends to the end of the file"; relocating the moov
+  // without rewriting it would make the moov swallow everything after it.
+  if (new DataView(moovBuffer).getUint32(0) === 0) {
+    throw new Error("MP4 moov box has no explicit size and cannot be safely relocated.");
+  }
+
+  const patchedMoovBuffer = patchChunkOffsets(moovBuffer, {
+    delta: moovBox.size,
+    minChunkOffset: insertionOffset,
+    maxChunkOffset: moovBox.offset,
+  });
 
   const optimisedBlob = new Blob([
     file.slice(0, insertionOffset),
@@ -181,20 +212,14 @@ const optimiseMp4ForFastStart = async (file: File) => {
   };
 };
 
-self.onmessage = async (event: MessageEvent<OptimiseMp4Request>) => {
-  const { id, file } = event.data;
-
+self.onmessage = async (event: MessageEvent<File>) => {
   try {
-    const result = await optimiseMp4ForFastStart(file);
-    const response: OptimiseMp4Response = { id, ...result };
+    const response: OptimiseMp4Response = await optimiseMp4ForFastStart(event.data);
     self.postMessage(response);
   } catch (error) {
     const response: OptimiseMp4Response = {
-      id,
       error: error instanceof Error ? error.message : "Video web optimisation failed.",
     };
     self.postMessage(response);
   }
 };
-
-export {};
