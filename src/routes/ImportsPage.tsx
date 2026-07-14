@@ -187,6 +187,18 @@ const ImportsPage: React.FC = () => {
     )));
   };
 
+  const failVideo = (localId: string, validationMessage: string) => {
+    updateVideo(localId, {
+      status: "failed",
+      isLoading: false,
+      loadingMessage: undefined,
+      isValid: false,
+      needsWebOptimisation: false,
+      wasWebOptimised: false,
+      validationMessage,
+    });
+  };
+
   const validateVideo = async (video: ImportVideo) => {
     try {
       updateVideo(video.localId, {
@@ -208,16 +220,7 @@ const ImportsPage: React.FC = () => {
 
       return result;
     } catch {
-      updateVideo(video.localId, {
-        status: "failed",
-        isLoading: false,
-        loadingMessage: undefined,
-        isValid: false,
-        needsWebOptimisation: false,
-        wasWebOptimised: false,
-        validationMessage: "Video validation failed.",
-      });
-
+      failVideo(video.localId, "Video validation failed.");
       return undefined;
     }
   };
@@ -240,16 +243,7 @@ const ImportsPage: React.FC = () => {
 
       return true;
     } catch {
-      updateVideo(video.localId, {
-        status: "failed",
-        isLoading: false,
-        loadingMessage: undefined,
-        isValid: false,
-        needsWebOptimisation: false,
-        wasWebOptimised: false,
-        validationMessage: "Could not hash video source.",
-      });
-
+      failVideo(video.localId, "Could not hash video source.");
       return false;
     }
   };
@@ -265,16 +259,7 @@ const ImportsPage: React.FC = () => {
       const validationResult = await isValidVideoForImport(result.file);
 
       if (!validationResult.isValid || validationResult.needsWebOptimisation) {
-        updateVideo(video.localId, {
-          status: "failed",
-          isLoading: false,
-          loadingMessage: undefined,
-          isValid: false,
-          needsWebOptimisation: false,
-          wasWebOptimised: false,
-          validationMessage: "Video web optimisation failed.",
-        });
-
+        failVideo(video.localId, "Video web optimisation failed.");
         return undefined;
       }
 
@@ -292,16 +277,7 @@ const ImportsPage: React.FC = () => {
 
       return result.file;
     } catch {
-      updateVideo(video.localId, {
-        status: "failed",
-        isLoading: false,
-        loadingMessage: undefined,
-        isValid: false,
-        needsWebOptimisation: false,
-        wasWebOptimised: false,
-        validationMessage: "Video web optimisation failed.",
-      });
-
+      failVideo(video.localId, "Video web optimisation failed.");
       return undefined;
     }
   };
