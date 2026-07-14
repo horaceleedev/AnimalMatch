@@ -1,6 +1,5 @@
 export type ImportVideoStatus =
   | "pending"
-  | "validating"
   | "ready"
   | "uploading"
   | "uploaded"
@@ -15,8 +14,12 @@ export interface ImportVideo {
   fileHash?: string;
   relativePath?: string;
   status: ImportVideoStatus;
+  isLoading?: boolean;
+  loadingMessage?: string;
   progressPercent: number;
   isValid?: boolean;
+  needsWebOptimisation?: boolean;
+  wasWebOptimised?: boolean;
   validationMessage?: string;
   errorMessage?: string;
 }
