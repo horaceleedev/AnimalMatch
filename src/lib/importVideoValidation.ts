@@ -2,6 +2,7 @@ import { createFile, MP4BoxBuffer, type Movie } from "mp4box";
 
 export interface ImportVideoValidationResult {
   isValid: boolean;
+  needsWebOptimisation?: boolean;
   message?: string;
 }
 
@@ -108,12 +109,11 @@ export const isValidVideoForImport = async (file: File): Promise<ImportVideoVali
     };
   }
 
-  // We treat compatible but non-web-optimised files as a warning because they
-  // can be fixed quickly during upload/import by rewriting MP4 metadata order.
   if (!info.isProgressive) {
     return {
       isValid: true,
-      message: "This MP4 is not web-optimised. It can be fixed during upload.",
+      needsWebOptimisation: true,
+      message: "This MP4 is not web-optimised. It needs to be optimised before upload.",
     };
   }
 

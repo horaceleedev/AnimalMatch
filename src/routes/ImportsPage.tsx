@@ -9,6 +9,7 @@ import type { ImportVideo, ImportVideoStatus } from "../importTypes";
 import { pocketBaseVideoUploadAdapter } from "../importUploadAdapters";
 import { hashFileSample } from "../lib/fileHashing";
 import { isValidVideoForImport } from "../lib/importVideoValidation";
+import { optimiseMp4ForWeb } from "../lib/optimiseMp4ForWeb";
 import { useVideoStore } from "../DataStores";
 import type { Video } from "../types";
 
@@ -18,7 +19,6 @@ type FileWithRelativePath = File & { webkitRelativePath?: string };
 
 const statusColors: Record<ImportVideoStatus, string> = {
   pending: "default",
-  validating: "processing",
   ready: "blue",
   uploading: "processing",
   uploaded: "success",
@@ -35,7 +35,9 @@ const createImportVideo = (file: FileWithRelativePath): ImportVideo => {
     filename: file.name,
     fileSize: file.size,
     relativePath: file.webkitRelativePath || undefined,
-    status: "validating",
+    status: "pending",
+    isLoading: true,
+    loadingMessage: "checking video",
     progressPercent: 0,
   };
 };
@@ -66,6 +68,7 @@ const getUploadedDuplicateVideo = (video: ImportVideo, uploadedVideos: Video[]) 
 
 const canUploadVideo = (video: ImportVideo, videos: ImportVideo[], uploadedVideos: Video[]) => (
   video.isValid
+  && !video.needsWebOptimisation
   && Boolean(video.fileHash)
   && !getDuplicateVideo(video, videos)
   && !getUploadedDuplicateVideo(video, uploadedVideos)
@@ -73,8 +76,8 @@ const canUploadVideo = (video: ImportVideo, videos: ImportVideo[], uploadedVideo
 );
 
 const getValidationTag = (video: ImportVideo) => {
-  if (video.status === "validating" || video.isValid === undefined) {
-    return <Tag icon={<LoadingOutlined spin />} color="processing">checking video</Tag>;
+  if (video.isLoading || video.isValid === undefined) {
+    return <Tag icon={<LoadingOutlined spin />} color="processing">{video.loadingMessage ?? "checking video"}</Tag>;
   }
 
   if (video.isValid === false) {
@@ -85,10 +88,18 @@ const getValidationTag = (video: ImportVideo) => {
     );
   }
 
-  if (video.validationMessage) {
+  if (video.needsWebOptimisation) {
     return (
       <Tooltip title={video.validationMessage}>
-        <Tag icon={<WarningOutlined />} color="warning">optimise on upload</Tag>
+        <Tag icon={<WarningOutlined />} color="warning">needs web optimisation</Tag>
+      </Tooltip>
+    );
+  }
+
+  if (video.wasWebOptimised) {
+    return (
+      <Tooltip title="This video has been optimised for web playback.">
+        <Tag icon={<CheckCircleOutlined />} color="success">valid</Tag>
       </Tooltip>
     );
   }
@@ -113,6 +124,10 @@ const getUploadedDuplicateTag = (duplicateVideo: Video) => (
 );
 
 const getStatusContent = (video: ImportVideo, videos: ImportVideo[], uploadedVideos: Video[]) => {
+  if (video.isLoading || video.isValid === undefined) {
+    return getValidationTag(video);
+  }
+
   const duplicateVideo = getDuplicateVideo(video, videos);
 
   if (duplicateVideo) return getDuplicateTag(duplicateVideo);
@@ -120,7 +135,7 @@ const getStatusContent = (video: ImportVideo, videos: ImportVideo[], uploadedVid
   const uploadedDuplicateVideo = getUploadedDuplicateVideo(video, uploadedVideos);
   if (uploadedDuplicateVideo) return getUploadedDuplicateTag(uploadedDuplicateVideo);
 
-  if (video.isValid !== false && !video.fileHash) {
+  if (video.isValid !== false && !video.needsWebOptimisation && !video.fileHash) {
     return <Tag icon={<LoadingOutlined spin />} color="processing">checking duplicates</Tag>;
   }
 
@@ -131,12 +146,16 @@ const getProgressContent = (video: ImportVideo, videos: ImportVideo[], uploadedV
   const duplicateVideo = getDuplicateVideo(video, videos);
   const uploadedDuplicateVideo = getUploadedDuplicateVideo(video, uploadedVideos);
 
-  if (!hasUploadStarted && (video.isValid === false || duplicateVideo || uploadedDuplicateVideo)) {
+  if (!hasUploadStarted && (video.isValid === false || video.needsWebOptimisation || duplicateVideo || uploadedDuplicateVideo)) {
     return <Text type="secondary">-</Text>;
   }
 
   if (video.isValid === false) {
     return <Tag color="error">skipped</Tag>;
+  }
+
+  if (video.needsWebOptimisation) {
+    return <Tag color="warning">skipped</Tag>;
   }
 
   if (duplicateVideo || uploadedDuplicateVideo) {
@@ -170,27 +189,52 @@ const ImportsPage: React.FC = () => {
 
   const validateVideo = async (video: ImportVideo) => {
     try {
+      updateVideo(video.localId, {
+        isLoading: true,
+        loadingMessage: "checking video",
+      });
+
       const result = await isValidVideoForImport(video.file);
 
       updateVideo(video.localId, {
-        status: result.isValid ? "ready" : "failed",
+        status: result.isValid && !result.needsWebOptimisation ? "ready" : result.isValid ? "pending" : "failed",
+        isLoading: result.needsWebOptimisation,
+        loadingMessage: result.needsWebOptimisation ? "optimising for web" : undefined,
         isValid: result.isValid,
+        needsWebOptimisation: result.needsWebOptimisation,
+        wasWebOptimised: false,
         validationMessage: result.message,
       });
+
+      return result;
     } catch {
       updateVideo(video.localId, {
         status: "failed",
+        isLoading: false,
+        loadingMessage: undefined,
         isValid: false,
+        needsWebOptimisation: false,
+        wasWebOptimised: false,
         validationMessage: "Video validation failed.",
       });
+
+      return undefined;
     }
   };
 
-  const hashVideoSource = async (video: ImportVideo) => {
+  const hashVideoSource = async (video: ImportVideo, file = video.file) => {
     try {
-      const result = await hashFileSample(video.file);
+      updateVideo(video.localId, {
+        isLoading: true,
+        loadingMessage: "checking duplicates",
+      });
+
+      const result = await hashFileSample(file);
 
       updateVideo(video.localId, {
+        status: "ready",
+        isLoading: false,
+        loadingMessage: undefined,
         fileHash: result.hash,
       });
 
@@ -198,7 +242,11 @@ const ImportsPage: React.FC = () => {
     } catch {
       updateVideo(video.localId, {
         status: "failed",
+        isLoading: false,
+        loadingMessage: undefined,
         isValid: false,
+        needsWebOptimisation: false,
+        wasWebOptimised: false,
         validationMessage: "Could not hash video source.",
       });
 
@@ -206,16 +254,74 @@ const ImportsPage: React.FC = () => {
     }
   };
 
-  const prepareVideo = async (video: ImportVideo) => {
-    const didHash = await hashVideoSource(video);
-    if (!didHash) return;
+  const optimiseVideoForWeb = async (video: ImportVideo) => {
+    try {
+      updateVideo(video.localId, {
+        isLoading: true,
+        loadingMessage: "optimising for web",
+      });
 
-    await validateVideo(video);
+      const result = await optimiseMp4ForWeb(video.file);
+      const validationResult = await isValidVideoForImport(result.file);
+
+      if (!validationResult.isValid || validationResult.needsWebOptimisation) {
+        updateVideo(video.localId, {
+          status: "failed",
+          isLoading: false,
+          loadingMessage: undefined,
+          isValid: false,
+          needsWebOptimisation: false,
+          wasWebOptimised: false,
+          validationMessage: "Video web optimisation failed.",
+        });
+
+        return undefined;
+      }
+
+      updateVideo(video.localId, {
+        file: result.file,
+        fileSize: result.file.size,
+        status: "ready",
+        isLoading: false,
+        loadingMessage: undefined,
+        isValid: true,
+        needsWebOptimisation: false,
+        wasWebOptimised: true,
+        validationMessage: undefined,
+      });
+
+      return result.file;
+    } catch {
+      updateVideo(video.localId, {
+        status: "failed",
+        isLoading: false,
+        loadingMessage: undefined,
+        isValid: false,
+        needsWebOptimisation: false,
+        wasWebOptimised: false,
+        validationMessage: "Video web optimisation failed.",
+      });
+
+      return undefined;
+    }
   };
 
-  const prepareVideos = (videosToPrepare: ImportVideo[]) => {
+  const prepareVideo = async (video: ImportVideo) => {
+    const validationResult = await validateVideo(video);
+    if (!validationResult?.isValid) return;
+
+    const fileToHash = validationResult.needsWebOptimisation
+      ? await optimiseVideoForWeb(video)
+      : video.file;
+
+    if (!fileToHash) return;
+
+    await hashVideoSource(video, fileToHash);
+  };
+
+  const prepareVideos = async (videosToPrepare: ImportVideo[]) => {
     for (const video of videosToPrepare) {
-      void prepareVideo(video);
+      await prepareVideo(video);
     }
   };
 
@@ -227,7 +333,7 @@ const ImportsPage: React.FC = () => {
       .map((file) => createImportVideo(file as FileWithRelativePath));
 
     setVideos((currentVideos) => [...currentVideos, ...videosToAdd]);
-    prepareVideos(videosToAdd);
+    void prepareVideos(videosToAdd);
   };
 
   const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -240,7 +346,13 @@ const ImportsPage: React.FC = () => {
   };
 
   const uploadVideo = async (video: ImportVideo) => {
-    updateVideo(video.localId, { status: "uploading", progressPercent: 0, errorMessage: undefined });
+    updateVideo(video.localId, {
+      status: "uploading",
+      isLoading: false,
+      loadingMessage: undefined,
+      progressPercent: 0,
+      errorMessage: undefined,
+    });
 
     try {
       await pocketBaseVideoUploadAdapter.uploadVideo(video, (progressPercent) => {
