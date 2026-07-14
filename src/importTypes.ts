@@ -19,6 +19,7 @@ export interface ImportVideo {
   progressPercent: number;
   isValid?: boolean;
   needsWebOptimisation?: boolean;
+  wasWebOptimised?: boolean;
   validationMessage?: string;
   errorMessage?: string;
 }
