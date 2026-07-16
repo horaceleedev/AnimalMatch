@@ -2,9 +2,6 @@
 
 AnimalMatch is a web application designed to make wildlife individual identification faster and easier. It helps researchers and conservation teams annotate animals in videos, find matching individuals, and keep profiles and metadata organised in one place.
 
-> [!NOTE]
-> This codebase is still in active development. The database schema is subject to change and we may introduce breaking changes between updates.
-
 ## Features
 
 **🗂️ Organise your data**
@@ -36,6 +33,11 @@ AnimalMatch is a web application designed to make wildlife individual identifica
 
 ## User guide
 
+> [!NOTE]
+> This codebase is still in active development. The database schema is subject to change and we may introduce breaking changes between updates.
+
+We will be updating this section soon to provide some basic setup instructions. 
+
 1. Download the prebuilt frontend from the [Releases](https://github.com/horaceleedev/AnimalMatch/releases) page
 
 TODO add instructions for installing and setting up backend, and serving frontend
@@ -61,6 +63,9 @@ If you are using AnimalMatch as-is, you can skip this section and go to the [Use
 ### Start development server
 1. Make sure you have completed the prerequisite steps above, and `cd`'ed into this directory if you haven't already done so
 2. Start the development server using `npm run dev`. Once the server is running, open `localhost:5173` in your browser to access the development version of the frontend
+
+### Local PocketBase backend
+See [`pb_migrations/README.md`](pb_migrations/README.md) for setting up a local PocketBase instance from migrations.
 
 ### Production build
 1. Make sure you have completed the prerequisite steps above, and `cd`'ed into this directory if you haven't already done so
@@ -100,8 +105,6 @@ Note:
 Please submit any bug reports and feature requests on the [Issues](https://github.com/horaceleedev/AnimalMatch/issues) page.
 
 If you have any questions or feedback, feel free to contact [Horace Lee](mailto:horace.lee@eng.ox.ac.uk).
-
-
 
 ## Acknowledgements
 Development and maintenance of AnimalMatch has been supported by the [Visual AI](https://www.robots.ox.ac.uk/~vgg/projects/visualai/) research grant (UKRI Grant EP/T028572/1) as well as Schmidt Sciences, LLC.

@@ -7,6 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+tmp
 .env
 node_modules
 dist
@@ -18,6 +19,10 @@ test-results
 __screenshots__/
 pb_data/
 tmp/
+
+# PocketBase files
+pocketbase
+pb_data/
 
 # TypeScript cache
 *.tsbuildinfo
