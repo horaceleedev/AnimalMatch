@@ -10,6 +10,7 @@ import { pocketBaseVideoUploadAdapter } from "../importUploadAdapters";
 import { hashFileSample } from "../lib/fileHashing";
 import { isValidVideoForImport } from "../lib/importVideoValidation";
 import { optimiseMp4ForWeb } from "../lib/optimiseMp4ForWeb";
+import { createVideoThumbnail } from "../lib/videoThumbnail";
 import { useVideoStore } from "../DataStores";
 import type { Video } from "../types";
 
@@ -62,6 +63,10 @@ const getDuplicateVideo = (video: ImportVideo, videos: ImportVideo[]) => {
 
 const getUploadedDuplicateVideo = (video: ImportVideo, uploadedVideos: Video[]) => {
   if (!video.fileHash) return undefined;
+
+  // Once this row is uploaded, its own record lands in the video store and
+  // would match its hash. this guards against it showing as "already uploaded".
+  if (video.status === "uploading" || video.status === "uploaded") return undefined;
 
   return uploadedVideos.find((uploadedVideo) => uploadedVideo.file_hash === video.fileHash);
 };
@@ -215,6 +220,7 @@ const ImportsPage: React.FC = () => {
         isValid: result.isValid,
         needsWebOptimisation: result.needsWebOptimisation,
         wasWebOptimised: false,
+        thumbnailFile: undefined,
         validationMessage: result.message,
       });
 
@@ -282,17 +288,37 @@ const ImportsPage: React.FC = () => {
     }
   };
 
+  const createThumbnailForVideo = async (video: ImportVideo, file: File) => {
+    try {
+      updateVideo(video.localId, {
+        isLoading: true,
+        loadingMessage: "creating thumbnail",
+      });
+
+      const thumbnailFile = await createVideoThumbnail(file);
+      updateVideo(video.localId, { thumbnailFile });
+
+      return true;
+    } catch {
+      failVideo(video.localId, "Could not create a thumbnail. The video may not be playable in this browser.");
+      return false;
+    }
+  };
+
   const prepareVideo = async (video: ImportVideo) => {
     const validationResult = await validateVideo(video);
     if (!validationResult?.isValid) return;
 
-    const fileToHash = validationResult.needsWebOptimisation
+    const fileToUpload = validationResult.needsWebOptimisation
       ? await optimiseVideoForWeb(video)
       : video.file;
 
-    if (!fileToHash) return;
+    if (!fileToUpload) return;
 
-    await hashVideoSource(video, fileToHash);
+    const hasThumbnail = await createThumbnailForVideo(video, fileToUpload);
+    if (!hasThumbnail) return;
+
+    await hashVideoSource(video, fileToUpload);
   };
 
   const prepareVideos = async (videosToPrepare: ImportVideo[]) => {
@@ -391,8 +417,9 @@ const ImportsPage: React.FC = () => {
       dataIndex: "status",
       render: (status: ImportVideoStatus, video) => (
         <Space direction="vertical" size={0}>
-          {getStatusContent(video, videos, uploadedVideos)}
-          {shouldShowUploadStatus(video) && <Tag color={statusColors[status]}>{status}</Tag>}
+          {shouldShowUploadStatus(video)
+            ? <Tag color={statusColors[status]}>{status}</Tag>
+            : getStatusContent(video, videos, uploadedVideos)}
           {video.errorMessage && (
             <Text type="danger">{video.errorMessage}</Text>
           )}

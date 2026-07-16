@@ -12,6 +12,7 @@ export interface ImportVideo {
   filename: string;
   fileSize: number;
   fileHash?: string;
+  thumbnailFile?: File;
   relativePath?: string;
   status: ImportVideoStatus;
   isLoading?: boolean;

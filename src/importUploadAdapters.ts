@@ -64,9 +64,11 @@ export const pocketBaseVideoUploadAdapter: VideoUploadAdapter = {
     formData.append("file", video.file);
     formData.append("file_hash", video.fileHash);
 
-    // TODO: These are placeholder metadata values for the video-only upload MWE.
-    // Replace them by making metadata fields optional in the frontend/domain model
-    // and filling them from the metadata import flow when that exists.
+    if (video.thumbnailFile) {
+      formData.append("thumbnail", video.thumbnailFile);
+    }
+
+    // TODO: placeholder values until the metadata import flow exists.
     formData.append("location_name", "Unknown");
     formData.append("recording_date", new Date(0).toISOString());
     formData.append("utm_easting", "0");
@@ -85,17 +87,13 @@ export const pocketBaseVideoUploadAdapter: VideoUploadAdapter = {
   },
 };
 
-// Temporary adapter used while the PocketBase import schema/API is not available.
-// This lets the import UI exercise real async progress, success, and retry flows
-// without writing files to PocketBase or creating video records.
+// Exercises the import UI (progress, success, retry) without writing to
+// PocketBase.
 export const mockVideoUploadAdapter: VideoUploadAdapter = {
   uploadVideo: async (
     video: ImportVideo,
     onProgress: (progressPercent: number) => void,
   ): Promise<VideoUploadResult> => {
-    // A real adapter will report upload progress from the transport layer instead
-    // of incrementing a timer. For PocketBase this will likely be replaced by a
-    // create/update call against an import_videos collection with a file field.
     for (let progress = 0; progress <= 100; progress += mockUploadProgressStep) {
       onProgress(progress);
       if (progress < 100) {
@@ -103,7 +101,6 @@ export const mockVideoUploadAdapter: VideoUploadAdapter = {
       }
     }
 
-    // The mock id stands in for the future server-side import video record id.
     return {
       id: `mock-${video.localId}`,
       filename: video.filename,

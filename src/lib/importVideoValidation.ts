@@ -6,8 +6,8 @@ export interface ImportVideoValidationResult {
   message?: string;
 }
 
-// Read bounded slices from the start and end so mp4box can find MP4 metadata
-// without loading large videos into memory.
+// mp4box only needs the metadata, which sits at one end of the file or the
+// other, so avoid loading whole videos into memory.
 const mp4MetadataReadByteLimit = 4 * 1024 * 1024;
 const supportedVideoCodecPrefixes = ["avc1", "avc3"];
 
@@ -55,8 +55,7 @@ const parseMp4Info = async (file: File): Promise<Movie> => {
 };
 
 export const isValidVideoForImport = async (file: File): Promise<ImportVideoValidationResult> => {
-  // Fast path for obvious non-video selections, especially folder uploads where
-  // the browser might have ignored the input's `accept` filter.
+  // Folder uploads can bypass the input's `accept` filter.
   if (!isMp4Extension(file)) {
     return {
       isValid: false,
@@ -66,8 +65,6 @@ export const isValidVideoForImport = async (file: File): Promise<ImportVideoVali
 
   let info: Movie;
   try {
-    // mp4box parses the MP4 structure and gives us tracks, codecs, and a MIME string.
-    // It also reports whether the MP4 can be played progressively via isProgressive:
     // https://github.com/gpac/mp4box.js?tab=readme-ov-file#onreadyinfo
     info = await parseMp4Info(file);
   } catch {
@@ -79,8 +76,7 @@ export const isValidVideoForImport = async (file: File): Promise<ImportVideoVali
 
   const videoTrack = info.videoTracks[0];
 
-  // Audio-only MP4s and malformed files may parse successfully but still have
-  // no usable video stream for annotation.
+  // Audio-only MP4s parse fine but there is nothing to annotate.
   if (!videoTrack) {
     return {
       isValid: false,
@@ -90,8 +86,7 @@ export const isValidVideoForImport = async (file: File): Promise<ImportVideoVali
 
   const videoCodec = videoTrack.codec;
 
-  // AnimalMatch targets H.264 MP4 for broad browser compatibility. Other codecs
-  // may work in some browsers but are not treated as safe import targets.
+  // Imported videos must play in any browser, so only H.264 is accepted.
   if (!hasSupportedVideoCodec(videoCodec)) {
     return {
       isValid: false,
@@ -99,9 +94,7 @@ export const isValidVideoForImport = async (file: File): Promise<ImportVideoVali
     };
   }
 
-  // Ask the current browser whether it can play the exact MIME/codec string
-  // reported by mp4box; this catches browser-specific playback gaps while the
-  // H.264 check above keeps AnimalMatch on a cross-browser-safe target.
+  // Even valid H.264 can use profile/level combinations this browser won't play.
   if (!canBrowserPlayMimeType(info.mime)) {
     return {
       isValid: false,
