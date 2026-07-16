@@ -17,6 +17,7 @@ test-results
 .vitest-attachments/
 __screenshots__/
 pb_data/
+tmp/
 
 # TypeScript cache
 *.tsbuildinfo
