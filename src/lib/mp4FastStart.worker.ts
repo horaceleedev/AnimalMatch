@@ -78,9 +78,8 @@ const findTopLevelBoxes = async (file: File) => {
   return boxes;
 };
 
-// Only bytes in [minChunkOffset, maxChunkOffset) shift by delta when the moov is
-// relocated; a chunk offset outside that region (e.g. media data after the moov)
-// would be silently corrupted if patched, so it must reject instead.
+// Only bytes in [minChunkOffset, maxChunkOffset) move when the moov is
+// relocated; offsets outside that range can't be patched, so reject the file.
 interface ChunkOffsetPatch {
   delta: number;
   minChunkOffset: number;
@@ -99,7 +98,7 @@ const readEntryCount = (view: DataView, box: Mp4BoxLocation, entrySize: number) 
 
 const assertChunkOffsetInPatchableRange = (chunkOffset: number, patch: ChunkOffsetPatch) => {
   if (chunkOffset < patch.minChunkOffset || chunkOffset >= patch.maxChunkOffset) {
-    throw new Error("MP4 chunk offsets reference data that cannot be safely relocated in the browser.");
+    throw new Error("MP4 chunk offsets point outside the media data being moved.");
   }
 };
 
@@ -184,10 +183,9 @@ const optimiseMp4ForFastStart = async (file: File) => {
 
   const moovBuffer = await file.slice(moovBox.offset, moovBox.offset + moovBox.size).arrayBuffer();
 
-  // A size field of 0 means "extends to the end of the file"; relocating the moov
-  // without rewriting it would make the moov swallow everything after it.
+  // A moov with size 0 can't be moved without rewriting its header.
   if (new DataView(moovBuffer).getUint32(0) === 0) {
-    throw new Error("MP4 moov box has no explicit size and cannot be safely relocated.");
+    throw new Error("MP4 moov box has no explicit size.");
   }
 
   const patchedMoovBuffer = patchChunkOffsets(moovBuffer, {

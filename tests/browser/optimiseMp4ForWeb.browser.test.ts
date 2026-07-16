@@ -20,8 +20,7 @@ interface TopLevelBox {
   size: number;
 }
 
-// Minimal top-level box scan so tests can locate and mutate fixture boxes without
-// going through the code under test.
+// Independent box scan so fixture mutations don't rely on the code under test.
 const readTopLevelBoxes = (buffer: ArrayBuffer) => {
   const view = new DataView(buffer);
   const boxes: TopLevelBox[] = [];
@@ -111,8 +110,7 @@ describe("optimiseMp4ForWeb", () => {
 
     if (!moovBox) throw new Error("Fixture has no moov box.");
 
-    // A size field of 0 means "extends to the end of the file", so it is only
-    // meaningful on the last top-level box.
+    // Size 0 ("rest of the file") is only valid on the last top-level box.
     expect(moovBox.offset + moovBox.size).toBe(buffer.byteLength);
     new DataView(buffer).setUint32(moovBox.offset, 0);
 
@@ -129,8 +127,8 @@ describe("optimiseMp4ForWeb", () => {
 
     if (!ftypBox || !moovBox) throw new Error("Fixture is missing ftyp or moov box.");
 
-    // Replace the real mdat with an empty stub so the moov's chunk offsets point
-    // beyond the moov's new position, which cannot be patched safely.
+    // Swap the real mdat for an empty stub so the chunk offsets end up pointing
+    // past the relocated moov.
     const emptyMdatBox = new Uint8Array([0, 0, 0, 8, 0x6d, 0x64, 0x61, 0x74]);
     const file = new File([
       buffer.slice(0, ftypBox.offset + ftypBox.size),
@@ -138,6 +136,6 @@ describe("optimiseMp4ForWeb", () => {
       buffer.slice(moovBox.offset, moovBox.offset + moovBox.size),
     ], "dangling-chunk-offsets.mp4", { type: "video/mp4" });
 
-    await expect(optimiseMp4ForWeb(file)).rejects.toThrow(/cannot be safely relocated/);
+    await expect(optimiseMp4ForWeb(file)).rejects.toThrow(/point outside the media data/);
   });
 });
