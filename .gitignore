@@ -18,6 +18,7 @@ test-results
 .vitest-attachments/
 __screenshots__/
 pb_data/
+tmp/
 
 # PocketBase files
 pocketbase
