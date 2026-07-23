@@ -10,6 +10,9 @@ vi.mock('../../src/lib/fileHashing', () => ({
 vi.mock('../../src/lib/videoThumbnail', () => ({
   createVideoThumbnail: vi.fn(),
 }));
+vi.mock('../../src/lib/optimiseMp4ForWeb', () => ({
+  optimiseMp4ForWeb: vi.fn(),
+}));
 vi.mock('../../src/importUploadAdapters', () => ({
   pocketBaseVideoUploadAdapter: { uploadVideo: vi.fn() },
 }));
@@ -20,6 +23,7 @@ vi.mock('../../src/DataStores', () => ({
 import { isValidVideoForImport } from '../../src/lib/importVideoValidation';
 import { hashFileSample } from '../../src/lib/fileHashing';
 import { createVideoThumbnail } from '../../src/lib/videoThumbnail';
+import { optimiseMp4ForWeb } from '../../src/lib/optimiseMp4ForWeb';
 import { pocketBaseVideoUploadAdapter } from '../../src/importUploadAdapters';
 import { useVideoStore } from '../../src/DataStores';
 import { fireEvent, renderWithProviders, screen, userEvent, waitFor } from '../helpers/render';
@@ -28,6 +32,7 @@ import ImportsPage from '../../src/routes/ImportsPage';
 const mockedIsValidVideoForImport = vi.mocked(isValidVideoForImport);
 const mockedHashFileSample = vi.mocked(hashFileSample);
 const mockedCreateVideoThumbnail = vi.mocked(createVideoThumbnail);
+const mockedOptimiseMp4ForWeb = vi.mocked(optimiseMp4ForWeb);
 const mockedUploadVideo = vi.mocked(pocketBaseVideoUploadAdapter.uploadVideo);
 const mockedUseVideoStore = vi.mocked(useVideoStore);
 
@@ -140,5 +145,84 @@ describe('ImportsPage retries', () => {
 
     await screen.findByText('uploaded');
     expect(mockedUploadVideo).toHaveBeenCalledTimes(2);
+  });
+
+  it('optimises a video for web playback before it becomes ready to upload', async () => {
+    const optimisedFile = new File(['optimised content'], 'clip.mp4', { type: 'video/mp4' });
+    mockedIsValidVideoForImport
+      .mockResolvedValueOnce({ isValid: true, needsWebOptimisation: true, message: 'This MP4 is not web-optimised.' })
+      .mockResolvedValueOnce({ isValid: true });
+    mockedOptimiseMp4ForWeb.mockResolvedValueOnce({ file: optimisedFile, wasOptimised: true });
+
+    await addTestVideos(['clip.mp4']);
+
+    expect(mockedOptimiseMp4ForWeb).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('valid')).toBeInTheDocument();
+  });
+
+  it('marks a video invalid if the optimised file still fails validation', async () => {
+    const optimisedFile = new File(['still broken'], 'clip.mp4', { type: 'video/mp4' });
+    mockedIsValidVideoForImport
+      .mockResolvedValueOnce({ isValid: true, needsWebOptimisation: true, message: 'This MP4 is not web-optimised.' })
+      .mockResolvedValueOnce({ isValid: false, message: 'This file could not be read as a valid MP4.' });
+    mockedOptimiseMp4ForWeb.mockResolvedValueOnce({ file: optimisedFile, wasOptimised: true });
+
+    renderWithProviders(<ImportsPage />);
+    const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [makeVideoFile('clip.mp4')] } });
+
+    await screen.findByText('invalid');
+    expect(screen.getByRole('button', { name: /Upload/ })).toBeDisabled();
+    expect(mockedUploadVideo).not.toHaveBeenCalled();
+  });
+
+  it('marks a video invalid if web optimisation itself throws', async () => {
+    mockedIsValidVideoForImport.mockResolvedValueOnce({
+      isValid: true,
+      needsWebOptimisation: true,
+      message: 'This MP4 is not web-optimised.',
+    });
+    mockedOptimiseMp4ForWeb.mockRejectedValueOnce(new Error('MP4 chunk offsets are too large to optimise in the browser.'));
+
+    renderWithProviders(<ImportsPage />);
+    const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [makeVideoFile('clip.mp4')] } });
+
+    await screen.findByText('invalid');
+    expect(screen.getByRole('button', { name: /Upload/ })).toBeDisabled();
+    expect(mockedUploadVideo).not.toHaveBeenCalled();
+  });
+
+  it('flags a duplicate video within the same batch and only uploads the first copy', async () => {
+    mockedHashFileSample.mockResolvedValue({ hash: 'same-hash', bytesHashed: 100 });
+    mockedUploadVideo.mockResolvedValueOnce({ id: 'video-1', filename: 'first.mp4' });
+
+    await addTestVideos(['first.mp4', 'second.mp4']);
+
+    expect(screen.getByText('duplicate video')).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: /Upload/ }));
+
+    await screen.findByText('uploaded');
+    expect(mockedUploadVideo).toHaveBeenCalledTimes(1);
+    expect(mockedUploadVideo).toHaveBeenCalledWith(
+      expect.objectContaining({ filename: 'first.mp4' }),
+      expect.any(Function),
+    );
+  });
+
+  it('flags a video that matches an already-uploaded record and skips it', async () => {
+    mockedUseVideoStore.mockImplementation((selector) => selector({
+      processedRecords: [{ file_hash: 'existing-hash', filename: 'existing.mp4' }],
+    } as never));
+    mockedHashFileSample.mockResolvedValueOnce({ hash: 'existing-hash', bytesHashed: 100 });
+
+    renderWithProviders(<ImportsPage />);
+    const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [makeVideoFile('dupe.mp4')] } });
+
+    await screen.findByText('already uploaded');
+    expect(screen.getByRole('button', { name: /Upload/ })).toBeDisabled();
+    expect(mockedUploadVideo).not.toHaveBeenCalled();
   });
 });
