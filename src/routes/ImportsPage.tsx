@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Card, Flex, Progress, Space, Table, Tag, Tooltip, Typography } from "antd";
+import { Button, Card, Divider, Flex, Progress, Space, Table, Tag, Tooltip, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, FolderOpenOutlined, LoadingOutlined, UploadOutlined, WarningOutlined } from "@ant-design/icons";
 import { nanoid } from "nanoid";
 
 import DashboardContent from "../components/dashboards/DashboardContent";
+import ImportBatchSummary from "../components/ImportBatchSummary";
 import type { ImportVideo, ImportVideoStatus } from "../importTypes";
 import { pocketBaseVideoUploadAdapter } from "../importUploadAdapters";
 import { hashFileSample } from "../lib/fileHashing";
@@ -380,8 +381,34 @@ const ImportsPage: React.FC = () => {
 
   const uploadableVideoCount = videos.filter((video) => canUploadVideo(video, videos, uploadedVideos)).length;
   const isUploading = videos.some((video) => video.status === "uploading");
-  const uploadedVideoCount = videos.filter((video) => video.status === "uploaded").length;
   const totalSize = videos.reduce((sum, video) => sum + video.fileSize, 0);
+
+  const checkingCount = videos.filter((video) => video.isLoading || video.isValid === undefined).length;
+  const uploadingCount = videos.filter((video) => video.status === "uploading").length;
+  const uploadedCount = videos.filter((video) => video.status === "uploaded").length;
+  const failedCount = videos.filter((video) => video.status === "failed" && video.isValid).length;
+  const readyCount = videos.filter((video) => video.status === "ready" && canUploadVideo(video, videos, uploadedVideos)).length;
+  const skippedCount = videos.length - checkingCount - uploadingCount - uploadedCount - failedCount - readyCount;
+
+  // Weight overall progress by bytes so one large video doesn't count the
+  // same as a small one.
+  const batchVideos = videos.filter((video) => (
+    canUploadVideo(video, videos, uploadedVideos)
+    || video.status === "uploading"
+    || video.status === "uploaded"
+    || (video.status === "failed" && video.isValid)
+  ));
+  const batchTotalBytes = batchVideos.reduce((sum, video) => sum + video.fileSize, 0);
+  const uploadedBytes = batchVideos
+    .filter((video) => video.status === "uploaded")
+    .reduce((sum, video) => sum + video.fileSize, 0);
+  const uploadingBytes = batchVideos
+    .filter((video) => video.status === "uploading")
+    .reduce((sum, video) => sum + (video.fileSize * video.progressPercent) / 100, 0);
+
+  const toBatchPercent = (bytes: number) => (batchTotalBytes === 0 ? 0 : Math.round((bytes / batchTotalBytes) * 100));
+  const uploadedPercent = toBatchPercent(uploadedBytes);
+  const overallPercent = toBatchPercent(uploadedBytes + uploadingBytes);
 
   const columns: ColumnsType<ImportVideo> = [
     {
@@ -446,24 +473,14 @@ const ImportsPage: React.FC = () => {
         </div>
 
         <Card>
-          <Flex justify="space-between" gap="large" wrap="wrap">
-            <Space>
-              <Button icon={<UploadOutlined />} onClick={() => fileInputRef.current?.click()}>
-                Select videos
-              </Button>
-              <Button icon={<FolderOpenOutlined />} onClick={() => folderInputRef.current?.click()}>
-                Select folder
-              </Button>
-              <Button type="primary" onClick={uploadReadyVideos} disabled={uploadableVideoCount === 0 || isUploading}>
-                Upload
-              </Button>
-            </Space>
-            <Space size="large" wrap>
-              <Text>{videos.length} selected</Text>
-              <Text>{uploadedVideoCount} uploaded</Text>
-              <Text>{formatFileSize(totalSize)} total</Text>
-            </Space>
-          </Flex>
+          <Space>
+            <Button icon={<UploadOutlined />} onClick={() => fileInputRef.current?.click()}>
+              Select videos
+            </Button>
+            <Button icon={<FolderOpenOutlined />} onClick={() => folderInputRef.current?.click()}>
+              Select folder
+            </Button>
+          </Space>
 
           <input
             ref={fileInputRef}
@@ -481,6 +498,29 @@ const ImportsPage: React.FC = () => {
             hidden
             onChange={handleFileInputChange}
           />
+
+          {videos.length > 0 && (
+            <>
+              <Divider style={{ margin: "16px 0" }} />
+              <ImportBatchSummary
+                counts={{
+                  selected: videos.length,
+                  checking: checkingCount,
+                  ready: readyCount,
+                  uploading: uploadingCount,
+                  uploaded: uploadedCount,
+                  failed: failedCount,
+                  skipped: skippedCount,
+                }}
+                totalSizeLabel={formatFileSize(totalSize)}
+                overallPercent={overallPercent}
+                uploadedPercent={uploadedPercent}
+                isUploading={isUploading}
+                uploadableCount={uploadableVideoCount}
+                onUpload={uploadReadyVideos}
+              />
+            </>
+          )}
         </Card>
 
         <Table
