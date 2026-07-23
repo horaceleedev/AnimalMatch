@@ -99,4 +99,46 @@ describe('ImportsPage retries', () => {
     await waitFor(() => expect(screen.getAllByText('uploaded')).toHaveLength(2));
     expect(mockedUploadVideo).toHaveBeenCalledTimes(4);
   });
+
+  it('does not show a retry icon for a video that failed validation', async () => {
+    mockedIsValidVideoForImport.mockResolvedValueOnce({ isValid: false, message: 'Unsupported video codec.' });
+
+    renderWithProviders(<ImportsPage />);
+    const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [makeVideoFile('bad.mp4')] } });
+
+    await screen.findByText('invalid');
+
+    expect(screen.getByRole('button', { name: /Upload/ })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: /Retry upload for bad\.mp4/ })).not.toBeInTheDocument();
+    expect(mockedUploadVideo).not.toHaveBeenCalled();
+  });
+
+  it('retries only the genuine upload failure when a batch also has a validation failure', async () => {
+    mockedIsValidVideoForImport.mockImplementation(async (file) => (
+      file.name === 'bad.mp4'
+        ? { isValid: false, message: 'Unsupported video codec.' }
+        : { isValid: true, needsWebOptimisation: false }
+    ));
+    mockedUploadVideo.mockRejectedValueOnce(new Error('Upload failed'));
+
+    renderWithProviders(<ImportsPage />);
+    const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [makeVideoFile('good.mp4'), makeVideoFile('bad.mp4')] } });
+
+    await screen.findByText('invalid');
+    await waitFor(() => expect(screen.getByRole('button', { name: /Upload/ })).toBeEnabled());
+
+    await userEvent.click(screen.getByRole('button', { name: /Upload/ }));
+    await screen.findByText('failed');
+
+    const retryAllButton = await screen.findByRole('button', { name: /Retry 1 failed/ });
+    expect(screen.queryByRole('button', { name: /Retry upload for bad\.mp4/ })).not.toBeInTheDocument();
+
+    mockedUploadVideo.mockResolvedValueOnce({ id: 'video-1', filename: 'good.mp4' });
+    await userEvent.click(retryAllButton);
+
+    await screen.findByText('uploaded');
+    expect(mockedUploadVideo).toHaveBeenCalledTimes(2);
+  });
 });
