@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Card, Divider, Flex, Progress, Space, Table, Tag, Tooltip, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, FolderOpenOutlined, LoadingOutlined, UploadOutlined, WarningOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, FolderOpenOutlined, LoadingOutlined, ReloadOutlined, UploadOutlined, WarningOutlined } from "@ant-design/icons";
 import { nanoid } from "nanoid";
 
 import DashboardContent from "../components/dashboards/DashboardContent";
@@ -79,6 +79,10 @@ const canUploadVideo = (video: ImportVideo, videos: ImportVideo[], uploadedVideo
   && !getDuplicateVideo(video, videos)
   && !getUploadedDuplicateVideo(video, uploadedVideos)
   && (video.status === "ready" || video.status === "failed")
+);
+
+const isRetryableFailure = (video: ImportVideo, videos: ImportVideo[], uploadedVideos: Video[]) => (
+  video.status === "failed" && canUploadVideo(video, videos, uploadedVideos)
 );
 
 const getValidationTag = (video: ImportVideo) => {
@@ -379,6 +383,19 @@ const ImportsPage: React.FC = () => {
     }
   };
 
+  const retryVideo = async (video: ImportVideo) => {
+    setHasUploadStarted(true);
+    await uploadVideo(video);
+  };
+
+  const retryFailedVideos = async () => {
+    setHasUploadStarted(true);
+
+    for (const video of videos.filter((video) => isRetryableFailure(video, videos, uploadedVideos))) {
+      await uploadVideo(video);
+    }
+  };
+
   const uploadableVideoCount = videos.filter((video) => canUploadVideo(video, videos, uploadedVideos)).length;
   const isUploading = videos.some((video) => video.status === "uploading");
   const totalSize = videos.reduce((sum, video) => sum + video.fileSize, 0);
@@ -386,7 +403,7 @@ const ImportsPage: React.FC = () => {
   const checkingCount = videos.filter((video) => video.isLoading || video.isValid === undefined).length;
   const uploadingCount = videos.filter((video) => video.status === "uploading").length;
   const uploadedCount = videos.filter((video) => video.status === "uploaded").length;
-  const failedCount = videos.filter((video) => video.status === "failed" && video.isValid).length;
+  const failedCount = videos.filter((video) => isRetryableFailure(video, videos, uploadedVideos)).length;
   const readyCount = videos.filter((video) => video.status === "ready" && canUploadVideo(video, videos, uploadedVideos)).length;
   const skippedCount = videos.length - checkingCount - uploadingCount - uploadedCount - failedCount - readyCount;
 
@@ -442,16 +459,33 @@ const ImportsPage: React.FC = () => {
     {
       title: "Status",
       dataIndex: "status",
-      render: (status: ImportVideoStatus, video) => (
-        <Space direction="vertical" size={0}>
-          {shouldShowUploadStatus(video)
-            ? <Tag color={statusColors[status]}>{status}</Tag>
-            : getStatusContent(video, videos, uploadedVideos)}
-          {video.errorMessage && (
-            <Text type="danger">{video.errorMessage}</Text>
-          )}
-        </Space>
-      ),
+      render: (status: ImportVideoStatus, video) => {
+        const canRetry = !isUploading && isRetryableFailure(video, videos, uploadedVideos);
+
+        return (
+          <Space direction="vertical" size={0}>
+            <Space size={4}>
+              {shouldShowUploadStatus(video)
+                ? <Tag color={statusColors[status]}>{status}</Tag>
+                : getStatusContent(video, videos, uploadedVideos)}
+              {canRetry && (
+                <Tooltip title="Retry upload">
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<ReloadOutlined />}
+                    aria-label={`Retry upload for ${video.filename}`}
+                    onClick={() => void retryVideo(video)}
+                  />
+                </Tooltip>
+              )}
+            </Space>
+            {video.errorMessage && (
+              <Text type="danger">{video.errorMessage}</Text>
+            )}
+          </Space>
+        );
+      },
       width: 220,
     },
     {
@@ -518,6 +552,7 @@ const ImportsPage: React.FC = () => {
                 isUploading={isUploading}
                 uploadableCount={uploadableVideoCount}
                 onUpload={uploadReadyVideos}
+                onRetryFailed={retryFailedVideos}
               />
             </>
           )}
