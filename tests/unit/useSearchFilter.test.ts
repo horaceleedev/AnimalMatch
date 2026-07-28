@@ -21,6 +21,7 @@ const makeVideo = (overrides: Partial<Video> = {}): Video => ({
   location_name: 'Meru',
   long: 0,
   month_of_SD_retrieval: 'January',
+  needs_metadata: false,
   notes: '',
   num_individuals: 1,
   recording_date: '2026-01-01',

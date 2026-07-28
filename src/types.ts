@@ -42,6 +42,7 @@ export interface VideoRecord extends RecordModel {
   custom_tags: string[];
   assignees: string[];
   annotation_status: string;
+  needs_metadata: boolean;
 };
 export interface Video extends VideoRecord {
   url: string;

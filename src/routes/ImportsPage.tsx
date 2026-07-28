@@ -77,11 +77,14 @@ const canUploadVideo = (video: ImportVideo, videos: ImportVideo[], uploadedVideo
   && Boolean(video.fileHash)
   && !getDuplicateVideo(video, videos)
   && !getUploadedDuplicateVideo(video, uploadedVideos)
-  && (video.status === "ready" || video.status === "failed")
+  && (video.status === "ready" || video.status === "failed" || video.status === "cancelled")
 );
 
+// A cancelled upload only ever happens to a video that had already started
+// uploading (isValid was already true to get there), so it's retryable the
+// same way a genuine upload failure is.
 const isRetryableFailure = (video: ImportVideo, videos: ImportVideo[], uploadedVideos: Video[]) => (
-  video.status === "failed" && canUploadVideo(video, videos, uploadedVideos)
+  (video.status === "failed" || video.status === "cancelled") && canUploadVideo(video, videos, uploadedVideos)
 );
 
 const getValidationTag = (video: ImportVideo) => {
@@ -175,7 +178,10 @@ const getProgressContent = (video: ImportVideo, videos: ImportVideo[], uploadedV
 };
 
 const shouldShowUploadStatus = (video: ImportVideo) => (
-  video.status === "uploading" || video.status === "uploaded" || (video.status === "failed" && video.isValid)
+  video.status === "uploading"
+  || video.status === "uploaded"
+  || video.status === "cancelled"
+  || (video.status === "failed" && video.isValid)
 );
 
 const ImportsPage: React.FC = () => {
@@ -185,6 +191,7 @@ const ImportsPage: React.FC = () => {
   const uploadedVideos = useVideoStore((state) => state.processedRecords);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
+  const uploadAbortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     folderInputRef.current?.setAttribute("webkitdirectory", "");
@@ -370,7 +377,7 @@ const ImportsPage: React.FC = () => {
     setVideos((currentVideos) => currentVideos.filter((video) => video.localId !== localId));
   };
 
-  const uploadVideo = async (video: ImportVideo) => {
+  const uploadVideo = async (video: ImportVideo, signal: AbortSignal) => {
     updateVideo(video.localId, {
       status: "uploading",
       isLoading: false,
@@ -382,10 +389,15 @@ const ImportsPage: React.FC = () => {
     try {
       await pocketBaseVideoUploadAdapter.uploadVideo(video, (progressPercent) => {
         updateVideo(video.localId, { progressPercent });
-      });
+      }, signal);
 
       updateVideo(video.localId, { status: "uploaded", progressPercent: 100 });
     } catch (error) {
+      if (signal.aborted) {
+        updateVideo(video.localId, { status: "cancelled" });
+        return;
+      }
+
       updateVideo(video.localId, {
         status: "failed",
         errorMessage: error instanceof Error ? error.message : "Upload failed",
@@ -393,25 +405,36 @@ const ImportsPage: React.FC = () => {
     }
   };
 
-  const uploadReadyVideos = async () => {
+  const runUploads = async (videosToUpload: ImportVideo[]) => {
     setHasUploadStarted(true);
 
-    for (const video of videos.filter((video) => canUploadVideo(video, videos, uploadedVideos))) {
-      await uploadVideo(video);
+    const controller = new AbortController();
+    uploadAbortControllerRef.current = controller;
+
+    try {
+      for (const video of videosToUpload) {
+        if (controller.signal.aborted) break;
+        await uploadVideo(video, controller.signal);
+      }
+    } finally {
+      if (uploadAbortControllerRef.current === controller) {
+        uploadAbortControllerRef.current = null;
+      }
     }
   };
 
-  const retryVideo = async (video: ImportVideo) => {
-    setHasUploadStarted(true);
-    await uploadVideo(video);
-  };
+  const uploadReadyVideos = () => (
+    runUploads(videos.filter((video) => canUploadVideo(video, videos, uploadedVideos)))
+  );
 
-  const retryFailedVideos = async () => {
-    setHasUploadStarted(true);
+  const retryVideo = (video: ImportVideo) => runUploads([video]);
 
-    for (const video of videos.filter((video) => isRetryableFailure(video, videos, uploadedVideos))) {
-      await uploadVideo(video);
-    }
+  const retryFailedVideos = () => (
+    runUploads(videos.filter((video) => isRetryableFailure(video, videos, uploadedVideos)))
+  );
+
+  const cancelUpload = () => {
+    uploadAbortControllerRef.current?.abort();
   };
 
   const uploadableVideoCount = videos.filter((video) => canUploadVideo(video, videos, uploadedVideos)).length;
@@ -596,6 +619,7 @@ const ImportsPage: React.FC = () => {
                 uploadableCount={uploadableVideoCount}
                 onUpload={uploadReadyVideos}
                 onRetryFailed={retryFailedVideos}
+                onCancel={cancelUpload}
               />
             </Card>
           )}
