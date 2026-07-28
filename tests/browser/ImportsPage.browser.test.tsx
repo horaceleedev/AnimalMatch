@@ -48,7 +48,6 @@ describe("ImportsPage (real video pipeline)", () => {
 
     await expect.element(screen.getByText("faststart.mp4")).toBeVisible();
     await expect.element(screen.getByText("valid", { exact: true })).toBeVisible();
-    await expect.element(screen.getByText(/file hash:/)).toBeVisible();
 
     await screen.getByRole("button", { name: /Upload/ }).click();
     await expect.element(screen.getByText("failed", { exact: true })).toBeVisible();
@@ -70,6 +69,7 @@ describe("ImportsPage (real video pipeline)", () => {
 
     await userEvent.upload(fileInput, file);
 
+    // A lone invalid video is a small enough group to auto-expand, so no need to click to open it.
     await expect.element(screen.getByText("invalid", { exact: true })).toBeVisible();
     await expect.element(screen.getByRole("button", { name: /Upload/ })).toBeDisabled();
     expect(mockedUploadVideo).not.toHaveBeenCalled();
