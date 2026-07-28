@@ -1,41 +1,24 @@
 import { Avatar, Card, Flex, Space, Tooltip, Typography } from "antd";
 import { generatePath, Link } from "react-router-dom";
+
 import { useIndividualsStoreWithCrops, useUsersStore, useVideoStore } from "../../DataStores";
 import { RecordType } from "../../types";
-
+import "./LinkButtons.scss";
 
 interface LinkButtonProps {
   id: string;
   linkTemplate?: string;
   openModal?: (type: RecordType, id: string) => void;
-  disableNavigation?: boolean;
 };
 
 export const IndividualLinkButton: React.FC<LinkButtonProps> = ({
   id,
   linkTemplate = "/individuals/:individualId",
   openModal,
-  disableNavigation,
 }: LinkButtonProps) => {
   // TODO see if there is an efficient implementation without loading all individuals
   const { individuals } = useIndividualsStoreWithCrops();
   const individual = individuals.find(i => i.id === id);
-
-  const content = (
-    <Card
-      hoverable={!disableNavigation}
-      size="small"
-      style={{ overflow: 'hidden' }}
-      styles={{ body: { padding: 0 } }}
-    >
-      <Flex gap="small" align="center">
-        <img src={individual?.crops[0]?.imageUrl} height={26} style={{margin: 3, borderRadius: 5}} />
-        <Typography.Title level={5} style={{margin: 0, fontSize: 12}}>{individual?.name}</Typography.Title>
-      </Flex>
-    </Card>
-  );
-
-  if (disableNavigation) return content;
 
   return (
     <Link
@@ -47,7 +30,17 @@ export const IndividualLinkButton: React.FC<LinkButtonProps> = ({
         openModal("individual", id);
       }}
     >
-      {content}
+      <Card
+        hoverable
+        size="small"
+        style={{ overflow: 'hidden' }}
+        styles={{ body: { padding: 0 } }}
+      >
+        <Flex gap="small" align="center">
+          <img src={individual?.crops[0]?.imageUrl} height={26} style={{margin: 3, borderRadius: 5}} />
+          <Typography.Title level={5} style={{margin: 0, fontSize: 12}}>{individual?.name}</Typography.Title>
+        </Flex>
+      </Card>
     </Link>
   );
 };
@@ -56,25 +49,8 @@ export const VideoLinkButton: React.FC<LinkButtonProps> = ({
   id,
   linkTemplate = "/videos/:videoId",
   openModal,
-  disableNavigation,
 }: LinkButtonProps) => {
   const video = useVideoStore((state) => state.processedRecords.find(v => v.id === id));
-
-  const content = (
-    <Card
-      hoverable={!disableNavigation}
-      size="small"
-      style={{ overflow: 'hidden' }}
-      styles={{ body: { padding: 0 } }}
-    >
-      <Flex gap="small" align="center">
-        <img src={video?.thumbnailUrl} height={26} style={{margin: 3, borderRadius: 5}} />
-        <Typography.Title level={5} style={{margin: 0, fontSize: 12}}>{video?.filename}</Typography.Title>
-      </Flex>
-    </Card>
-  );
-
-  if (disableNavigation) return content;
 
   return (
     <Link
@@ -86,9 +62,43 @@ export const VideoLinkButton: React.FC<LinkButtonProps> = ({
         openModal("video", id);
       }}
     >
-      {content}
+      <Card
+        hoverable
+        size="small"
+        style={{ overflow: 'hidden' }}
+        styles={{ body: { padding: 0 } }}
+      >
+        <Flex gap="small" align="center">
+          <img src={video?.thumbnailUrl} height={26} style={{margin: 3, borderRadius: 5}} />
+          <Typography.Title level={5} style={{margin: 0, fontSize: 12}}>{video?.filename}</Typography.Title>
+        </Flex>
+      </Card>
     </Link>
   );
+};
+
+export const IndividualLabel: React.FC<{id: string}> = ({id}) => {
+  // TODO see if there is an efficient implementation without loading all individuals
+  const { individuals } = useIndividualsStoreWithCrops();
+  const individual = individuals.find(i => i.id === id);
+
+  return (
+    <Flex gap="small" align="center">
+      <img src={individual?.crops[0]?.imageUrl} className="individual-label-image" />
+      {individual?.name}
+    </Flex>
+  );
+};
+
+export const VideoLabel: React.FC<{id: string}> = ({id}) => {
+    const video = useVideoStore((state) => state.processedRecords.find(v => v.id === id));
+
+    return (
+      <Flex gap="small" align="center">
+        <img src={video?.thumbnailUrl} className="video-label-image" />
+        {video?.filename}
+      </Flex>
+    );
 };
 
 export const UserLabel: React.FC<{id: string}> = ({id}) => {

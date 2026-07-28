@@ -1,0 +1,26 @@
+img.individual-label-image {
+  height: 30px;
+  width: 30px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+// styles specific to the selected label (not the options in the dropdown)
+.ant-select-selection-item {
+  img.individual-label-image {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+img.video-label-image {
+  height: 30px;
+  border-radius: 5px;
+}
+
+// styles specific to the selected label (not the options in the dropdown)
+.ant-select-selection-item {
+  img.video-label-image {
+    height: 24px;
+  }
+}

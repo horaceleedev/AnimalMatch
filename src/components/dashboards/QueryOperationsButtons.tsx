@@ -15,7 +15,7 @@ import SwapVert from '../../assets/material_symbols/swap_vert_24dp_5F6368_FILL0_
 
 import type { MetadataFieldsType } from "../../types.ts";
 import { buildQueryBuilderFields } from '../../lib/filtering/filterBuilderConfig.ts';
-import { IndividualLinkButton, UserLabel, VideoLinkButton } from '../smart-components/LinkButtons.tsx';
+import { IndividualLabel, UserLabel, VideoLabel } from '../smart-components/LinkButtons.tsx';
 import AnnotationStatusLabel from '../ui/AnnotationStatusLabel.tsx';
 import "./QueryOperationsButtons.scss";
 
@@ -116,10 +116,10 @@ const renderDropdownOption = (
   const id = String(option.value ?? '');
 
   if (renderType === 'video_link') {
-    return <VideoLinkButton id={id} disableNavigation />;
+    return <VideoLabel id={id} />;
   }
   if (renderType === 'individual_link') {
-    return <IndividualLinkButton id={id} disableNavigation />;
+    return <IndividualLabel id={id} />;
   }
   if (renderType === 'user_label') {
     return <UserLabel id={id} />;
