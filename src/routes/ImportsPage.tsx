@@ -263,7 +263,7 @@ const ImportsPage: React.FC = () => {
   const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});
   const [preferredDuplicateKeepers, setPreferredDuplicateKeepers] = useState<PreferredDuplicateKeepers>({});
   const [activeGroupKeys, setActiveGroupKeys] = useState<VideoGroup[]>([]);
-  const decidedGroupKeysRef = useRef<Set<VideoGroup>>(new Set());
+  const manuallyToggledGroupKeysRef = useRef<Set<VideoGroup>>(new Set());
   const thumbnailUrlsRef = useRef<Record<string, string>>({});
   const uploadedVideos = useVideoStore((state) => state.processedRecords);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -686,6 +686,10 @@ const ImportsPage: React.FC = () => {
       render: (status: ImportVideoStatus, video) => {
         const canRetry = !isUploading && isRetryableFailure(video, videos, uploadedVideos, preferredDuplicateKeepers);
         const duplicateVideo = getDuplicateVideo(video, videos, preferredDuplicateKeepers);
+        // If this file already exists on the server, every local copy shares its hash - so
+        // whichever one becomes the keeper will itself be "already uploaded", never uploadable.
+        // Swapping the keeper only helps when the alternative is between two local duplicates.
+        const canSwapToThisFile = duplicateVideo && !getUploadedDuplicateVideo(video, uploadedVideos);
 
         return (
           <Space direction="vertical" size={0}>
@@ -705,7 +709,7 @@ const ImportsPage: React.FC = () => {
                 </Tooltip>
               )}
             </Space>
-            {duplicateVideo && (
+            {canSwapToThisFile && (
               <Button
                 type="link"
                 size="small"
@@ -747,25 +751,23 @@ const ImportsPage: React.FC = () => {
   ];
   const groupSections = allGroupSections.filter((section) => section.videos.length > 0);
 
-  // "Active" always opens by default; the others auto-open too when there's
-  // little enough in them to be worth a glance, and stay collapsed otherwise.
-  // A video's group can change after its section first appears (e.g. a row
-  // starts "active" while validation is still running, then moves to
-  // "wontUpload"), so this is decided once per group - the first time it has
-  // any videos - rather than derived fresh every render, which would either
-  // miss that later move or fight the user's own manual toggling.
+  // "Active" always opens by default; the others auto-open while there's
+  // little enough in them to be worth a glance, and auto-collapse again once
+  // they grow past the threshold. Once the user manually toggles a group's
+  // panel, its open/closed state is theirs from then on - this keeps tracking
+  // the count only for groups the user hasn't touched.
   const collapseAutoExpandThreshold = 5;
   useEffect(() => {
-    const undecidedSections = groupSections.filter((section) => !decidedGroupKeysRef.current.has(section.key));
-    if (undecidedSections.length === 0) return;
-
-    const keysToOpen = undecidedSections
-      .filter((section) => section.key === "active" || section.videos.length <= collapseAutoExpandThreshold)
-      .map((section) => section.key);
-    undecidedSections.forEach((section) => decidedGroupKeysRef.current.add(section.key));
-    if (keysToOpen.length > 0) {
-      setActiveGroupKeys((current) => [...current, ...keysToOpen]);
-    }
+    setActiveGroupKeys((current) => {
+      const autoKeys = groupSections
+        .filter((section) => !manuallyToggledGroupKeysRef.current.has(section.key))
+        .filter((section) => section.key === "active" || section.videos.length <= collapseAutoExpandThreshold)
+        .map((section) => section.key);
+      const manualKeys = current.filter((key) => manuallyToggledGroupKeysRef.current.has(key));
+      const nextKeys = [...new Set([...autoKeys, ...manualKeys])];
+      const isUnchanged = nextKeys.length === current.length && nextKeys.every((key) => current.includes(key));
+      return isUnchanged ? current : nextKeys;
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupSections.map((section) => `${section.key}:${section.videos.length}`).join(",")]);
 
@@ -864,7 +866,15 @@ const ImportsPage: React.FC = () => {
         ) : (
           <Collapse
             activeKey={activeGroupKeys}
-            onChange={(keys) => setActiveGroupKeys(keys as VideoGroup[])}
+            onChange={(keys) => {
+              const newKeys = keys as VideoGroup[];
+              const toggledKeys = [
+                ...activeGroupKeys.filter((key) => !newKeys.includes(key)),
+                ...newKeys.filter((key) => !activeGroupKeys.includes(key)),
+              ];
+              toggledKeys.forEach((key) => manuallyToggledGroupKeysRef.current.add(key));
+              setActiveGroupKeys(newKeys);
+            }}
             items={groupSections.map((section) => ({
               key: section.key,
               label: `${section.label} (${section.videos.length})`,

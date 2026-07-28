@@ -227,6 +227,23 @@ describe('ImportsPage retries', () => {
     expect(mockedUploadVideo).not.toHaveBeenCalled();
   });
 
+  it('hides the swap button on in-batch duplicates of a file that is already uploaded', async () => {
+    mockedUseVideoStore.mockImplementation((selector) => selector({
+      processedRecords: [{ file_hash: 'existing-hash', filename: 'existing.mp4' }],
+    } as never));
+    mockedHashFileSample.mockResolvedValue({ hash: 'existing-hash', bytesHashed: 100 });
+
+    renderWithProviders(<ImportsPage />);
+    const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [makeVideoFile('dupe-a.mp4'), makeVideoFile('dupe-b.mp4')] } });
+
+    // Whichever local copy becomes the keeper still matches the server record, so
+    // swapping never makes either one uploadable - the swap affordance should not appear.
+    await screen.findByText('already uploaded');
+    expect(screen.getByText('duplicate video')).toBeInTheDocument();
+    expect(screen.queryByText('Use this file instead')).not.toBeInTheDocument();
+  });
+
   it('cancels a running batch: the in-flight video is cancelled, the queued one is never attempted', async () => {
     mockedUploadVideo.mockImplementationOnce((_video, _onProgress, signal) => new Promise((_resolve, reject) => {
       signal?.addEventListener('abort', () => reject(new DOMException('Upload cancelled.', 'AbortError')));
