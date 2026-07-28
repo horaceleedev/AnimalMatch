@@ -208,6 +208,7 @@ describe('ImportsPage retries', () => {
     expect(mockedUploadVideo).toHaveBeenCalledWith(
       expect.objectContaining({ filename: 'first.mp4' }),
       expect.any(Function),
+      expect.any(AbortSignal),
     );
   });
 
@@ -224,5 +225,26 @@ describe('ImportsPage retries', () => {
     await screen.findByText('already uploaded');
     expect(screen.getByRole('button', { name: /Upload/ })).toBeDisabled();
     expect(mockedUploadVideo).not.toHaveBeenCalled();
+  });
+
+  it('cancels a running batch: the in-flight video is cancelled, the queued one is never attempted', async () => {
+    mockedUploadVideo.mockImplementationOnce((_video, _onProgress, signal) => new Promise((_resolve, reject) => {
+      signal?.addEventListener('abort', () => reject(new DOMException('Upload cancelled.', 'AbortError')));
+    }));
+
+    await addTestVideos(['clip-a.mp4', 'clip-b.mp4']);
+
+    await userEvent.click(screen.getByRole('button', { name: /Upload/ }));
+    await screen.findByText('uploading');
+
+    const cancelButton = await screen.findByRole('button', { name: /Cancel/ });
+    await userEvent.click(cancelButton);
+
+    await screen.findByText('cancelled');
+    expect(mockedUploadVideo).toHaveBeenCalledTimes(1);
+
+    // The queued video was never attempted, so it's still shown as valid/ready, not failed or cancelled.
+    expect(screen.queryByText('failed')).not.toBeInTheDocument();
+    expect(screen.getAllByText('cancelled')).toHaveLength(1);
   });
 });

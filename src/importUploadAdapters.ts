@@ -10,7 +10,13 @@ const createPocketBaseRecordWithProgress = (
   collectionName: string,
   formData: FormData,
   onProgress: (progressPercent: number) => void,
+  signal?: AbortSignal,
 ) => new Promise<Record<string, unknown>>((resolve, reject) => {
+  if (signal?.aborted) {
+    reject(new DOMException("Upload cancelled.", "AbortError"));
+    return;
+  }
+
   const xhr = new XMLHttpRequest();
   xhr.open("POST", `${pocketBaseUrl}/api/collections/${collectionName}/records`);
 
@@ -24,7 +30,14 @@ const createPocketBaseRecordWithProgress = (
     onProgress(Math.round((event.loaded / event.total) * 100));
   };
 
+  const handleAbort = () => xhr.abort();
+  signal?.addEventListener("abort", handleAbort);
+
+  const stopWatchingAbort = () => signal?.removeEventListener("abort", handleAbort);
+
   xhr.onload = () => {
+    stopWatchingAbort();
+
     const responseText = xhr.responseText || "{}";
     let response: Record<string, unknown> = {};
 
@@ -42,7 +55,17 @@ const createPocketBaseRecordWithProgress = (
     reject(new Error(typeof response.message === "string" ? response.message : "Upload failed"));
   };
 
-  xhr.onerror = () => reject(new Error("Upload failed"));
+  // xhr.abort() doesn't trigger onerror, only onabort - so it needs its own handler.
+  xhr.onabort = () => {
+    stopWatchingAbort();
+    reject(new DOMException("Upload cancelled.", "AbortError"));
+  };
+
+  xhr.onerror = () => {
+    stopWatchingAbort();
+    reject(new Error("Upload failed"));
+  };
+
   xhr.send(formData);
 });
 
@@ -50,6 +73,7 @@ export const pocketBaseVideoUploadAdapter: VideoUploadAdapter = {
   uploadVideo: async (
     video: ImportVideo,
     onProgress: (progressPercent: number) => void,
+    signal?: AbortSignal,
   ): Promise<VideoUploadResult> => {
     if (!pb.authStore.isValid) {
       throw new Error("Please log in before uploading videos.");
@@ -78,7 +102,7 @@ export const pocketBaseVideoUploadAdapter: VideoUploadAdapter = {
     formData.append("assignees", JSON.stringify([]));
     formData.append("annotation_status", "to annotate");
 
-    const record = await createPocketBaseRecordWithProgress("videos", formData, onProgress);
+    const record = await createPocketBaseRecordWithProgress("videos", formData, onProgress, signal);
 
     return {
       id: typeof record.id === "string" ? record.id : undefined,
@@ -93,8 +117,13 @@ export const mockVideoUploadAdapter: VideoUploadAdapter = {
   uploadVideo: async (
     video: ImportVideo,
     onProgress: (progressPercent: number) => void,
+    signal?: AbortSignal,
   ): Promise<VideoUploadResult> => {
     for (let progress = 0; progress <= 100; progress += mockUploadProgressStep) {
+      if (signal?.aborted) {
+        throw new DOMException("Upload cancelled.", "AbortError");
+      }
+
       onProgress(progress);
       if (progress < 100) {
         await wait(mockUploadStepMs);
