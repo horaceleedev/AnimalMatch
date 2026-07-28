@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Card, Divider, Flex, Progress, Space, Table, Tag, Tooltip, Typography } from "antd";
+import { Button, Card, Flex, Progress, Space, Table, Tag, Tooltip, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, FolderOpenOutlined, LoadingOutlined, ReloadOutlined, UploadOutlined, WarningOutlined } from "@ant-design/icons";
 import { nanoid } from "nanoid";
@@ -12,12 +12,11 @@ import { hashFileSample } from "../lib/fileHashing";
 import { isValidVideoForImport } from "../lib/importVideoValidation";
 import { optimiseMp4ForWeb } from "../lib/optimiseMp4ForWeb";
 import { createVideoThumbnail } from "../lib/videoThumbnail";
+import { readDroppedFiles, type FileWithRelativePath } from "../lib/readDroppedFiles";
 import { useVideoStore } from "../DataStores";
 import type { Video } from "../types";
 
 const { Text, Title } = Typography;
-
-type FileWithRelativePath = File & { webkitRelativePath?: string };
 
 const statusColors: Record<ImportVideoStatus, string> = {
   pending: "default",
@@ -182,6 +181,7 @@ const shouldShowUploadStatus = (video: ImportVideo) => (
 const ImportsPage: React.FC = () => {
   const [videos, setVideos] = useState<ImportVideo[]>([]);
   const [hasUploadStarted, setHasUploadStarted] = useState(false);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const uploadedVideos = useVideoStore((state) => state.processedRecords);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
@@ -332,7 +332,7 @@ const ImportsPage: React.FC = () => {
     }
   };
 
-  const addFiles = (files: FileList | null) => {
+  const addFiles = (files: FileList | FileWithRelativePath[] | null) => {
     if (!files) return;
 
     const videosToAdd = Array.from(files)
@@ -346,6 +346,24 @@ const ImportsPage: React.FC = () => {
   const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     addFiles(event.target.files);
     event.target.value = "";
+  };
+
+  const handleDropzoneDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+    setIsDraggingOver(true);
+  };
+
+  const handleDropzoneDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDraggingOver(false);
+  };
+
+  const handleDropzoneDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDraggingOver(false);
+
+    void readDroppedFiles(event.dataTransfer.items).then(addFiles);
   };
 
   const removeVideo = (localId: string) => {
@@ -502,40 +520,65 @@ const ImportsPage: React.FC = () => {
         <div>
           <Title level={2}>Import videos to AnimalMatch</Title>
           <Text type="secondary">
-            Placeholder import.
+            Select or drag in .mp4 files or folders to check, hash, and upload them.
           </Text>
         </div>
 
-        <Card>
-          <Space>
-            <Button icon={<UploadOutlined />} onClick={() => fileInputRef.current?.click()}>
-              Select videos
-            </Button>
-            <Button icon={<FolderOpenOutlined />} onClick={() => folderInputRef.current?.click()}>
-              Select folder
-            </Button>
-          </Space>
+        <Flex gap="large" wrap="wrap" align="stretch">
+          <Card style={{ flex: "0 0 380px" }}>
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() => fileInputRef.current?.click()}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") fileInputRef.current?.click();
+              }}
+              onDragOver={handleDropzoneDragOver}
+              onDragLeave={handleDropzoneDragLeave}
+              onDrop={handleDropzoneDrop}
+              style={{
+                border: `2px dashed ${isDraggingOver ? "#0958d9" : "#1677ff"}`,
+                borderRadius: 8,
+                background: isDraggingOver ? "#e6f4ff" : "#fafafa",
+                padding: "32px 24px",
+                textAlign: "center",
+                cursor: "pointer",
+                transition: "border-color 0.2s, background-color 0.2s",
+              }}
+            >
+              <UploadOutlined style={{ fontSize: 32, color: "#1677ff" }} />
+              <div style={{ marginTop: 12 }}>
+                <Text strong>Click or drag video files or folders here to import</Text>
+              </div>
+              <Text type="secondary">Supports .mp4 files</Text>
+            </div>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="video/mp4,.mp4"
-            multiple
-            hidden
-            onChange={handleFileInputChange}
-          />
-          <input
-            ref={folderInputRef}
-            type="file"
-            accept="video/mp4,.mp4"
-            multiple
-            hidden
-            onChange={handleFileInputChange}
-          />
+            <Flex justify="center" style={{ marginTop: 12 }}>
+              <Button type="link" icon={<FolderOpenOutlined />} onClick={() => folderInputRef.current?.click()}>
+                or select a folder
+              </Button>
+            </Flex>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="video/mp4,.mp4"
+              multiple
+              hidden
+              onChange={handleFileInputChange}
+            />
+            <input
+              ref={folderInputRef}
+              type="file"
+              accept="video/mp4,.mp4"
+              multiple
+              hidden
+              onChange={handleFileInputChange}
+            />
+          </Card>
 
           {videos.length > 0 && (
-            <>
-              <Divider style={{ margin: "16px 0" }} />
+            <Card style={{ flex: "1 1 360px" }}>
               <ImportBatchSummary
                 counts={{
                   selected: videos.length,
@@ -554,9 +597,9 @@ const ImportsPage: React.FC = () => {
                 onUpload={uploadReadyVideos}
                 onRetryFailed={retryFailedVideos}
               />
-            </>
+            </Card>
           )}
-        </Card>
+        </Flex>
 
         <Table
           rowKey="localId"
