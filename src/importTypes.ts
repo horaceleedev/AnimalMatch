@@ -40,5 +40,6 @@ export interface VideoUploadAdapter {
   uploadVideo: (
     video: ImportVideo,
     onProgress: (progressPercent: number) => void,
+    signal?: AbortSignal,
   ) => Promise<VideoUploadResult>;
 }
