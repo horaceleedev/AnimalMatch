@@ -92,15 +92,13 @@ export const pocketBaseVideoUploadAdapter: VideoUploadAdapter = {
       formData.append("thumbnail", video.thumbnailFile);
     }
 
-    // TODO: placeholder values until the metadata import flow exists.
-    formData.append("location_name", "Unknown");
-    formData.append("recording_date", new Date(0).toISOString());
-    formData.append("utm_easting", "0");
-    formData.append("utm_northing", "0");
+    // location_name/recording_date/utm_easting/utm_northing are left unset
+    // rather than filled with placeholder values - needs_metadata set true
     formData.append("notes", "");
     formData.append("custom_tags", JSON.stringify([]));
     formData.append("assignees", JSON.stringify([]));
     formData.append("annotation_status", "to annotate");
+    formData.append("needs_metadata", "true");
 
     const record = await createPocketBaseRecordWithProgress("videos", formData, onProgress, signal);
 
@@ -111,8 +109,7 @@ export const pocketBaseVideoUploadAdapter: VideoUploadAdapter = {
   },
 };
 
-// Exercises the import UI (progress, success, retry) without writing to
-// PocketBase.
+// Exercises the import UI (progress, success, retry) without writing to db
 export const mockVideoUploadAdapter: VideoUploadAdapter = {
   uploadVideo: async (
     video: ImportVideo,

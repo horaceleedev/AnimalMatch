@@ -96,6 +96,13 @@ export const videoMetadataFields: MetadataFieldsType = {
     },
     renderType: 'annotation_status_label',
   },
+  'needs_metadata': {
+    displayName: 'Needs metadata',
+    icon: <Icon component={PendingActions} />,
+    type: 'boolean',
+    valueEditorType: 'radio',
+    displayBooleanValuesAs: ['Has metadata', 'Needs metadata'],
+  },
 };
 
 

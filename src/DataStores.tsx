@@ -130,8 +130,9 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
   extraInitialState?: TExtra;
   processRecords: (records: TRecord[]) => { processedRecords: TProcessed[]; uniqueValuesPerField: Record<string, string[]>; extra?: TExtra };
   ignoredUpdateKeys?: string[];
+  preparePayload?: (payload: Partial<TProcessed>) => Partial<TProcessed>;
 }) => {
-  const { collectionName, sortField, extraInitialState = {}, processRecords, ignoredUpdateKeys = [] } = opts;
+  const { collectionName, sortField, extraInitialState = {}, processRecords, ignoredUpdateKeys = [], preparePayload } = opts;
 
   return create<CollectionStore<TRecord, TProcessed, TExtra>>()((set) => ({
     unprocessedRecords: [] as TRecord[],
@@ -220,10 +221,11 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
     },
     update: async (id: string, data: Partial<TProcessed>) => {
       // remove some keys before sending to backend
-      const payload = { ...data };
+      let payload = { ...data };
       for (const k of ignoredUpdateKeys) {
         if (k in payload) delete payload[k];
       }
+      if (preparePayload) payload = preparePayload(payload);
       const updatedRecord = await pb.collection(collectionName).update<TRecord>(id, payload);
 
       return new Promise((resolve) => {
@@ -309,6 +311,14 @@ export const useVideoStore = createRealtimeCollectionStore<VideoRecord, Video, {
   // For now ignore the recording_date/url/lat/long key
   // TODO later maybe convert back from URLs to filenames (and verify what happens in the backend)
   ignoredUpdateKeys: ['recording_date', 'url', 'thumbnailUrl', 'lat', 'long'],
+  // Once someone fills in real location/coordinates, this video no longer
+  // needs the metadata-import backlog treatment. recording_date is excluded
+  // here since it's stripped above and never actually reaches the server.
+  preparePayload: (payload) => (
+    ['location_name', 'utm_easting', 'utm_northing'].some((key) => key in payload)
+      ? { ...payload, needs_metadata: false }
+      : payload
+  ),
 });
 
 
