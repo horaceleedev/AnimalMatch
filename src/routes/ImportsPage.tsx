@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Card, Flex, Progress, Space, Table, Tag, Tooltip, Typography } from "antd";
+import { App, Button, Card, Flex, Progress, Space, Table, Tag, Tooltip, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, FolderOpenOutlined, LoadingOutlined, ReloadOutlined, UploadOutlined, WarningOutlined } from "@ant-design/icons";
 import { nanoid } from "nanoid";
@@ -85,6 +85,14 @@ const canUploadVideo = (video: ImportVideo, videos: ImportVideo[], uploadedVideo
 // same way a genuine upload failure is.
 const isRetryableFailure = (video: ImportVideo, videos: ImportVideo[], uploadedVideos: Video[]) => (
   (video.status === "failed" || video.status === "cancelled") && canUploadVideo(video, videos, uploadedVideos)
+);
+
+// Permanently invalid/duplicate videos don't count - there's nothing left to
+// do with them, so they shouldn't hold the beforeunload guard open forever.
+const hasUnfinishedWork = (video: ImportVideo, videos: ImportVideo[], uploadedVideos: Video[]) => (
+  video.status === "pending"
+  || video.status === "uploading"
+  || canUploadVideo(video, videos, uploadedVideos)
 );
 
 const getValidationTag = (video: ImportVideo) => {
@@ -185,6 +193,7 @@ const shouldShowUploadStatus = (video: ImportVideo) => (
 );
 
 const ImportsPage: React.FC = () => {
+  const { message } = App.useApp();
   const [videos, setVideos] = useState<ImportVideo[]>([]);
   const [hasUploadStarted, setHasUploadStarted] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
@@ -197,6 +206,18 @@ const ImportsPage: React.FC = () => {
     folderInputRef.current?.setAttribute("webkitdirectory", "");
     folderInputRef.current?.setAttribute("directory", "");
   }, []);
+
+  useEffect(() => {
+    if (!videos.some((video) => hasUnfinishedWork(video, videos, uploadedVideos))) return;
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [videos, uploadedVideos]);
 
   const updateVideo = (localId: string, changes: Partial<ImportVideo>) => {
     setVideos((currentVideos) => currentVideos.map((video) => (
@@ -342,9 +363,17 @@ const ImportsPage: React.FC = () => {
   const addFiles = (files: FileList | FileWithRelativePath[] | null) => {
     if (!files) return;
 
-    const videosToAdd = Array.from(files)
+    const allFiles = Array.from(files);
+    const videosToAdd = allFiles
       .filter(isMp4File)
       .map((file) => createImportVideo(file as FileWithRelativePath));
+    const skippedCount = allFiles.length - videosToAdd.length;
+
+    if (skippedCount > 0) {
+      message.warning(`Only .mp4 files are supported. Skipped ${skippedCount} file${skippedCount === 1 ? "" : "s"}.`);
+    }
+
+    if (videosToAdd.length === 0) return;
 
     setVideos((currentVideos) => [...currentVideos, ...videosToAdd]);
     void prepareVideos(videosToAdd);
@@ -485,8 +514,9 @@ const ImportsPage: React.FC = () => {
             type="text"
             danger
             icon={<DeleteOutlined />}
+            aria-label={`Remove ${video.filename} from the import list`}
             onClick={() => removeVideo(video.localId)}
-            disabled={video.status === "uploading"}
+            disabled={isUploading}
           />
         </Flex>
       ),
