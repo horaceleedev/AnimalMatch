@@ -3,6 +3,7 @@ import { App, Button, Card, Flex, Progress, Space, Table, Tag, Tooltip, Typograp
 import type { ColumnsType } from "antd/es/table";
 import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, FolderOpenOutlined, LoadingOutlined, ReloadOutlined, UploadOutlined, WarningOutlined } from "@ant-design/icons";
 import { nanoid } from "nanoid";
+import { useBlocker } from "react-router-dom";
 
 import DashboardContent from "../components/dashboards/DashboardContent";
 import ImportBatchSummary from "../components/ImportBatchSummary";
@@ -49,8 +50,6 @@ const formatFileSize = (bytes: number) => {
   if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
   return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
 };
-
-const formatShortHash = (hash: string) => hash.slice(0, 12);
 
 const getDuplicateVideo = (video: ImportVideo, videos: ImportVideo[]) => {
   if (!video.fileHash) return undefined;
@@ -193,22 +192,29 @@ const shouldShowUploadStatus = (video: ImportVideo) => (
 );
 
 const ImportsPage: React.FC = () => {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
   const [videos, setVideos] = useState<ImportVideo[]>([]);
   const [hasUploadStarted, setHasUploadStarted] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});
+  const thumbnailUrlsRef = useRef<Record<string, string>>({});
   const uploadedVideos = useVideoStore((state) => state.processedRecords);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
   const uploadAbortControllerRef = useRef<AbortController | null>(null);
+
+  const hasUnfinishedImportWork = videos.some((video) => hasUnfinishedWork(video, videos, uploadedVideos));
 
   useEffect(() => {
     folderInputRef.current?.setAttribute("webkitdirectory", "");
     folderInputRef.current?.setAttribute("directory", "");
   }, []);
 
+  // beforeunload only covers leaving the app entirely (refresh, close tab,
+  // typing a new URL) - it never fires for React Router's own in-app
+  // navigation (header links, back/forward), which useBlocker handles below.
   useEffect(() => {
-    if (!videos.some((video) => hasUnfinishedWork(video, videos, uploadedVideos))) return;
+    if (!hasUnfinishedImportWork) return;
 
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
@@ -217,7 +223,56 @@ const ImportsPage: React.FC = () => {
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [videos, uploadedVideos]);
+  }, [hasUnfinishedImportWork]);
+
+  const navigationBlocker = useBlocker(hasUnfinishedImportWork);
+
+  useEffect(() => {
+    if (navigationBlocker.state !== "blocked") return;
+
+    modal.confirm({
+      title: "Leave this import?",
+      content: "Videos still uploading or waiting to upload will be lost if you leave now.",
+      okText: "Leave",
+      okButtonProps: { danger: true },
+      cancelText: "Stay",
+      onOk: () => navigationBlocker.proceed(),
+      onCancel: () => navigationBlocker.reset(),
+    });
+  }, [navigationBlocker, modal]);
+
+  // Object URLs are created lazily per video and revoked once that video is
+  // removed (or the page unmounts), so we never leak one per thumbnail.
+  useEffect(() => {
+    setThumbnailUrls((currentUrls) => {
+      const nextUrls = { ...currentUrls };
+      const currentIds = new Set(videos.map((video) => video.localId));
+      let didChange = false;
+
+      for (const video of videos) {
+        if (video.thumbnailFile && !nextUrls[video.localId]) {
+          nextUrls[video.localId] = URL.createObjectURL(video.thumbnailFile);
+          didChange = true;
+        }
+      }
+
+      for (const localId of Object.keys(nextUrls)) {
+        if (!currentIds.has(localId)) {
+          URL.revokeObjectURL(nextUrls[localId]);
+          delete nextUrls[localId];
+          didChange = true;
+        }
+      }
+
+      const result = didChange ? nextUrls : currentUrls;
+      thumbnailUrlsRef.current = result;
+      return result;
+    });
+  }, [videos]);
+
+  useEffect(() => () => {
+    Object.values(thumbnailUrlsRef.current).forEach((url) => URL.revokeObjectURL(url));
+  }, []);
 
   const updateVideo = (localId: string, changes: Partial<ImportVideo>) => {
     setVideos((currentVideos) => currentVideos.map((video) => (
@@ -503,13 +558,30 @@ const ImportsPage: React.FC = () => {
       dataIndex: "filename",
       render: (_, video) => (
         <Flex align="center" justify="space-between" gap="small">
-          <Space direction="vertical" size={0}>
-            <Text strong>{video.filename}</Text>
-            {video.relativePath && <Text type="secondary">{video.relativePath}</Text>}
-            {video.fileHash && (
-              <Text type="secondary">file hash: {formatShortHash(video.fileHash)}</Text>
-            )}
-          </Space>
+          <Flex align="center" gap="small">
+            <div
+              style={{
+                width: 64,
+                height: 36,
+                borderRadius: 4,
+                overflow: "hidden",
+                background: "#f0f0f0",
+                flexShrink: 0,
+              }}
+            >
+              {thumbnailUrls[video.localId] && (
+                <img
+                  src={thumbnailUrls[video.localId]}
+                  alt=""
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                />
+              )}
+            </div>
+            <Space direction="vertical" size={0}>
+              <Text strong>{video.filename}</Text>
+              {video.relativePath && <Text type="secondary">{video.relativePath}</Text>}
+            </Space>
+          </Flex>
           <Button
             type="text"
             danger
