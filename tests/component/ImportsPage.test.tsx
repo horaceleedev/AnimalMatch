@@ -26,7 +26,7 @@ import { createVideoThumbnail } from '../../src/lib/videoThumbnail';
 import { optimiseMp4ForWeb } from '../../src/lib/optimiseMp4ForWeb';
 import { pocketBaseVideoUploadAdapter } from '../../src/importUploadAdapters';
 import { useVideoStore } from '../../src/DataStores';
-import { fireEvent, renderWithProviders, screen, userEvent, waitFor } from '../helpers/render';
+import { fireEvent, renderWithProviders, screen, userEvent, waitFor, within } from '../helpers/render';
 import ImportsPage from '../../src/routes/ImportsPage';
 
 const mockedIsValidVideoForImport = vi.mocked(isValidVideoForImport);
@@ -227,6 +227,32 @@ describe('ImportsPage retries', () => {
     expect(mockedUploadVideo).not.toHaveBeenCalled();
   });
 
+  it('shows a provisional "Videos to upload" count while some videos are still being checked', async () => {
+    let resolveSecondHash: (result: { hash: string; bytesHashed: number }) => void = () => {};
+    const secondHashPromise = new Promise<{ hash: string; bytesHashed: number }>((resolve) => {
+      resolveSecondHash = resolve;
+    });
+    mockedHashFileSample.mockImplementation(async (file) => (
+      file.name === 'second.mp4' ? secondHashPromise : { hash: `hash-${file.name}`, bytesHashed: file.size }
+    ));
+
+    renderWithProviders(<ImportsPage />);
+    const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [makeVideoFile('first.mp4'), makeVideoFile('second.mp4')] } });
+
+    await screen.findByText('first.mp4');
+    await screen.findByText('second.mp4');
+
+    // first.mp4 has finished the pipeline, second.mp4 is still hashing.
+    const header = (await screen.findByText('Videos to upload (1)')).closest('.ant-collapse-header') as HTMLElement;
+    expect(within(header).getByLabelText('loading')).toBeInTheDocument();
+
+    resolveSecondHash({ hash: 'hash-second.mp4', bytesHashed: 100 });
+
+    const finalHeader = (await screen.findByText('Videos to upload (2)')).closest('.ant-collapse-header') as HTMLElement;
+    expect(within(finalHeader).queryByLabelText('loading')).not.toBeInTheDocument();
+  });
+
   it('hides the swap button on in-batch duplicates of a file that is already uploaded', async () => {
     mockedUseVideoStore.mockImplementation((selector) => selector({
       processedRecords: [{ file_hash: 'existing-hash', filename: 'existing.mp4' }],
@@ -237,8 +263,7 @@ describe('ImportsPage retries', () => {
     const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
     fireEvent.change(fileInput, { target: { files: [makeVideoFile('dupe-a.mp4'), makeVideoFile('dupe-b.mp4')] } });
 
-    // Whichever local copy becomes the keeper still matches the server record, so
-    // swapping never makes either one uploadable - the swap affordance should not appear.
+    // Whichever copy becomes the keeper still matches the server record.
     await screen.findByText('already uploaded');
     expect(screen.getByText('duplicate video')).toBeInTheDocument();
     expect(screen.queryByText('Use this file instead')).not.toBeInTheDocument();

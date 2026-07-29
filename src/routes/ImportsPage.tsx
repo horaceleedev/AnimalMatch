@@ -19,8 +19,7 @@ import type { Video } from "../types";
 
 const { Text, Title } = Typography;
 
-// Maps a file hash to the localId of the video the user has chosen to treat
-// as the canonical copy, overriding the default "first one added wins".
+// Which local video to keep, per file hash, when the user overrides the default first-one-wins.
 type PreferredDuplicateKeepers = Record<string, string>;
 
 const statusColors: Record<ImportVideoStatus, string> = {
@@ -80,12 +79,17 @@ const getDuplicateVideo = (
 const getUploadedDuplicateVideo = (video: ImportVideo, uploadedVideos: Video[]) => {
   if (!video.fileHash) return undefined;
 
-  // Once this row is uploaded, its own record lands in the video store and
-  // would match its hash. this guards against it showing as "already uploaded".
+  // Otherwise a just-uploaded row would match its own new record and flag itself.
   if (video.status === "uploading" || video.status === "uploaded") return undefined;
 
   return uploadedVideos.find((uploadedVideo) => uploadedVideo.file_hash === video.fileHash);
 };
+
+// Only counts toward "Videos to upload" once fully checked - a video sits in
+// the active group before that too, but could still turn out invalid or a duplicate.
+const hasFinishedProcessing = (video: ImportVideo) => (
+  video.isValid === true && !video.needsWebOptimisation && Boolean(video.fileHash)
+);
 
 const canUploadVideo = (
   video: ImportVideo,
@@ -101,9 +105,8 @@ const canUploadVideo = (
   && (video.status === "ready" || video.status === "failed" || video.status === "cancelled")
 );
 
-// A cancelled upload only ever happens to a video that had already started
-// uploading (isValid was already true to get there), so it's retryable the
-// same way a genuine upload failure is.
+// A cancelled video already passed validation to start uploading, so it
+// retries the same way a genuine upload failure does.
 const isRetryableFailure = (
   video: ImportVideo,
   videos: ImportVideo[],
@@ -114,8 +117,7 @@ const isRetryableFailure = (
   && canUploadVideo(video, videos, uploadedVideos, preferredDuplicateKeepers)
 );
 
-// Permanently invalid/duplicate videos don't count - there's nothing left to
-// do with them, so they shouldn't hold the beforeunload guard open forever.
+// Invalid/duplicate videos are dead ends - they shouldn't hold the leave-page guard open.
 const hasUnfinishedWork = (
   video: ImportVideo,
   videos: ImportVideo[],
@@ -127,12 +129,8 @@ const hasUnfinishedWork = (
   || canUploadVideo(video, videos, uploadedVideos, preferredDuplicateKeepers)
 );
 
-// Groups drive the collapsible sections below. A video can only ever be a
-// duplicate if it was successfully hashed, which only ever happens after
-// validation succeeds - so "invalid" never collides with the duplicate checks.
-// "Already uploaded" and "invalid" are merged into "wontUpload": both are
-// non-actionable (nothing to review or swap), unlike an in-batch duplicate -
-// the per-row tag still shows which of the two reasons applies.
+// "Already uploaded" and "invalid" share the "wontUpload" bucket - neither is
+// actionable, unlike a duplicate the user can swap. The row's tag still shows which applies.
 type VideoGroup = "active" | "duplicate" | "wontUpload";
 
 const getVideoGroup = (
@@ -279,9 +277,8 @@ const ImportsPage: React.FC = () => {
     folderInputRef.current?.setAttribute("directory", "");
   }, []);
 
-  // beforeunload only covers leaving the app entirely (refresh, close tab,
-  // typing a new URL) - it never fires for React Router's own in-app
-  // navigation (header links, back/forward), which useBlocker handles below.
+  // Covers refresh/close/typing a new URL; in-app nav (header links, back/forward)
+  // doesn't trigger beforeunload, so useBlocker below handles that case instead.
   useEffect(() => {
     if (!hasUnfinishedImportWork) return;
 
@@ -310,8 +307,7 @@ const ImportsPage: React.FC = () => {
     });
   }, [navigationBlocker, modal]);
 
-  // Object URLs are created lazily per video and revoked once that video is
-  // removed (or the page unmounts), so we never leak one per thumbnail.
+  // Revoked once a video is removed (or the page unmounts) to avoid leaking one per thumbnail.
   useEffect(() => {
     setThumbnailUrls((currentUrls) => {
       const nextUrls = { ...currentUrls };
@@ -686,9 +682,8 @@ const ImportsPage: React.FC = () => {
       render: (status: ImportVideoStatus, video) => {
         const canRetry = !isUploading && isRetryableFailure(video, videos, uploadedVideos, preferredDuplicateKeepers);
         const duplicateVideo = getDuplicateVideo(video, videos, preferredDuplicateKeepers);
-        // If this file already exists on the server, every local copy shares its hash - so
-        // whichever one becomes the keeper will itself be "already uploaded", never uploadable.
-        // Swapping the keeper only helps when the alternative is between two local duplicates.
+        // If it's already on the server, every copy shares its hash - swapping the keeper
+        // never makes any of them uploadable, so only offer it between two local duplicates.
         const canSwapToThisFile = duplicateVideo && !getUploadedDuplicateVideo(video, uploadedVideos);
 
         return (
@@ -749,13 +744,14 @@ const ImportsPage: React.FC = () => {
     { key: "duplicate", label: "Duplicate videos", videos: groupedVideos.duplicate },
     { key: "wontUpload", label: "Won't be uploaded", videos: groupedVideos.wontUpload },
   ];
+  // Duplicate/wontUpload only gain members once fully resolved, so their counts are
+  // already accurate - active is the one group a still-checking video defaults into.
+  const confirmedActiveCount = groupedVideos.active.filter(hasFinishedProcessing).length;
+  const pendingCount = videos.filter((video) => video.isValid !== false && !hasFinishedProcessing(video)).length;
   const groupSections = allGroupSections.filter((section) => section.videos.length > 0);
 
-  // "Active" always opens by default; the others auto-open while there's
-  // little enough in them to be worth a glance, and auto-collapse again once
-  // they grow past the threshold. Once the user manually toggles a group's
-  // panel, its open/closed state is theirs from then on - this keeps tracking
-  // the count only for groups the user hasn't touched.
+  // Active always opens; others auto-open/collapse around the threshold until the
+  // user manually toggles a panel, after which their choice sticks.
   const collapseAutoExpandThreshold = 5;
   useEffect(() => {
     setActiveGroupKeys((current) => {
@@ -875,19 +871,32 @@ const ImportsPage: React.FC = () => {
               toggledKeys.forEach((key) => manuallyToggledGroupKeysRef.current.add(key));
               setActiveGroupKeys(newKeys);
             }}
-            items={groupSections.map((section) => ({
-              key: section.key,
-              label: `${section.label} (${section.videos.length})`,
-              forceRender: true,
-              children: (
-                <Table
-                  rowKey="localId"
-                  columns={columns}
-                  dataSource={section.videos}
-                  pagination={{ pageSize: 25, showSizeChanger: true }}
-                />
-              ),
-            }))}
+            items={groupSections.map((section) => {
+              const displayedCount = section.key === "active" ? confirmedActiveCount : section.videos.length;
+
+              return {
+                key: section.key,
+                label: (
+                  <Space size={6}>
+                    <span>{section.label} ({displayedCount})</span>
+                    {pendingCount > 0 && (
+                      <Tooltip title={`Still checking ${pendingCount} video${pendingCount === 1 ? "" : "s"}`}>
+                        <LoadingOutlined spin />
+                      </Tooltip>
+                    )}
+                  </Space>
+                ),
+                forceRender: true,
+                children: (
+                  <Table
+                    rowKey="localId"
+                    columns={columns}
+                    dataSource={section.videos}
+                    pagination={{ pageSize: 25, showSizeChanger: true }}
+                  />
+                ),
+              };
+            })}
           />
         )}
       </Space>
