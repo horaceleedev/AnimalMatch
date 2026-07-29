@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { App, Button, Card, Flex, Progress, Space, Table, Tag, Tooltip, Typography } from "antd";
+import { App, Button, Card, Collapse, Flex, Progress, Space, Table, Tag, Tooltip, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, FolderOpenOutlined, LoadingOutlined, ReloadOutlined, UploadOutlined, WarningOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, FolderOpenOutlined, LoadingOutlined, ReloadOutlined, SwapOutlined, UploadOutlined, WarningOutlined } from "@ant-design/icons";
 import { nanoid } from "nanoid";
 import { useBlocker } from "react-router-dom";
 
@@ -18,6 +18,9 @@ import { useVideoStore } from "../DataStores";
 import type { Video } from "../types";
 
 const { Text, Title } = Typography;
+
+// Which local video to keep, per file hash, when the user overrides the default first-one-wins.
+type PreferredDuplicateKeepers = Record<string, string>;
 
 const statusColors: Record<ImportVideoStatus, string> = {
   pending: "default",
@@ -51,8 +54,21 @@ const formatFileSize = (bytes: number) => {
   return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
 };
 
-const getDuplicateVideo = (video: ImportVideo, videos: ImportVideo[]) => {
+const getDuplicateVideo = (
+  video: ImportVideo,
+  videos: ImportVideo[],
+  preferredDuplicateKeepers: PreferredDuplicateKeepers,
+) => {
   if (!video.fileHash) return undefined;
+
+  const preferredKeeperId = preferredDuplicateKeepers[video.fileHash];
+  if (preferredKeeperId) {
+    if (preferredKeeperId === video.localId) return undefined;
+
+    const keeper = videos.find((candidate) => candidate.localId === preferredKeeperId);
+    if (keeper) return keeper;
+    // The chosen keeper was removed from the list - fall back to the default below.
+  }
 
   const videoIndex = videos.findIndex((candidate) => candidate.localId === video.localId);
   if (videoIndex === -1) return undefined;
@@ -63,36 +79,71 @@ const getDuplicateVideo = (video: ImportVideo, videos: ImportVideo[]) => {
 const getUploadedDuplicateVideo = (video: ImportVideo, uploadedVideos: Video[]) => {
   if (!video.fileHash) return undefined;
 
-  // Once this row is uploaded, its own record lands in the video store and
-  // would match its hash. this guards against it showing as "already uploaded".
+  // Otherwise a just-uploaded row would match its own new record and flag itself.
   if (video.status === "uploading" || video.status === "uploaded") return undefined;
 
   return uploadedVideos.find((uploadedVideo) => uploadedVideo.file_hash === video.fileHash);
 };
 
-const canUploadVideo = (video: ImportVideo, videos: ImportVideo[], uploadedVideos: Video[]) => (
+// Only counts toward "Videos to upload" once fully checked - a video sits in
+// the active group before that too, but could still turn out invalid or a duplicate.
+const hasFinishedProcessing = (video: ImportVideo) => (
+  video.isValid === true && !video.needsWebOptimisation && Boolean(video.fileHash)
+);
+
+const canUploadVideo = (
+  video: ImportVideo,
+  videos: ImportVideo[],
+  uploadedVideos: Video[],
+  preferredDuplicateKeepers: PreferredDuplicateKeepers,
+) => (
   video.isValid
   && !video.needsWebOptimisation
   && Boolean(video.fileHash)
-  && !getDuplicateVideo(video, videos)
+  && !getDuplicateVideo(video, videos, preferredDuplicateKeepers)
   && !getUploadedDuplicateVideo(video, uploadedVideos)
   && (video.status === "ready" || video.status === "failed" || video.status === "cancelled")
 );
 
-// A cancelled upload only ever happens to a video that had already started
-// uploading (isValid was already true to get there), so it's retryable the
-// same way a genuine upload failure is.
-const isRetryableFailure = (video: ImportVideo, videos: ImportVideo[], uploadedVideos: Video[]) => (
-  (video.status === "failed" || video.status === "cancelled") && canUploadVideo(video, videos, uploadedVideos)
+// A cancelled video already passed validation to start uploading, so it
+// retries the same way a genuine upload failure does.
+const isRetryableFailure = (
+  video: ImportVideo,
+  videos: ImportVideo[],
+  uploadedVideos: Video[],
+  preferredDuplicateKeepers: PreferredDuplicateKeepers,
+) => (
+  (video.status === "failed" || video.status === "cancelled")
+  && canUploadVideo(video, videos, uploadedVideos, preferredDuplicateKeepers)
 );
 
-// Permanently invalid/duplicate videos don't count - there's nothing left to
-// do with them, so they shouldn't hold the beforeunload guard open forever.
-const hasUnfinishedWork = (video: ImportVideo, videos: ImportVideo[], uploadedVideos: Video[]) => (
+// Invalid/duplicate videos are dead ends - they shouldn't hold the leave-page guard open.
+const hasUnfinishedWork = (
+  video: ImportVideo,
+  videos: ImportVideo[],
+  uploadedVideos: Video[],
+  preferredDuplicateKeepers: PreferredDuplicateKeepers,
+) => (
   video.status === "pending"
   || video.status === "uploading"
-  || canUploadVideo(video, videos, uploadedVideos)
+  || canUploadVideo(video, videos, uploadedVideos, preferredDuplicateKeepers)
 );
+
+// "Already uploaded" and "invalid" share the "wontUpload" bucket - neither is
+// actionable, unlike a duplicate the user can swap. The row's tag still shows which applies.
+type VideoGroup = "active" | "duplicate" | "wontUpload";
+
+const getVideoGroup = (
+  video: ImportVideo,
+  videos: ImportVideo[],
+  uploadedVideos: Video[],
+  preferredDuplicateKeepers: PreferredDuplicateKeepers,
+): VideoGroup => {
+  if (getDuplicateVideo(video, videos, preferredDuplicateKeepers)) return "duplicate";
+  if (getUploadedDuplicateVideo(video, uploadedVideos)) return "wontUpload";
+  if (video.isValid === false) return "wontUpload";
+  return "active";
+};
 
 const getValidationTag = (video: ImportVideo) => {
   if (video.isLoading || video.isValid === undefined) {
@@ -142,12 +193,17 @@ const getUploadedDuplicateTag = (duplicateVideo: Video) => (
   </Tooltip>
 );
 
-const getStatusContent = (video: ImportVideo, videos: ImportVideo[], uploadedVideos: Video[]) => {
+const getStatusContent = (
+  video: ImportVideo,
+  videos: ImportVideo[],
+  uploadedVideos: Video[],
+  preferredDuplicateKeepers: PreferredDuplicateKeepers,
+) => {
   if (video.isLoading || video.isValid === undefined) {
     return getValidationTag(video);
   }
 
-  const duplicateVideo = getDuplicateVideo(video, videos);
+  const duplicateVideo = getDuplicateVideo(video, videos, preferredDuplicateKeepers);
 
   if (duplicateVideo) return getDuplicateTag(duplicateVideo);
 
@@ -161,8 +217,14 @@ const getStatusContent = (video: ImportVideo, videos: ImportVideo[], uploadedVid
   return getValidationTag(video);
 };
 
-const getProgressContent = (video: ImportVideo, videos: ImportVideo[], uploadedVideos: Video[], hasUploadStarted: boolean) => {
-  const duplicateVideo = getDuplicateVideo(video, videos);
+const getProgressContent = (
+  video: ImportVideo,
+  videos: ImportVideo[],
+  uploadedVideos: Video[],
+  hasUploadStarted: boolean,
+  preferredDuplicateKeepers: PreferredDuplicateKeepers,
+) => {
+  const duplicateVideo = getDuplicateVideo(video, videos, preferredDuplicateKeepers);
   const uploadedDuplicateVideo = getUploadedDuplicateVideo(video, uploadedVideos);
 
   if (!hasUploadStarted && (video.isValid === false || video.needsWebOptimisation || duplicateVideo || uploadedDuplicateVideo)) {
@@ -197,22 +259,26 @@ const ImportsPage: React.FC = () => {
   const [hasUploadStarted, setHasUploadStarted] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});
+  const [preferredDuplicateKeepers, setPreferredDuplicateKeepers] = useState<PreferredDuplicateKeepers>({});
+  const [activeGroupKeys, setActiveGroupKeys] = useState<VideoGroup[]>([]);
+  const manuallyToggledGroupKeysRef = useRef<Set<VideoGroup>>(new Set());
   const thumbnailUrlsRef = useRef<Record<string, string>>({});
   const uploadedVideos = useVideoStore((state) => state.processedRecords);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
   const uploadAbortControllerRef = useRef<AbortController | null>(null);
 
-  const hasUnfinishedImportWork = videos.some((video) => hasUnfinishedWork(video, videos, uploadedVideos));
+  const hasUnfinishedImportWork = videos.some((video) => (
+    hasUnfinishedWork(video, videos, uploadedVideos, preferredDuplicateKeepers)
+  ));
 
   useEffect(() => {
     folderInputRef.current?.setAttribute("webkitdirectory", "");
     folderInputRef.current?.setAttribute("directory", "");
   }, []);
 
-  // beforeunload only covers leaving the app entirely (refresh, close tab,
-  // typing a new URL) - it never fires for React Router's own in-app
-  // navigation (header links, back/forward), which useBlocker handles below.
+  // Covers refresh/close/typing a new URL; in-app nav (header links, back/forward)
+  // doesn't trigger beforeunload, so useBlocker below handles that case instead.
   useEffect(() => {
     if (!hasUnfinishedImportWork) return;
 
@@ -241,8 +307,7 @@ const ImportsPage: React.FC = () => {
     });
   }, [navigationBlocker, modal]);
 
-  // Object URLs are created lazily per video and revoked once that video is
-  // removed (or the page unmounts), so we never leak one per thumbnail.
+  // Revoked once a video is removed (or the page unmounts) to avoid leaking one per thumbnail.
   useEffect(() => {
     setThumbnailUrls((currentUrls) => {
       const nextUrls = { ...currentUrls };
@@ -461,6 +526,12 @@ const ImportsPage: React.FC = () => {
     setVideos((currentVideos) => currentVideos.filter((video) => video.localId !== localId));
   };
 
+  const keepThisFileInstead = (video: ImportVideo) => {
+    if (!video.fileHash) return;
+
+    setPreferredDuplicateKeepers((current) => ({ ...current, [video.fileHash!]: video.localId }));
+  };
+
   const uploadVideo = async (video: ImportVideo, signal: AbortSignal) => {
     updateVideo(video.localId, {
       status: "uploading",
@@ -508,34 +579,40 @@ const ImportsPage: React.FC = () => {
   };
 
   const uploadReadyVideos = () => (
-    runUploads(videos.filter((video) => canUploadVideo(video, videos, uploadedVideos)))
+    runUploads(videos.filter((video) => canUploadVideo(video, videos, uploadedVideos, preferredDuplicateKeepers)))
   );
 
   const retryVideo = (video: ImportVideo) => runUploads([video]);
 
   const retryFailedVideos = () => (
-    runUploads(videos.filter((video) => isRetryableFailure(video, videos, uploadedVideos)))
+    runUploads(videos.filter((video) => isRetryableFailure(video, videos, uploadedVideos, preferredDuplicateKeepers)))
   );
 
   const cancelUpload = () => {
     uploadAbortControllerRef.current?.abort();
   };
 
-  const uploadableVideoCount = videos.filter((video) => canUploadVideo(video, videos, uploadedVideos)).length;
+  const uploadableVideoCount = videos.filter((video) => (
+    canUploadVideo(video, videos, uploadedVideos, preferredDuplicateKeepers)
+  )).length;
   const isUploading = videos.some((video) => video.status === "uploading");
   const totalSize = videos.reduce((sum, video) => sum + video.fileSize, 0);
 
   const checkingCount = videos.filter((video) => video.isLoading || video.isValid === undefined).length;
   const uploadingCount = videos.filter((video) => video.status === "uploading").length;
   const uploadedCount = videos.filter((video) => video.status === "uploaded").length;
-  const failedCount = videos.filter((video) => isRetryableFailure(video, videos, uploadedVideos)).length;
-  const readyCount = videos.filter((video) => video.status === "ready" && canUploadVideo(video, videos, uploadedVideos)).length;
+  const failedCount = videos.filter((video) => (
+    isRetryableFailure(video, videos, uploadedVideos, preferredDuplicateKeepers)
+  )).length;
+  const readyCount = videos.filter((video) => (
+    video.status === "ready" && canUploadVideo(video, videos, uploadedVideos, preferredDuplicateKeepers)
+  )).length;
   const skippedCount = videos.length - checkingCount - uploadingCount - uploadedCount - failedCount - readyCount;
 
   // Weight overall progress by bytes so one large video doesn't count the
   // same as a small one.
   const batchVideos = videos.filter((video) => (
-    canUploadVideo(video, videos, uploadedVideos)
+    canUploadVideo(video, videos, uploadedVideos, preferredDuplicateKeepers)
     || video.status === "uploading"
     || video.status === "uploaded"
     || (video.status === "failed" && video.isValid)
@@ -603,14 +680,18 @@ const ImportsPage: React.FC = () => {
       title: "Status",
       dataIndex: "status",
       render: (status: ImportVideoStatus, video) => {
-        const canRetry = !isUploading && isRetryableFailure(video, videos, uploadedVideos);
+        const canRetry = !isUploading && isRetryableFailure(video, videos, uploadedVideos, preferredDuplicateKeepers);
+        const duplicateVideo = getDuplicateVideo(video, videos, preferredDuplicateKeepers);
+        // If it's already on the server, every copy shares its hash - swapping the keeper
+        // never makes any of them uploadable, so only offer it between two local duplicates.
+        const canSwapToThisFile = duplicateVideo && !getUploadedDuplicateVideo(video, uploadedVideos);
 
         return (
           <Space direction="vertical" size={0}>
             <Space size={4}>
               {shouldShowUploadStatus(video)
                 ? <Tag color={statusColors[status]}>{status}</Tag>
-                : getStatusContent(video, videos, uploadedVideos)}
+                : getStatusContent(video, videos, uploadedVideos, preferredDuplicateKeepers)}
               {canRetry && (
                 <Tooltip title="Retry upload">
                   <Button
@@ -623,6 +704,17 @@ const ImportsPage: React.FC = () => {
                 </Tooltip>
               )}
             </Space>
+            {canSwapToThisFile && (
+              <Button
+                type="link"
+                size="small"
+                icon={<SwapOutlined />}
+                style={{ padding: 0, height: "auto" }}
+                onClick={() => keepThisFileInstead(video)}
+              >
+                Use this file instead
+              </Button>
+            )}
             {video.errorMessage && (
               <Text type="danger">{video.errorMessage}</Text>
             )}
@@ -634,10 +726,46 @@ const ImportsPage: React.FC = () => {
     {
       title: "Progress",
       dataIndex: "progressPercent",
-      render: (_, video) => getProgressContent(video, videos, uploadedVideos, hasUploadStarted),
+      render: (_, video) => (
+        getProgressContent(video, videos, uploadedVideos, hasUploadStarted, preferredDuplicateKeepers)
+      ),
       width: 220,
     },
   ];
+
+  const groupedVideos = videos.reduce<Record<VideoGroup, ImportVideo[]>>((groups, video) => {
+    const group = getVideoGroup(video, videos, uploadedVideos, preferredDuplicateKeepers);
+    groups[group].push(video);
+    return groups;
+  }, { active: [], duplicate: [], wontUpload: [] });
+
+  const allGroupSections: { key: VideoGroup; label: string; videos: ImportVideo[] }[] = [
+    { key: "active", label: "Videos to upload", videos: groupedVideos.active },
+    { key: "duplicate", label: "Duplicate videos", videos: groupedVideos.duplicate },
+    { key: "wontUpload", label: "Won't be uploaded", videos: groupedVideos.wontUpload },
+  ];
+  // Duplicate/wontUpload only gain members once fully resolved, so their counts are
+  // already accurate - active is the one group a still-checking video defaults into.
+  const confirmedActiveCount = groupedVideos.active.filter(hasFinishedProcessing).length;
+  const pendingCount = videos.filter((video) => video.isValid !== false && !hasFinishedProcessing(video)).length;
+  const groupSections = allGroupSections.filter((section) => section.videos.length > 0);
+
+  // Active always opens; others auto-open/collapse around the threshold until the
+  // user manually toggles a panel, after which their choice sticks.
+  const collapseAutoExpandThreshold = 5;
+  useEffect(() => {
+    setActiveGroupKeys((current) => {
+      const autoKeys = groupSections
+        .filter((section) => !manuallyToggledGroupKeysRef.current.has(section.key))
+        .filter((section) => section.key === "active" || section.videos.length <= collapseAutoExpandThreshold)
+        .map((section) => section.key);
+      const manualKeys = current.filter((key) => manuallyToggledGroupKeysRef.current.has(key));
+      const nextKeys = [...new Set([...autoKeys, ...manualKeys])];
+      const isUnchanged = nextKeys.length === current.length && nextKeys.every((key) => current.includes(key));
+      return isUnchanged ? current : nextKeys;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupSections.map((section) => `${section.key}:${section.videos.length}`).join(",")]);
 
   return (
     <DashboardContent>
@@ -727,13 +855,50 @@ const ImportsPage: React.FC = () => {
           )}
         </Flex>
 
-        <Table
-          rowKey="localId"
-          columns={columns}
-          dataSource={videos}
-          pagination={{ pageSize: 25, showSizeChanger: true }}
-          locale={{ emptyText: "Select videos or a folder to start import." }}
-        />
+        {videos.length === 0 ? (
+          <Card>
+            <Text type="secondary">Select videos or a folder to start import.</Text>
+          </Card>
+        ) : (
+          <Collapse
+            activeKey={activeGroupKeys}
+            onChange={(keys) => {
+              const newKeys = keys as VideoGroup[];
+              const toggledKeys = [
+                ...activeGroupKeys.filter((key) => !newKeys.includes(key)),
+                ...newKeys.filter((key) => !activeGroupKeys.includes(key)),
+              ];
+              toggledKeys.forEach((key) => manuallyToggledGroupKeysRef.current.add(key));
+              setActiveGroupKeys(newKeys);
+            }}
+            items={groupSections.map((section) => {
+              const displayedCount = section.key === "active" ? confirmedActiveCount : section.videos.length;
+
+              return {
+                key: section.key,
+                label: (
+                  <Space size={6}>
+                    <span>{section.label} ({displayedCount})</span>
+                    {pendingCount > 0 && (
+                      <Tooltip title={`Still checking ${pendingCount} video${pendingCount === 1 ? "" : "s"}`}>
+                        <LoadingOutlined spin />
+                      </Tooltip>
+                    )}
+                  </Space>
+                ),
+                forceRender: true,
+                children: (
+                  <Table
+                    rowKey="localId"
+                    columns={columns}
+                    dataSource={section.videos}
+                    pagination={{ pageSize: 25, showSizeChanger: true }}
+                  />
+                ),
+              };
+            })}
+          />
+        )}
       </Space>
     </DashboardContent>
   );

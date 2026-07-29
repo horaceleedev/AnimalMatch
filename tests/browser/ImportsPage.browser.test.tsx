@@ -1,11 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 
-// Only the network leg is mocked here. Validation, hashing, thumbnailing, and
-// (where relevant) web optimisation all run for real against real fixture
-// files, which is the point of this suite living in tests/browser rather
-// than tests/component - see ImportsPage.test.tsx for the jsdom version that
-// mocks those out to test the page's own retry/state wiring in isolation.
+// Only the network leg is mocked - validation, hashing, thumbnailing and web
+// optimisation run for real against fixture files. See ImportsPage.test.tsx
+// for the jsdom version that mocks those out to test page state in isolation.
 vi.mock("../../src/importUploadAdapters", () => ({
   pocketBaseVideoUploadAdapter: { uploadVideo: vi.fn() },
 }));
@@ -48,7 +46,6 @@ describe("ImportsPage (real video pipeline)", () => {
 
     await expect.element(screen.getByText("faststart.mp4")).toBeVisible();
     await expect.element(screen.getByText("valid", { exact: true })).toBeVisible();
-    await expect.element(screen.getByText(/file hash:/)).toBeVisible();
 
     await screen.getByRole("button", { name: /Upload/ }).click();
     await expect.element(screen.getByText("failed", { exact: true })).toBeVisible();
@@ -70,6 +67,7 @@ describe("ImportsPage (real video pipeline)", () => {
 
     await userEvent.upload(fileInput, file);
 
+    // A lone invalid video is a small enough group to auto-expand, so no need to click to open it.
     await expect.element(screen.getByText("invalid", { exact: true })).toBeVisible();
     await expect.element(screen.getByRole("button", { name: /Upload/ })).toBeDisabled();
     expect(mockedUploadVideo).not.toHaveBeenCalled();
