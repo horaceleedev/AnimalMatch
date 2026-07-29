@@ -61,6 +61,17 @@ const getDuplicateVideo = (
 ) => {
   if (!video.fileHash) return undefined;
 
+  // Once a video is uploading or uploaded it's locked in as the keeper for its hash -
+  // a swap made after that point must not hide it or promote a still-unstarted copy.
+  if (video.status === "uploading" || video.status === "uploaded") return undefined;
+
+  const committedVideo = videos.find((candidate) => (
+    candidate.localId !== video.localId
+    && candidate.fileHash === video.fileHash
+    && (candidate.status === "uploading" || candidate.status === "uploaded")
+  ));
+  if (committedVideo) return committedVideo;
+
   const preferredKeeperId = preferredDuplicateKeepers[video.fileHash];
   if (preferredKeeperId) {
     if (preferredKeeperId === video.localId) return undefined;
@@ -139,8 +150,8 @@ const getVideoGroup = (
   uploadedVideos: Video[],
   preferredDuplicateKeepers: PreferredDuplicateKeepers,
 ): VideoGroup => {
-  if (getDuplicateVideo(video, videos, preferredDuplicateKeepers)) return "duplicate";
   if (getUploadedDuplicateVideo(video, uploadedVideos)) return "wontUpload";
+  if (getDuplicateVideo(video, videos, preferredDuplicateKeepers)) return "duplicate";
   if (video.isValid === false) return "wontUpload";
   return "active";
 };
@@ -203,12 +214,13 @@ const getStatusContent = (
     return getValidationTag(video);
   }
 
-  const duplicateVideo = getDuplicateVideo(video, videos, preferredDuplicateKeepers);
-
-  if (duplicateVideo) return getDuplicateTag(duplicateVideo);
-
+  // Checked before local duplicates: every copy of an already-uploaded file is equally
+  // "already uploaded", not just the one copy nothing else in the batch happens to precede.
   const uploadedDuplicateVideo = getUploadedDuplicateVideo(video, uploadedVideos);
   if (uploadedDuplicateVideo) return getUploadedDuplicateTag(uploadedDuplicateVideo);
+
+  const duplicateVideo = getDuplicateVideo(video, videos, preferredDuplicateKeepers);
+  if (duplicateVideo) return getDuplicateTag(duplicateVideo);
 
   if (video.isValid !== false && !video.needsWebOptimisation && !video.fileHash) {
     return <Tag icon={<LoadingOutlined spin />} color="processing">checking duplicates</Tag>;

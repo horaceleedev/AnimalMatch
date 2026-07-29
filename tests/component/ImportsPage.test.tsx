@@ -212,6 +212,34 @@ describe('ImportsPage retries', () => {
     );
   });
 
+  it('keeps an in-flight upload in the active group even if the user swaps the keeper mid-upload', async () => {
+    mockedHashFileSample.mockResolvedValue({ hash: 'same-hash', bytesHashed: 100 });
+
+    let resolveUpload: (result: { id: string; filename: string }) => void = () => {};
+    const uploadPromise = new Promise<{ id: string; filename: string }>((resolve) => {
+      resolveUpload = resolve;
+    });
+    mockedUploadVideo.mockReturnValueOnce(uploadPromise);
+
+    await addTestVideos(['first.mp4', 'second.mp4']);
+
+    await userEvent.click(screen.getByRole('button', { name: /Upload/ }));
+    await screen.findByText('uploading');
+
+    // Swapping while first.mp4 is uploading must not retroactively turn it into a duplicate -
+    // second.mp4 legitimately becomes/stays first.mp4's duplicate instead, since first.mp4 has
+    // already committed to uploading and a later swap can't un-claim that.
+    await userEvent.click(screen.getByText('Use this file instead'));
+    const firstRow = screen.getByText('first.mp4').closest('tr') as HTMLElement;
+    expect(within(firstRow).getByText('uploading')).toBeInTheDocument();
+    expect(within(firstRow).queryByText('duplicate video')).not.toBeInTheDocument();
+
+    resolveUpload({ id: 'video-1', filename: 'first.mp4' });
+
+    await within(firstRow).findByText('uploaded');
+    expect(within(firstRow).queryByText('duplicate video')).not.toBeInTheDocument();
+  });
+
   it('flags a video that matches an already-uploaded record and skips it', async () => {
     mockedUseVideoStore.mockImplementation((selector) => selector({
       processedRecords: [{ file_hash: 'existing-hash', filename: 'existing.mp4' }],
@@ -263,9 +291,10 @@ describe('ImportsPage retries', () => {
     const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
     fireEvent.change(fileInput, { target: { files: [makeVideoFile('dupe-a.mp4'), makeVideoFile('dupe-b.mp4')] } });
 
-    // Whichever copy becomes the keeper still matches the server record.
-    await screen.findByText('already uploaded');
-    expect(screen.getByText('duplicate video')).toBeInTheDocument();
+    // Every copy matches the server record, not just whichever one is the local "keeper".
+    await screen.findAllByText('already uploaded');
+    expect(screen.getAllByText('already uploaded')).toHaveLength(2);
+    expect(screen.queryByText('duplicate video')).not.toBeInTheDocument();
     expect(screen.queryByText('Use this file instead')).not.toBeInTheDocument();
   });
 
