@@ -18,16 +18,21 @@ const headerMenuItems = [
         key: 'crops',
         label: <Link to={`crops`}>Crops</Link>,
       },
+      {
+        type: 'divider' as const,
+        // antd's dark Menu popup doesn't theme the default divider colour, so it's invisible without this.
+        style: { borderColor: 'rgba(255, 255, 255, 0.15)' },
+      },
+      {
+        key: 'import',
+        label: <Link to={`import`}>Import videos</Link>,
+      },
     ],
     popupOffset: [-14, 0],
   },
   {
     key: 'individuals',
     label: <Link to={`individuals`}>Individuals</Link>,
-  },
-  {
-    key: 'import',
-    label: <Link to={`import`}>Import</Link>,
   },
   {
     key: 'project-settings',
