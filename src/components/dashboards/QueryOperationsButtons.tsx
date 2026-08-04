@@ -80,20 +80,22 @@ type QueryBuilderFieldData = {
 
 const MULTI_VALUE_OPERATORS = new Set(['in', 'notIn']);
 
+/** Ensures `in` and `notIn` rules store their selected values as string arrays. */
 const normalizeMultiOperatorRuleValue = (rule: RuleType): RuleType => {
   if (!MULTI_VALUE_OPERATORS.has(rule.operator)) return rule;
 
   const value = rule.value;
-  const normalizedValue =
-    Array.isArray(value)
-      ? value.map(String)
-      : value === null || value === undefined || value === ''
-        ? []
-        : [String(value)];
+  if (Array.isArray(value)) {
+    return { ...rule, value: value.map(String) };
+  }
+
+  if (value === null || value === undefined || value === '') {
+    return { ...rule, value: [] };
+  }
 
   return {
     ...rule,
-    value: normalizedValue,
+    value: [String(value)],
   };
 };
 
@@ -141,17 +143,21 @@ const RenderAwareValueEditor = (props: ValueEditorProps) => {
   }
 
   if (props.inputType === 'date') {
-    const value =
-      typeof props.value === 'string' && props.value
-        ? dayjs(props.value, 'YYYY-MM-DD', true)
-        : null;
+    let value = props.value;
+    if (typeof value === 'string' && value) {
+      const parsedDate = dayjs(value, 'YYYY-MM-DD', true);
+      if (parsedDate.isValid()) value = parsedDate;
+      else value = null;
+    } else {
+      value = null;
+    }
 
     return (
       <span title={props.title} className={props.className}>
         <DatePicker
           disabled={props.disabled}
           format="YYYY-MM-DD"
-          value={value?.isValid() ? value : null}
+          value={value}
           onChange={(_, dateString) => props.handleOnChange(dateString)}
         />
       </span>
@@ -264,7 +270,7 @@ type QueryOperationsButtonsProps = {
   handleSearch: (x: string) => void;
 }
 
-// Button label reflects nested filter rules, not just top-level query groups.
+/** Get the first leaf rule in the query, recursively traversing nested groups. */
 const getFirstLeafRule = (group: RuleGroupType): RuleType | undefined => {
   for (const rule of group.rules) {
     if ('rules' in rule) {
@@ -278,6 +284,7 @@ const getFirstLeafRule = (group: RuleGroupType): RuleType | undefined => {
   return undefined;
 };
 
+/** Count the number of leaf rules in the query, recursively traversing nested groups. */
 const countLeafRules = (group: RuleGroupType): number =>
   group.rules.reduce(
     (count, rule) => count + ('rules' in rule ? countLeafRules(rule) : 1),
@@ -296,6 +303,8 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
     () => getFirstLeafRule(query),
     [query]
   );
+  // Get the label for the filter button based on the number of leaf rules.
+  // Button label reflects nested filter rules, not just top-level query groups.
   const filterLabel = useMemo(() => {
     if (filterRuleCount === 0) return "Filter";
     if (filterRuleCount === 1 && firstFilterRule) {

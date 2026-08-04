@@ -104,6 +104,7 @@ export const buildQueryBuilderFields = (
     const category = metadataTypeToCategory(metadataField.type);
     const valueEditorType =
       category === 'enum' && metadataField.valueEditorType === 'select'
+        // If the field is a select (single-value) field, we want to use a multiselect input if the operator is a multi-value operator (e.g. "is any of"), and a single-select input otherwise.
         ? ((operator: string) => (MULTI_VALUE_OPERATORS.has(operator) ? 'multiselect' : 'select')) as Field['valueEditorType']
         : (metadataField.valueEditorType as Field['valueEditorType']);
     const output: Field = {

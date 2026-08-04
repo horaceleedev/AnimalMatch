@@ -8,8 +8,8 @@ export type QueryDefinition = RuleGroupType;
 
 const DATE_FIELD_NAMES = new Set(
   [...Object.entries(videoMetadataFields), ...Object.entries(individualsMetadataFields), ...Object.entries(cropsMetadataFields)]
-    .filter(([, field]) => field.type === 'date')
-    .map(([fieldName]) => fieldName)
+    .filter(([_, field]) => field.type === 'date')
+    .map(([fieldName, _]) => fieldName)
 );
 
 const hasGroupNot = (group: QueryDefinition): boolean =>
@@ -128,6 +128,10 @@ const normalizeDateQueryOperators = (value: unknown): unknown => {
   return value;
 };
 
+/**
+ * Convert strings in the query to lowercase for case-insensitive matching,
+ * with recursive handling of nested objects and arrays.
+ */
 const normalizeMongoQueryStrings = (value: unknown): unknown => {
   if (typeof value === 'string') {
     // Keep Mongo-style field references used in $expr/$where payloads.
