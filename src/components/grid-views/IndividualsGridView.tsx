@@ -1,36 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { generatePath, Link } from 'react-router-dom';
-import { Card, Select, Skeleton, Space, Tag, Tooltip } from 'antd';
+import { Card, Select, Space, Tag, Tooltip } from 'antd';
 
-import { Crop, Individual, MetadataFieldsType, RecordType } from '../../types.ts';
+import { Individual, MetadataFieldsType, RecordType } from '../../types.ts';
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
+import CropWithSkeleton from './CropWithSkeleton.tsx';
 import "./IndividualsGridView.scss";
 
 // const imgStyle: React.CSSProperties = {
 //   display: 'block',
 //   width: 200,
 // };
-
-const CropWithSkeleton: React.FC<{ crop: Crop }> = ({ crop }) => {
-  const [loaded, setLoaded] = useState(false);
-  const scaledCropWidth = crop.height > 0
-    ? Math.round((crop.width / crop.height) * 150)
-    : 150; // fallback
-
-  return (
-    <div>
-      {!loaded && (
-        <Skeleton.Node active style={{height: 150, width: scaledCropWidth}} />
-      )}
-      <img
-        src={crop.imageUrl}
-        onLoad={() => setLoaded(true)}
-        onError={() => setLoaded(true)}
-        style={{display: loaded ? "block" : "none", height: 150, borderRadius: 5}}
-      />
-    </div>
-  );
-};
 
 interface BasicIndividualsGridViewProps {
   individuals: Individual[];
@@ -86,7 +66,9 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
             <Card hoverable bordered={true} size="small" cover={
               <div style={{display: 'flex', overflow: 'scroll', height: 150, columnGap: 5, borderRadius: 5}}>
                 {
-                  individual.crops.map(crop => (<CropWithSkeleton crop={crop} key={crop.id} />))
+                  individual.crops.map(crop => (
+                    <CropWithSkeleton crop={crop} imageHeight={150} imageStyle={{borderRadius: 5}} key={crop.id} />
+                  ))
                 }
               </div>
             }>
