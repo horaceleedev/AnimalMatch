@@ -5,11 +5,18 @@ img.individual-label-image {
   border-radius: 5px;
 }
 
+// custom styles for when the individual label is displayed inside an antd Select component
 // styles specific to the selected label (not the options in the dropdown)
-.ant-select-selection-item {
+.ant-select-single .ant-select-selection-item {
   img.individual-label-image {
     width: 24px;
     height: 24px;
+  }
+}
+.ant-select-multiple .ant-select-selection-item {
+  img.individual-label-image {
+    width: 20px;
+    height: 20px;
   }
 }
 
@@ -18,9 +25,48 @@ img.video-label-image {
   border-radius: 5px;
 }
 
+// custom styles for when the individual label is displayed inside an antd Select component
 // styles specific to the selected label (not the options in the dropdown)
-.ant-select-selection-item {
+.ant-select-single .ant-select-selection-item {
   img.video-label-image {
     height: 24px;
+  }
+}
+.ant-select-multiple .ant-select-selection-item {
+  img.video-label-image {
+    height: 20px;
+  }
+}
+
+.user-label {
+  > .ant-space-item {
+    line-height: 18px;
+
+    > .ant-avatar {
+      background: #555;
+    }
+  }
+}
+
+// custom styles for when the user label is displayed inside an antd Select component
+// styles specific to the selected label (not the options in the dropdown)
+.ant-select-single .ant-select-selection-item {
+  .user-label {
+    .ant-avatar {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+.ant-select-multiple .ant-select-selection-item {
+  .user-label {
+    > .ant-space-item {
+      line-height: 16px;
+
+      > .ant-avatar {
+        width: 16px;
+        height: 16px;
+      }
+    }
   }
 }

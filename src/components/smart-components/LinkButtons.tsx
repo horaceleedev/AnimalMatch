@@ -107,8 +107,8 @@ export const UserLabel: React.FC<{id: string}> = ({id}) => {
   if (!user) return <></>;
 
   return (
-    <Space styles={{item: {lineHeight: '18px'}}}>
-      <Avatar size="small" style={{background: '#555'}}>
+    <Space className="user-label">
+      <Avatar size="small">
         {/* First letter of user's name */}
         {user.name[0].toLocaleUpperCase()}
       </Avatar>
