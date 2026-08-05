@@ -2,7 +2,7 @@ const thumbnailMaxEdgePx = 640;
 const thumbnailJpegQuality = 0.8;
 
 // Prevent capturing initial black or blank frames.
-const thumbnailCaptureSeconds = 1;
+const thumbnailCaptureSeconds = 0.1;
 
 // A stalled decode would leave the import row loading forever
 const thumbnailCaptureTimeoutMs = 15_000;
