@@ -92,6 +92,10 @@ export const pocketBaseVideoUploadAdapter: VideoUploadAdapter = {
       formData.append("thumbnail", video.thumbnailFile);
     }
 
+    if (video.relativePath) {
+      formData.append("original_path", video.relativePath);
+    }
+
     // location_name/recording_date/utm_easting/utm_northing are left unset
     // rather than filled with placeholder values - needs_metadata set true
     formData.append("notes", "");

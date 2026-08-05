@@ -1,7 +1,8 @@
-import { FC, useEffect, useMemo, useRef, useState } from 'react'
+import { FC, ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { differenceBy, intersection } from 'es-toolkit';
-import { Button, Flex, Input, Layout, Modal, Popover, Space, Tabs, Tooltip } from "antd";
+import { Button, Flex, Input, Layout, Modal, Popover, Space, Tabs, Tooltip, Typography } from "antd";
+const { Text } = Typography;
 import type { TabsProps } from "antd";
 const { TextArea } = Input;
 const { Content, Sider } = Layout;
@@ -408,7 +409,7 @@ const CompareModal: FC = () => {
     );
   }
 
-  let modalTitleText;
+  let modalTitleText: ReactNode;
   if (isCompareView) {
     modalTitleText = "Comparison view"
     // modalTitleText = "Compare ";
@@ -420,7 +421,15 @@ const CompareModal: FC = () => {
     // else modalTitleText += "(select a video or individual)";
   } else {
     if (videoDetailProps) {
-      modalTitleText = videoDetailProps.video.filename;
+      const { filename, original_path } = videoDetailProps.video;
+      modalTitleText = original_path ? (
+        <Flex vertical style={{minWidth: 0}}>
+          <span>{filename}</span>
+          <Text type="secondary" style={{fontSize: 12, fontWeight: "normal"}} ellipsis={{tooltip: original_path}}>
+            {original_path}
+          </Text>
+        </Flex>
+      ) : filename;
     } else if (individualDetailProps) {
       modalTitleText = individualDetailProps.individual.name;
     } else if (cropDetailProps) {
