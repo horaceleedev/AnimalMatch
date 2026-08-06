@@ -333,19 +333,43 @@ const ImportsPage: React.FC = () => {
 
   const navigationBlocker = useBlocker(hasUnfinishedImportWork);
 
+  const cancelUpload = useCallback(() => {
+    setIsAutoUploadEnabled(false);
+    uploadAbortControllerRef.current?.abort();
+  }, []);
+
   useEffect(() => {
     if (navigationBlocker.state !== "blocked") return;
 
-    modal.confirm({
+    const hasActiveUploadQueue = uploadAbortControllerRef.current !== null;
+    const leaveConfirmation = modal.confirm({
       title: "Leave this import?",
-      content: "Videos still uploading or waiting to upload will be lost if you leave now.",
-      okText: "Leave",
-      okButtonProps: { danger: true },
+      content: hasActiveUploadQueue
+        ? "The active upload queue will continue. Videos not yet queued and this page's progress and controls will be lost. Your original files are unaffected."
+        : "This import session and its progress will be lost. Your original files are unaffected.",
+      okText: hasActiveUploadQueue ? "Leave & keep uploading" : "Leave",
+      okButtonProps: hasActiveUploadQueue ? undefined : { danger: true },
       cancelText: "Stay",
       onOk: () => navigationBlocker.proceed(),
       onCancel: () => navigationBlocker.reset(),
+      footer: hasActiveUploadQueue ? (_originNode, { OkBtn, CancelBtn }) => (
+        <Space>
+          <CancelBtn />
+          <Button
+            danger
+            onClick={() => {
+              cancelUpload();
+              leaveConfirmation.destroy();
+              navigationBlocker.proceed();
+            }}
+          >
+            Cancel uploads & leave
+          </Button>
+          <OkBtn />
+        </Space>
+      ) : undefined,
     });
-  }, [navigationBlocker, modal]);
+  }, [cancelUpload, navigationBlocker, modal]);
 
   // Revoked once a video is removed (or the page unmounts) to avoid leaking one per thumbnail.
   useEffect(() => {
@@ -691,11 +715,6 @@ const ImportsPage: React.FC = () => {
   const retryFailedVideos = () => (
     runUploads(videos.filter((video) => isRetryableFailure(video, videos, uploadedVideos, preferredDuplicateKeepers)))
   );
-
-  const cancelUpload = () => {
-    setIsAutoUploadEnabled(false);
-    uploadAbortControllerRef.current?.abort();
-  };
 
   const uploadableVideoCount = videos.filter((video) => (
     canUploadVideo(video, videos, uploadedVideos, preferredDuplicateKeepers)
