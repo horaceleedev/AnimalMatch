@@ -27,10 +27,12 @@ const demoUser: AuthUser = {
   updated: '2026-01-01T00:00:00.000Z',
   username: 'demo',
   verified: true,
+  role: 'viewer',
 };
 
 const makeAuthValue = (overrides: Partial<ReturnType<typeof useAuth>> = {}): ReturnType<typeof useAuth> => ({
   user: null,
+  isEditor: overrides.user?.role === 'editor',
   login: vi.fn().mockResolvedValue(undefined),
   logout: vi.fn(),
   ...overrides,
@@ -43,6 +45,24 @@ const LoginLocationState = (): ReactNode => {
       <span data-testid="from-pathname">{from?.pathname}</span>
       <span data-testid="from-search">{from?.search}</span>
     </>
+  );
+};
+
+const renderEditorRoute = () => {
+  renderWithProviders(
+    <Routes>
+      <Route
+        path="/import"
+        element={(
+          <ProtectedRoute editorOnly>
+            <div>Import page</div>
+          </ProtectedRoute>
+        )}
+      />
+      <Route path="/videos" element={<div>Videos page</div>} />
+      <Route path="/login" element={<div>Login page</div>} />
+    </Routes>,
+    { route: '/import' },
   );
 };
 
@@ -137,5 +157,31 @@ describe('ProtectedRoute', () => {
 
     expect(screen.getByText('Secret content')).toBeInTheDocument();
     expect(screen.queryByText('Login screen')).not.toBeInTheDocument();
+  });
+
+  it('renders an editor-only route for editors', async () => {
+    mockedUseAuth.mockReturnValue(makeAuthValue({
+      user: { ...demoUser, role: 'editor' },
+    }));
+
+    renderEditorRoute();
+
+    expect(await screen.findByText("Import page")).toBeInTheDocument();
+  });
+
+  it('redirects viewers away from an editor-only route', async () => {
+    mockedUseAuth.mockReturnValue(makeAuthValue({ user: demoUser }));
+
+    renderEditorRoute();
+
+    expect(await screen.findByText("Videos page")).toBeInTheDocument();
+  });
+
+  it('still redirects signed-out users to login', async () => {
+    mockedUseAuth.mockReturnValue(makeAuthValue());
+
+    renderEditorRoute();
+
+    expect(await screen.findByText("Login page")).toBeInTheDocument();
   });
 });
