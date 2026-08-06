@@ -2,7 +2,7 @@
 import { render, type RenderOptions } from '@testing-library/react';
 import { App as AntApp } from 'antd';
 import type { ReactElement } from 'react';
-import { createMemoryRouter, RouterProvider } from 'react-router-dom';
+import { createMemoryRouter, Outlet, RouterProvider, type RouteObject } from 'react-router-dom';
 
 type AppRenderOptions = Omit<RenderOptions, 'wrapper'> & {
   route?: string;
@@ -16,6 +16,22 @@ export const renderWithProviders = (
 ) => {
   const router = createMemoryRouter(
     [{ path: '*', element: <AntApp>{ui}</AntApp> }],
+    { initialEntries: [route], future: { v7_relativeSplatPath: true } },
+  );
+
+  return render(<RouterProvider router={router} future={{ v7_startTransition: true }} />, options);
+};
+
+export const renderWithRoutes = (
+  routes: RouteObject[],
+  { route = '/', ...options }: AppRenderOptions = {},
+) => {
+  const router = createMemoryRouter(
+    [{
+      path: '/',
+      element: <AntApp><Outlet /></AntApp>,
+      children: routes,
+    }],
     { initialEntries: [route], future: { v7_relativeSplatPath: true } },
   );
 
