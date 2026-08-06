@@ -8,7 +8,7 @@ export interface ImportVideoValidationResult {
 
 // mp4box only needs the metadata, which sits at one end of the file or the
 // other, so avoid loading whole videos into memory.
-const mp4MetadataReadByteLimit = 4 * 1024 * 1024;
+const mp4MetadataReadByteLimit = 16 * 1024 * 1024;
 const supportedVideoCodecPrefixes = ["avc1", "avc3"];
 
 const isMp4Extension = (file: File) => file.name.toLowerCase().endsWith(".mp4");
