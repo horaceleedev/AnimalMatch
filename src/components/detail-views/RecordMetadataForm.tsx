@@ -18,6 +18,7 @@ type RecordMetadataFormProps<T extends RecordModel> = {
   videoLinkTemplate?: string;
   individualLinkTemplate?: string;
   openModal?: (type: RecordType, id: string) => void;
+  getFieldWarning?: (fieldName: string, formData: Partial<T>) => string | undefined;
 }
 
 const RecordMetadataForm = <T extends RecordModel>({
@@ -29,6 +30,7 @@ const RecordMetadataForm = <T extends RecordModel>({
   videoLinkTemplate,
   individualLinkTemplate,
   openModal,
+  getFieldWarning,
 }: RecordMetadataFormProps<T>) => {
   const {
     formData,
@@ -54,6 +56,7 @@ const RecordMetadataForm = <T extends RecordModel>({
       {
         Object.entries(metadataFields).map(([fieldName, metadataField]) => {
           let inputElement = <></>;
+          const warning = getFieldWarning?.(fieldName, formData);
           const disabled = metadataField.isInternal || metadataField.isUneditable;
           if (metadataField.type === 'rich_text') {
             inputElement = <TextArea autoSize={{ minRows: 3, maxRows: 6 }} />
@@ -142,7 +145,13 @@ const RecordMetadataForm = <T extends RecordModel>({
             inputElement = <InputNumber disabled={disabled} />;
           }
           return (
-            <Form.Item key={fieldName} label={metadataField.displayName} name={fieldName}>
+            <Form.Item
+              key={fieldName}
+              label={metadataField.displayName}
+              name={fieldName}
+              validateStatus={warning ? "warning" : undefined}
+              help={warning}
+            >
               {inputElement}
             </Form.Item>
           );

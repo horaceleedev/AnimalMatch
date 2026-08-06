@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import BasicMapView from '../ui/BasicMapView.tsx';
 import { Individual, LocationInfo, RecordType, Video } from '../../types.ts';
 import { individualsMetadataFields, videoMetadataFields } from '../../metadata.tsx';
+import { getNeedsMetadataWarning } from '../../lib/videoMetadata.ts';
 import IndividualsGridView from "../grid-views/IndividualsGridView.tsx";
 import RecordMetadataForm from "./RecordMetadataForm.tsx";
 import { PrevNextVideoButtons } from "../ui/PrevNextButtons.tsx";
@@ -92,6 +93,9 @@ const VideoDetailView: FC<VideoDetailViewProps> = ({
         uniqueValuesPerField={uniqueValuesPerField}
         updateFunction={updateVideo}
         showIconInSelectionFields={true}
+        getFieldWarning={(fieldName, formData) => (
+          fieldName === "needs_metadata" ? getNeedsMetadataWarning(formData) : undefined
+        )}
       />
       {
         showMap && // Temporary hack needed because map wasn't showing up properly
