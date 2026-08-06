@@ -565,7 +565,15 @@ const ImportsPage: React.FC = () => {
     event.preventDefault();
     setIsDraggingOver(false);
 
-    void readDroppedFiles(event.dataTransfer.items).then(addFiles);
+    void readDroppedFiles(event.dataTransfer.items).then(({ files, failedEntryCount }) => {
+      addFiles(files);
+
+      if (failedEntryCount > 0) {
+        message.warning(
+          `Could not read ${failedEntryCount} dropped item${failedEntryCount === 1 ? "" : "s"}. ${files.length > 0 ? "The remaining files were added." : "No files were added."}`,
+        );
+      }
+    });
   };
 
   const removeVideo = (localId: string) => {

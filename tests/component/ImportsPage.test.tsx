@@ -13,6 +13,9 @@ vi.mock('../../src/lib/videoThumbnail', () => ({
 vi.mock('../../src/lib/optimiseMp4ForWeb', () => ({
   optimiseMp4ForWeb: vi.fn(),
 }));
+vi.mock('../../src/lib/readDroppedFiles', () => ({
+  readDroppedFiles: vi.fn(),
+}));
 vi.mock('../../src/importUploadAdapters', () => ({
   pocketBaseVideoUploadAdapter: { uploadVideo: vi.fn() },
 }));
@@ -24,6 +27,7 @@ import { isValidVideoForImport } from '../../src/lib/importVideoValidation';
 import { hashFileSample } from '../../src/lib/fileHashing';
 import { createVideoThumbnail } from '../../src/lib/videoThumbnail';
 import { optimiseMp4ForWeb } from '../../src/lib/optimiseMp4ForWeb';
+import { readDroppedFiles } from '../../src/lib/readDroppedFiles';
 import { pocketBaseVideoUploadAdapter } from '../../src/importUploadAdapters';
 import { useVideoStore } from '../../src/DataStores';
 import { fireEvent, renderWithProviders, screen, userEvent, waitFor, within } from '../helpers/render';
@@ -33,6 +37,7 @@ const mockedIsValidVideoForImport = vi.mocked(isValidVideoForImport);
 const mockedHashFileSample = vi.mocked(hashFileSample);
 const mockedCreateVideoThumbnail = vi.mocked(createVideoThumbnail);
 const mockedOptimiseMp4ForWeb = vi.mocked(optimiseMp4ForWeb);
+const mockedReadDroppedFiles = vi.mocked(readDroppedFiles);
 const mockedUploadVideo = vi.mocked(pocketBaseVideoUploadAdapter.uploadVideo);
 const mockedUseVideoStore = vi.mocked(useVideoStore);
 
@@ -356,5 +361,21 @@ describe('ImportsPage retries', () => {
     // The queued video was never attempted, so it's still shown as valid/ready, not failed or cancelled.
     expect(screen.queryByText('failed')).not.toBeInTheDocument();
     expect(screen.getAllByText('cancelled')).toHaveLength(1);
+  });
+
+  it('adds readable dropped files and warns when another dropped entry could not be read', async () => {
+    const readableVideo = makeVideoFile('readable.mp4');
+    mockedReadDroppedFiles.mockResolvedValueOnce({
+      files: [readableVideo],
+      failedEntryCount: 1,
+    });
+
+    renderWithProviders(<ImportsPage />);
+    fireEvent.drop(screen.getByRole('button', { name: /Click or drag video files or folders here to import/ }), {
+      dataTransfer: { items: [] },
+    });
+
+    await screen.findByText('readable.mp4');
+    expect(await screen.findByText('Could not read 1 dropped item. The remaining files were added.')).toBeInTheDocument();
   });
 });

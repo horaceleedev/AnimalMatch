@@ -13,6 +13,19 @@ const makeFileEntry = (fullPath: string, file: File): FileSystemFileEntry => ({
   toURL: () => '',
 } as unknown as FileSystemFileEntry);
 
+const makeUnreadableFileEntry = (fullPath: string): FileSystemFileEntry => ({
+  isFile: true,
+  isDirectory: false,
+  fullPath,
+  name: fullPath.split('/').pop() ?? '',
+  filesystem: {} as FileSystem,
+  file: (_successCallback: (file: File) => void, errorCallback?: (error: DOMException) => void) => {
+    errorCallback?.(new DOMException('File could not be read.'));
+  },
+  getParent: () => {},
+  toURL: () => '',
+} as unknown as FileSystemFileEntry);
+
 // Splits entries across multiple readEntries() batches (plus a trailing empty
 // batch), matching the real DirectoryReader contract this code relies on.
 const makeDirectoryEntry = (fullPath: string, childBatches: FileSystemEntry[][]): FileSystemDirectoryEntry => {
@@ -66,9 +79,10 @@ describe('readDroppedFiles', () => {
 
     const result = await readDroppedFiles(asItemList([makeItem(rootDir)]));
 
-    expect(result.map((file) => file.name).sort()).toEqual(['deep.mp4', 'nested.mp4', 'root.mp4']);
+    expect(result.failedEntryCount).toBe(0);
+    expect(result.files.map((file) => file.name).sort()).toEqual(['deep.mp4', 'nested.mp4', 'root.mp4']);
 
-    const byName = Object.fromEntries(result.map((file) => [file.name, file.webkitRelativePath]));
+    const byName = Object.fromEntries(result.files.map((file) => [file.name, file.webkitRelativePath]));
     expect(byName['root.mp4']).toBe('videos/root.mp4');
     expect(byName['nested.mp4']).toBe('videos/sub/nested.mp4');
     expect(byName['deep.mp4']).toBe('videos/sub/deep/deep.mp4');
@@ -80,9 +94,10 @@ describe('readDroppedFiles', () => {
 
     const result = await readDroppedFiles(asItemList([makeItem(entry)]));
 
-    expect(result).toHaveLength(1);
-    expect(result[0].name).toBe('clip.mp4');
-    expect(result[0].webkitRelativePath).toBe('clip.mp4');
+    expect(result.failedEntryCount).toBe(0);
+    expect(result.files).toHaveLength(1);
+    expect(result.files[0].name).toBe('clip.mp4');
+    expect(result.files[0].webkitRelativePath).toBe('clip.mp4');
   });
 
   it('falls back to getAsFile when an item has no entry backing it', async () => {
@@ -90,13 +105,29 @@ describe('readDroppedFiles', () => {
 
     const result = await readDroppedFiles(asItemList([makeItem(null, file)]));
 
-    expect(result).toHaveLength(1);
-    expect(result[0]).toBe(file);
+    expect(result.failedEntryCount).toBe(0);
+    expect(result.files).toHaveLength(1);
+    expect(result.files[0]).toBe(file);
   });
 
   it('ignores an item that has neither an entry nor a file', async () => {
     const result = await readDroppedFiles(asItemList([makeItem(null)]));
 
-    expect(result).toEqual([]);
+    expect(result).toEqual({ files: [], failedEntryCount: 0 });
+  });
+
+  it('keeps readable siblings when one entry in a dropped directory cannot be read', async () => {
+    const readableVideo = new File(['content'], 'readable.mp4', { type: 'video/mp4' });
+    const rootDir = makeDirectoryEntry('/videos', [[
+      makeFileEntry('/videos/readable.mp4', readableVideo),
+      makeUnreadableFileEntry('/videos/unreadable.mp4'),
+    ]]);
+
+    const result = await readDroppedFiles(asItemList([makeItem(rootDir)]));
+
+    expect(result.failedEntryCount).toBe(1);
+    expect(result.files).toHaveLength(1);
+    expect(result.files[0].name).toBe('readable.mp4');
+    expect(result.files[0].webkitRelativePath).toBe('videos/readable.mp4');
   });
 });
