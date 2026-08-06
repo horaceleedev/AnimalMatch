@@ -48,7 +48,7 @@ describe("video metadata completeness", () => {
       ...completeMetadata,
       location_name: "",
       needs_metadata: false,
-    })).toContain("location name");
+    })).toBe("Required metadata is missing: location name. Are you sure you want to mark this video as having metadata?");
     expect(getNeedsMetadataWarning({ ...completeMetadata, needs_metadata: false })).toBeUndefined();
   });
 });
