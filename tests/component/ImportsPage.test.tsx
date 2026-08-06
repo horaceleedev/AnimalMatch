@@ -31,7 +31,15 @@ import { optimiseMp4ForWeb } from '../../src/lib/optimiseMp4ForWeb';
 import { readDroppedFiles } from '../../src/lib/readDroppedFiles';
 import { pocketBaseVideoUploadAdapter } from '../../src/importUploadAdapters';
 import { useVideoStore } from '../../src/DataStores';
-import { fireEvent, renderWithProviders, screen, userEvent, waitFor, within } from '../helpers/render';
+import {
+  fireEvent,
+  renderWithProviders,
+  renderWithRoutes,
+  screen,
+  userEvent,
+  waitFor,
+  within,
+} from '../helpers/render';
 import ImportsPage from '../../src/routes/ImportsPage';
 
 const mockedIsValidVideoForImport = vi.mocked(isValidVideoForImport);
@@ -55,6 +63,19 @@ const addTestVideos = async (filenames: string[]) => {
   }
   await waitFor(() => expect(screen.getByRole('button', { name: /Upload/ })).toBeEnabled());
 };
+
+const renderImportNavigation = () => renderWithRoutes([
+  {
+    path: 'import',
+    element: (
+      <>
+        <ImportsPage />
+        <Link to="/destination">Leave import page</Link>
+      </>
+    ),
+  },
+  { path: 'destination', element: <div>Destination page</div> },
+], { route: '/import' });
 
 describe('ImportsPage retries', () => {
   beforeEach(() => {
@@ -451,12 +472,7 @@ describe('ImportsPage retries', () => {
   });
 
   it('warns that leaving abandons the import session without affecting the original files', async () => {
-    renderWithProviders(
-      <>
-        <ImportsPage />
-        <Link to="/somewhere-else">Leave import page</Link>
-      </>,
-    );
+    renderImportNavigation();
 
     const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
     fireEvent.change(fileInput, { target: { files: [makeVideoFile('clip.mp4')] } });
@@ -467,6 +483,11 @@ describe('ImportsPage retries', () => {
     expect(await screen.findByText(
       'This import session and its progress will be lost. Your original files are unaffected.',
     )).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Leave' }));
+
+    expect(await screen.findByText('Destination page')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Import videos to AnimalMatch' })).not.toBeInTheDocument();
   });
 
   it('offers to keep or cancel the active upload queue when leaving', async () => {
@@ -474,12 +495,7 @@ describe('ImportsPage retries', () => {
       signal?.addEventListener('abort', () => reject(new DOMException('Upload cancelled.', 'AbortError')));
     }));
 
-    renderWithProviders(
-      <>
-        <ImportsPage />
-        <Link to="/somewhere-else">Leave import page</Link>
-      </>,
-    );
+    renderImportNavigation();
 
     const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
     fireEvent.change(fileInput, { target: { files: [makeVideoFile('clip.mp4')] } });
@@ -497,5 +513,34 @@ describe('ImportsPage retries', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Cancel uploads & leave' }));
 
     expect(mockedUploadVideo.mock.calls[0][2]?.aborted).toBe(true);
+    expect(await screen.findByText('Destination page')).toBeInTheDocument();
+  });
+
+  it('continues the active upload queue after leaving when requested', async () => {
+    let finishFirstUpload: () => void = () => {};
+    mockedUploadVideo
+      .mockImplementationOnce((video) => new Promise((resolve) => {
+        finishFirstUpload = () => resolve({ id: 'video-1', filename: video.filename });
+      }))
+      .mockResolvedValueOnce({ id: 'video-2', filename: 'second.mp4' });
+
+    renderImportNavigation();
+
+    const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
+    fireEvent.change(fileInput, {
+      target: { files: [makeVideoFile('first.mp4'), makeVideoFile('second.mp4')] },
+    });
+    await waitFor(() => expect(screen.getByRole('button', { name: /Upload/ })).toBeEnabled());
+    await userEvent.click(screen.getByRole('button', { name: /Upload/ }));
+    await screen.findByText('uploading');
+
+    await userEvent.click(screen.getByRole('link', { name: 'Leave import page' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Leave & keep uploading' }));
+
+    expect(await screen.findByText('Destination page')).toBeInTheDocument();
+
+    finishFirstUpload();
+    await waitFor(() => expect(mockedUploadVideo).toHaveBeenCalledTimes(2));
+    expect(mockedUploadVideo.mock.calls[1][0].filename).toBe('second.mp4');
   });
 });
