@@ -428,6 +428,28 @@ describe('ImportsPage retries', () => {
     expect(await screen.findByText('Could not read 1 dropped item. The remaining files were added.')).toBeInTheDocument();
   });
 
+  it('stops preparing the batch when the import page unmounts', async () => {
+    let resolveValidation: (result: { isValid: boolean; needsWebOptimisation: boolean }) => void = () => {};
+    mockedIsValidVideoForImport.mockReturnValueOnce(new Promise((resolve) => {
+      resolveValidation = resolve;
+    }));
+
+    const { unmount } = renderWithProviders(<ImportsPage />);
+    const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
+    fireEvent.change(fileInput, {
+      target: { files: [makeVideoFile('first.mp4'), makeVideoFile('second.mp4')] },
+    });
+
+    await waitFor(() => expect(mockedIsValidVideoForImport).toHaveBeenCalledTimes(1));
+    unmount();
+    resolveValidation({ isValid: true, needsWebOptimisation: false });
+    await new Promise((resolve) => window.setTimeout(resolve, 0));
+
+    expect(mockedIsValidVideoForImport).toHaveBeenCalledTimes(1);
+    expect(mockedHashFileSample).not.toHaveBeenCalled();
+    expect(mockedCreateVideoThumbnail).not.toHaveBeenCalled();
+  });
+
   it('warns that leaving abandons the import session without affecting the original files', async () => {
     renderWithProviders(
       <>
