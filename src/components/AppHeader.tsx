@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from "react-router-dom";
-import { Avatar, Button, Dropdown, Layout, Menu } from 'antd';
+import { Avatar, Button, Dropdown, Layout, Menu, type MenuProps } from 'antd';
 const { Header } = Layout;
 
 import { UserRecord } from '../types';
 
-const headerMenuItems = [
+const getHeaderMenuItems = (showImport: boolean): MenuProps['items'] => [
   {
     key: 'media',
     label: <Link to={`videos`} style={{ textDecoration: 'none', color: 'inherit' }}>Media</Link>,
@@ -18,6 +18,17 @@ const headerMenuItems = [
         key: 'crops',
         label: <Link to={`crops`}>Crops</Link>,
       },
+      ...(showImport ? [
+        {
+          type: 'divider' as const,
+          // antd's dark Menu popup doesn't theme the default divider colour, so it's invisible without this.
+          style: { borderColor: 'rgba(255, 255, 255, 0.15)' },
+        },
+        {
+          key: 'import',
+          label: <Link to={`import`}>Import videos</Link>,
+        },
+      ] : []),
     ],
     popupOffset: [-14, 0],
   },
@@ -34,9 +45,12 @@ const headerMenuItems = [
 interface AppHeaderProps {
   currentMenuPage: string;
   user: UserRecord | null;
+  isEditor: boolean;
   logout: () => void;
 }
-const AppHeader: React.FC<AppHeaderProps> = ({currentMenuPage, user, logout}: AppHeaderProps) => {
+const AppHeader: React.FC<AppHeaderProps> = ({currentMenuPage, user, isEditor, logout}: AppHeaderProps) => {
+  const headerMenuItems = getHeaderMenuItems(isEditor);
+
   return (
     <Header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 28px' }}>
       <Link to="/">

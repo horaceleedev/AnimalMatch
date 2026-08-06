@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { useNavigate, useParams } from "react-router-dom";
-import { Flex, Modal } from "antd";
+import { Flex, Modal, Typography } from "antd";
+
+const { Text } = Typography;
 
 // import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
@@ -56,8 +58,15 @@ const VideoDetailModal: React.FC<RecordDetailModalProps> = ({
   return (
     <Modal
       title={
-        <Flex gap="small" align="center" justify="space-between" style={{height: 24, marginRight: "32px"}}>
-          {video?.filename ?? "Unknown video"}
+        <Flex gap="small" align="center" justify="space-between" style={{marginRight: "32px"}}>
+          <Flex vertical style={{minWidth: 0}}>
+            <span>{video?.filename ?? "Unknown video"}</span>
+            {video?.original_path && (
+              <Text type="secondary" style={{fontSize: 12, fontWeight: "normal"}} ellipsis={{tooltip: video.original_path}}>
+                {video.original_path}
+              </Text>
+            )}
+          </Flex>
           {/* <Link to={"/videos/compare/v/" + videoId}>
             <Button icon={<Icon component={Compare} />}>Open comparison view</Button>
           </Link> */}

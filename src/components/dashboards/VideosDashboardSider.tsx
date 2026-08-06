@@ -1,6 +1,6 @@
 import { FC, useMemo, useState } from "react";
 import { Layout, Menu, Typography } from "antd";
-import { PlaySquareOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
+import { InfoCircleOutlined, PlaySquareOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
 const { Sider } = Layout;
 
 import AnnotationStatusLabel from "../ui/AnnotationStatusLabel";
@@ -12,6 +12,7 @@ export const useVideosDashboardSiderState = (videos: Video[], videoMetadataField
   const videosBySiderKey: Record<string, Video[]> = useMemo(() => ({
     "all-videos": videos,
     "assigned-to-me": user ? videos.filter(video => video.assignees.includes(user.id)) : [],
+    "needs-metadata": videos.filter(video => video.needs_metadata),
     // annotation statuses
     ...videoMetadataFields['annotation_status'].presetOptions!.reduce((acc: Record<string, Video[]>, status: string) => {
       acc[status] = videos.filter(video => video.annotation_status === status);
@@ -72,6 +73,12 @@ export const VideosDashboardSider: FC<VideosDashboardSiderProps> = ({
             label: "Assigned to me",
             icon: <UserOutlined />,
             extra: videosBySiderKey["assigned-to-me"].length,
+          },
+          {
+            key: "needs-metadata",
+            label: "Needs metadata",
+            icon: <InfoCircleOutlined />,
+            extra: videosBySiderKey["needs-metadata"].length,
           },
           // {
           //   key: 'recently-added',

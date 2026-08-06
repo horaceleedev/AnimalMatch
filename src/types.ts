@@ -2,6 +2,7 @@ import { type RecordModel } from 'pocketbase';
 import { type ValueEditorType } from 'react-querybuilder';
 
 export type RecordType = "video" | "individual" | "crop";
+export type UserRole = "viewer" | "editor";
 export interface RecordDetailModalProps {
   id?: string;
   exitModal?: () => void;
@@ -19,6 +20,7 @@ export interface UserRecord extends RecordModel {
   email: string;
   name: string;
   avatar: string;
+  role: UserRole;
 };
 export interface User extends UserRecord {
   avatarUrl: string;
@@ -31,6 +33,8 @@ export interface VideoRecord extends RecordModel {
   updated: string;
   id: string;
   filename: string;
+  file_hash?: string;
+  original_path?: string;
   file: string;
   thumbnail: string;
   location_name: string;
@@ -41,6 +45,7 @@ export interface VideoRecord extends RecordModel {
   custom_tags: string[];
   assignees: string[];
   annotation_status: string;
+  needs_metadata: boolean;
 };
 export interface Video extends VideoRecord {
   url: string;

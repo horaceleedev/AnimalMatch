@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { matchPath, Outlet, useLocation } from "react-router-dom";
-import { Layout, Splitter, Tabs } from "antd";
+import { Link, matchPath, Outlet, useLocation } from "react-router-dom";
+import { Button, Flex, Layout, Splitter, Tabs } from "antd";
 import type { TabsProps } from 'antd';
-import Icon, { AppstoreOutlined } from "@ant-design/icons";
+import Icon, { AppstoreOutlined, PlusOutlined } from "@ant-design/icons";
 import { RuleGroupType } from 'react-querybuilder';
 import useSearchFilter from '../hooks/useSearchFilter.ts';
 
@@ -88,7 +88,7 @@ const VideosDashboardPage: React.FC = () => {
   const uniqueLocations = useVideoStore((state) => state.extra.uniqueLocations);
   const uniqueValuesPerField = useVideoStore((state) => state.uniqueValuesPerField);
 
-  const { user } = useAuth();
+  const { user, isEditor } = useAuth();
 
   const [sortFields, setSortFields] = useState<string[]>([]);
   const [sortOrders, setSortOrders] = useState<("asc" | "desc")[]>([]);
@@ -126,13 +126,20 @@ const VideosDashboardPage: React.FC = () => {
           uniqueValuesPerField={uniqueValuesPerField}
         />
         <DashboardContent>
-          <QueryOperationsButtons
-            metadataFields={videoMetadataFields} uniqueValuesPerField={uniqueValuesPerField}
-            sortFields={sortFields} setSortFields={setSortFields} sortOrders={sortOrders} setSortOrders={setSortOrders}
-            groupFields={groupFields} setGroupFields={setGroupFields} groupOrders={groupOrders} setGroupOrders={setGroupOrders}
-            query={query} setQuery={setQuery}
-            handleSearch={(val: string) => setSearchQuery(val)}
-          />
+          <Flex justify="space-between" align="start">
+            <QueryOperationsButtons
+              metadataFields={videoMetadataFields} uniqueValuesPerField={uniqueValuesPerField}
+              sortFields={sortFields} setSortFields={setSortFields} sortOrders={sortOrders} setSortOrders={setSortOrders}
+              groupFields={groupFields} setGroupFields={setGroupFields} groupOrders={groupOrders} setGroupOrders={setGroupOrders}
+              query={query} setQuery={setQuery}
+              handleSearch={(val: string) => setSearchQuery(val)}
+            />
+            {isEditor && (
+              <Link to="/import">
+                <Button type="primary" icon={<PlusOutlined />}>Import videos</Button>
+              </Link>
+            )}
+          </Flex>
 
           <Tabs defaultActiveKey="grid" items={viewsTabsItems} onChange={setView} />
 

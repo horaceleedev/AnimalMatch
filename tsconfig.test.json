@@ -1,7 +1,13 @@
 {
   "extends": "./tsconfig.app.json",
   "compilerOptions": {
-    "types": ["@webgpu/types", "vitest/globals", "@vitest/browser/matchers"]
+    "types": [
+      "vite/client",
+      "@webgpu/types",
+      "vitest/globals",
+      "@vitest/browser/matchers",
+      "@testing-library/jest-dom/vitest"
+    ]
   },
-  "include": ["tests"]
+  "include": ["tests", "src/vite-env.d.ts"]
 }

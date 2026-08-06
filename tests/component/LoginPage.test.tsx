@@ -26,6 +26,7 @@ const mockedUseAuth = vi.mocked(useAuth);
 // This helper gives us an auth shaped object, we override as needed.
 const makeAuthValue = (overrides: Partial<ReturnType<typeof useAuth>> = {}): ReturnType<typeof useAuth> => ({
   user: null,
+  isEditor: false,
   login: vi.fn().mockResolvedValue(undefined),
   logout: vi.fn(),
   ...overrides,

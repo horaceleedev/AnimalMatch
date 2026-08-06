@@ -1,0 +1,45 @@
+export type ImportVideoStatus =
+  | "pending"
+  | "ready"
+  | "uploading"
+  | "uploaded"
+  | "failed"
+  | "cancelled";
+
+export interface ImportVideo {
+  localId: string;
+  file: File;
+  filename: string;
+  fileSize: number;
+  fileHash?: string;
+  thumbnailFile?: File;
+  relativePath?: string;
+  status: ImportVideoStatus;
+  isLoading?: boolean;
+  loadingMessage?: string;
+  progressPercent: number;
+  isValid?: boolean;
+  needsWebOptimisation?: boolean;
+  wasWebOptimised?: boolean;
+  validationMessage?: string;
+  errorMessage?: string;
+}
+
+export interface ImportBatch {
+  localId: string;
+  name: string;
+  videos: ImportVideo[];
+}
+
+export interface VideoUploadResult {
+  id?: string;
+  filename: string;
+}
+
+export interface VideoUploadAdapter {
+  uploadVideo: (
+    video: ImportVideo,
+    onProgress: (progressPercent: number) => void,
+    signal?: AbortSignal,
+  ) => Promise<VideoUploadResult>;
+}
