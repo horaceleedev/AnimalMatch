@@ -76,6 +76,21 @@ describe('ImportsPage retries', () => {
     expect(mockedUploadVideo).toHaveBeenCalledTimes(2);
   });
 
+  it('auto-uploads a video added to the batch after Upload was pressed, without pressing Upload again', async () => {
+    mockedUploadVideo.mockResolvedValue({ id: 'video', filename: 'ok' });
+
+    await addTestVideos(['clip-a.mp4']);
+    await userEvent.click(screen.getByRole('button', { name: /Upload/ }));
+    await waitFor(() => expect(screen.getAllByText('uploaded')).toHaveLength(1));
+
+    const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [makeVideoFile('clip-b.mp4')] } });
+    await screen.findByText('clip-b.mp4');
+
+    await waitFor(() => expect(screen.getAllByText('uploaded')).toHaveLength(2));
+    expect(mockedUploadVideo).toHaveBeenCalledTimes(2);
+  });
+
   it('hides the retry icon again once the retry succeeds', async () => {
     mockedUploadVideo.mockRejectedValueOnce(new Error('Upload failed'));
     await addTestVideos(['clip.mp4']);
@@ -210,6 +225,30 @@ describe('ImportsPage retries', () => {
       expect.any(Function),
       expect.any(AbortSignal),
     );
+  });
+
+  it('skips thumbnail generation for a duplicate video, since it will never be uploaded', async () => {
+    mockedHashFileSample.mockResolvedValue({ hash: 'same-hash', bytesHashed: 100 });
+
+    await addTestVideos(['first.mp4', 'second.mp4']);
+
+    expect(screen.getByText('duplicate video')).toBeInTheDocument();
+    expect(mockedCreateVideoThumbnail).toHaveBeenCalledTimes(1);
+    expect(mockedCreateVideoThumbnail).toHaveBeenCalledWith(expect.objectContaining({ name: 'first.mp4' }));
+  });
+
+  it('skips thumbnail generation for a video that already exists on the server', async () => {
+    mockedUseVideoStore.mockImplementation((selector) => selector({
+      processedRecords: [{ file_hash: 'existing-hash', filename: 'existing.mp4' }],
+    } as never));
+    mockedHashFileSample.mockResolvedValueOnce({ hash: 'existing-hash', bytesHashed: 100 });
+
+    renderWithProviders(<ImportsPage />);
+    const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [makeVideoFile('dupe.mp4')] } });
+
+    await screen.findByText('already uploaded');
+    expect(mockedCreateVideoThumbnail).not.toHaveBeenCalled();
   });
 
   it('keeps an in-flight upload in the active group even if the user swaps the keeper mid-upload', async () => {
