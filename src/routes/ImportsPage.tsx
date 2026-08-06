@@ -269,6 +269,7 @@ const ImportsPage: React.FC = () => {
   const { message, modal } = App.useApp();
   const [videos, setVideos] = useState<ImportVideo[]>([]);
   const [hasUploadStarted, setHasUploadStarted] = useState(false);
+  const [isAutoUploadEnabled, setIsAutoUploadEnabled] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});
   const [preferredDuplicateKeepers, setPreferredDuplicateKeepers] = useState<PreferredDuplicateKeepers>({});
@@ -279,6 +280,18 @@ const ImportsPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
   const uploadAbortControllerRef = useRef<AbortController | null>(null);
+
+  // The source of truth for videos - updateVideo/addFiles/removeVideo write to
+  // it synchronously and setVideos just mirrors it for rendering, rather than
+  // the ref being a render-time copy of state. React only calls a setVideos
+  // updater once it gets around to processing the update, so anything that
+  // needs to read "the latest videos" from async pipeline code (prepareVideo,
+  // the auto-upload effect) right after a change would otherwise see stale data.
+  const videosRef = useRef<ImportVideo[]>(videos);
+  const uploadedVideosRef = useRef<Video[]>(uploadedVideos);
+  uploadedVideosRef.current = uploadedVideos;
+  const preferredDuplicateKeepersRef = useRef<PreferredDuplicateKeepers>(preferredDuplicateKeepers);
+  preferredDuplicateKeepersRef.current = preferredDuplicateKeepers;
 
   const hasUnfinishedImportWork = videos.some((video) => (
     hasUnfinishedWork(video, videos, uploadedVideos, preferredDuplicateKeepers)
@@ -352,9 +365,16 @@ const ImportsPage: React.FC = () => {
   }, []);
 
   const updateVideo = (localId: string, changes: Partial<ImportVideo>) => {
-    setVideos((currentVideos) => currentVideos.map((video) => (
+    // Computed from videosRef rather than via setVideos' own updater callback,
+    // which React only invokes once it gets around to processing the update -
+    // videosRef.current needs to be correct immediately, since async pipeline
+    // code (the auto-upload effect, prepareVideo) reads it right after calling
+    // this and can't wait for a render that may not have happened yet.
+    const nextVideos = videosRef.current.map((video) => (
       video.localId === localId ? { ...video, ...changes } : video
-    )));
+    ));
+    videosRef.current = nextVideos;
+    setVideos(nextVideos);
   };
 
   const failVideo = (localId: string, validationMessage: string) => {
@@ -379,7 +399,10 @@ const ImportsPage: React.FC = () => {
       const result = await isValidVideoForImport(video.file);
 
       updateVideo(video.localId, {
-        status: result.isValid && !result.needsWebOptimisation ? "ready" : result.isValid ? "pending" : "failed",
+        // Not "ready" yet even when no web optimisation is needed - hashing and
+        // thumbnailing still have to happen first; prepareVideo sets "ready" once
+        // the whole pipeline is actually done, so canUploadVideo can't fire early.
+        status: result.isValid ? "pending" : "failed",
         isLoading: result.needsWebOptimisation,
         loadingMessage: result.needsWebOptimisation ? "optimising for web" : undefined,
         isValid: result.isValid,
@@ -405,17 +428,12 @@ const ImportsPage: React.FC = () => {
 
       const result = await hashFileSample(file);
 
-      updateVideo(video.localId, {
-        status: "ready",
-        isLoading: false,
-        loadingMessage: undefined,
-        fileHash: result.hash,
-      });
+      updateVideo(video.localId, { fileHash: result.hash });
 
-      return true;
+      return result.hash;
     } catch {
       failVideo(video.localId, "Could not hash video source.");
-      return false;
+      return undefined;
     }
   };
 
@@ -437,7 +455,7 @@ const ImportsPage: React.FC = () => {
       updateVideo(video.localId, {
         file: result.file,
         fileSize: result.file.size,
-        status: "ready",
+        // Still "pending", not "ready" - same reasoning as validateVideo above.
         isLoading: false,
         loadingMessage: undefined,
         isValid: true,
@@ -480,10 +498,25 @@ const ImportsPage: React.FC = () => {
 
     if (!fileToUpload) return;
 
-    const hasThumbnail = await createThumbnailForVideo(video, fileToUpload);
-    if (!hasThumbnail) return;
+    const fileHash = await hashVideoSource(video, fileToUpload);
+    if (!fileHash) return;
 
-    await hashVideoSource(video, fileToUpload);
+    // Hash first, then only spend time on a thumbnail if this copy will actually be
+    // uploaded - a duplicate or already-uploaded video is going to be skipped either way.
+    const hashedVideo = { ...video, fileHash };
+    const isDuplicate = Boolean(getDuplicateVideo(hashedVideo, videosRef.current, preferredDuplicateKeepersRef.current))
+      || Boolean(getUploadedDuplicateVideo(hashedVideo, uploadedVideosRef.current));
+
+    if (!isDuplicate) {
+      const hasThumbnail = await createThumbnailForVideo(video, fileToUpload);
+      if (!hasThumbnail) return;
+    }
+
+    updateVideo(video.localId, {
+      status: "ready",
+      isLoading: false,
+      loadingMessage: undefined,
+    });
   };
 
   const prepareVideos = async (videosToPrepare: ImportVideo[]) => {
@@ -507,7 +540,8 @@ const ImportsPage: React.FC = () => {
 
     if (videosToAdd.length === 0) return;
 
-    setVideos((currentVideos) => [...currentVideos, ...videosToAdd]);
+    videosRef.current = [...videosRef.current, ...videosToAdd];
+    setVideos(videosRef.current);
     void prepareVideos(videosToAdd);
   };
 
@@ -535,7 +569,8 @@ const ImportsPage: React.FC = () => {
   };
 
   const removeVideo = (localId: string) => {
-    setVideos((currentVideos) => currentVideos.filter((video) => video.localId !== localId));
+    videosRef.current = videosRef.current.filter((video) => video.localId !== localId);
+    setVideos(videosRef.current);
   };
 
   const keepThisFileInstead = (video: ImportVideo) => {
@@ -590,9 +625,10 @@ const ImportsPage: React.FC = () => {
     }
   };
 
-  const uploadReadyVideos = () => (
-    runUploads(videos.filter((video) => canUploadVideo(video, videos, uploadedVideos, preferredDuplicateKeepers)))
-  );
+  const uploadReadyVideos = () => {
+    setIsAutoUploadEnabled(true);
+    return runUploads(videos.filter((video) => canUploadVideo(video, videos, uploadedVideos, preferredDuplicateKeepers)));
+  };
 
   const retryVideo = (video: ImportVideo) => runUploads([video]);
 
@@ -601,6 +637,7 @@ const ImportsPage: React.FC = () => {
   );
 
   const cancelUpload = () => {
+    setIsAutoUploadEnabled(false);
     uploadAbortControllerRef.current?.abort();
   };
 
@@ -608,6 +645,36 @@ const ImportsPage: React.FC = () => {
     canUploadVideo(video, videos, uploadedVideos, preferredDuplicateKeepers)
   )).length;
   const isUploading = videos.some((video) => video.status === "uploading");
+
+  // Once Upload has been pressed, keep picking up videos that finish checking
+  // afterward instead of requiring another click - runUploads only ever sees
+  // a fixed snapshot, so this effect is what re-dispatches it as more videos
+  // become ready. Each video is claimed permanently the moment it's picked up,
+  // rather than un-claimed once its upload settles: releasing the claim on
+  // completion would race against videosRef only being refreshed at render
+  // time (a video's "uploaded" state can be set after runUploads' promise has
+  // already resolved), letting this effect see a stale "ready" snapshot and
+  // dispatch the same video twice. A video never needs auto-picking-up a
+  // second time anyway - if it fails, retrying is a deliberate user action.
+  const isDispatchingAutoUploadRef = useRef(false);
+  const autoUploadedVideoIdsRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!isAutoUploadEnabled || isUploading || uploadAbortControllerRef.current || isDispatchingAutoUploadRef.current) return;
+
+    const readyVideos = videosRef.current.filter((video) => (
+      video.status === "ready"
+      && !autoUploadedVideoIdsRef.current.has(video.localId)
+      && canUploadVideo(video, videosRef.current, uploadedVideosRef.current, preferredDuplicateKeepersRef.current)
+    ));
+    if (readyVideos.length === 0) return;
+
+    readyVideos.forEach((video) => autoUploadedVideoIdsRef.current.add(video.localId));
+    isDispatchingAutoUploadRef.current = true;
+    void runUploads(readyVideos).finally(() => {
+      isDispatchingAutoUploadRef.current = false;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAutoUploadEnabled, isUploading, videos, uploadedVideos, preferredDuplicateKeepers]);
   const totalSize = videos.reduce((sum, video) => sum + video.fileSize, 0);
 
   const checkingCount = videos.filter((video) => video.isLoading || video.isValid === undefined).length;
