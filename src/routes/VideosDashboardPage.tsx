@@ -88,7 +88,7 @@ const VideosDashboardPage: React.FC = () => {
   const uniqueLocations = useVideoStore((state) => state.extra.uniqueLocations);
   const uniqueValuesPerField = useVideoStore((state) => state.uniqueValuesPerField);
 
-  const { user } = useAuth();
+  const { user, isEditor } = useAuth();
 
   const [sortFields, setSortFields] = useState<string[]>([]);
   const [sortOrders, setSortOrders] = useState<("asc" | "desc")[]>([]);
@@ -134,9 +134,11 @@ const VideosDashboardPage: React.FC = () => {
               query={query} setQuery={setQuery}
               handleSearch={(val: string) => setSearchQuery(val)}
             />
-            <Link to="/import">
-              <Button type="primary" icon={<PlusOutlined />}>Import videos</Button>
-            </Link>
+            {isEditor && (
+              <Link to="/import">
+                <Button type="primary" icon={<PlusOutlined />}>Import videos</Button>
+              </Link>
+            )}
           </Flex>
 
           <Tabs defaultActiveKey="grid" items={viewsTabsItems} onChange={setView} />

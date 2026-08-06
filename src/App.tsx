@@ -12,7 +12,7 @@ import "./App.scss"
 const App: React.FC = () => {
   const { message } = AntApp.useApp();
 
-  const { user, logout } = useAuth();
+  const { user, isEditor, logout } = useAuth();
 
   const [fetchUsers, subscribeToUsers, unsubscribeFromUsers] = useUsersStore(
     useShallow((state) => [state.fetch, state.subscribe, state.unsubscribe])
@@ -65,7 +65,7 @@ const App: React.FC = () => {
   return (
     <Layout className="app-layout">
       {webgpu === false && <WebGPUBanner />}
-      <AppHeader currentMenuPage={currentMenuPage} user={user} logout={logout} />
+      <AppHeader currentMenuPage={currentMenuPage} user={user} isEditor={isEditor} logout={logout} />
       <Outlet />
     </Layout>
   );

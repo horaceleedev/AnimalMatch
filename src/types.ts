@@ -2,6 +2,7 @@ import { type RecordModel } from 'pocketbase';
 import { type ValueEditorType } from 'react-querybuilder';
 
 export type RecordType = "video" | "individual" | "crop";
+export type UserRole = "viewer" | "editor";
 export interface RecordDetailModalProps {
   id?: string;
   exitModal?: () => void;
@@ -19,6 +20,7 @@ export interface UserRecord extends RecordModel {
   email: string;
   name: string;
   avatar: string;
+  role: UserRole;
 };
 export interface User extends UserRecord {
   avatarUrl: string;

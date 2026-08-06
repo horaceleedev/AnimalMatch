@@ -47,6 +47,7 @@ export const useDisconnectedMessage = () => {
 
 interface AuthContextType {
   user: UserRecord | null;
+  isEditor: boolean;
   login: (usernameOrEmail: string, password: string) => Promise<void>;
   logout: () => void;
 }
@@ -98,7 +99,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, isEditor: user?.role === "editor", login, logout }}>
       {children}
     </AuthContext.Provider>
   );

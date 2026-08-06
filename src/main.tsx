@@ -141,7 +141,11 @@ const router = createBrowserRouter([
       },
       {
         path: "import",
-        element: <ImportsPage />,
+        element: (
+          <ProtectedRoute editorOnly>
+            <ImportsPage />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
