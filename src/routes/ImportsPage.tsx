@@ -371,6 +371,8 @@ const ImportsPage: React.FC = () => {
         </Space>
       ) : undefined,
     });
+
+    return () => leaveConfirmation.destroy();
   }, [cancelUpload, navigationBlocker, modal]);
 
   // Revoked once a video is removed (or the page unmounts) to avoid leaking one per thumbnail.
