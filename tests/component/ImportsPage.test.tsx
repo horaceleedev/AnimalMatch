@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 // not sure I like having to mock all these but alternatives worse?
@@ -64,16 +65,20 @@ const addTestVideos = async (filenames: string[]) => {
   await waitFor(() => expect(screen.getByRole('button', { name: /Upload/ })).toBeEnabled());
 };
 
+const ImportNavigationPage = () => {
+  const [isImportMounted, setIsImportMounted] = useState(true);
+
+  return (
+    <>
+      {isImportMounted && <ImportsPage />}
+      <Link to="/destination">Leave import page</Link>
+      <button type="button" onClick={() => setIsImportMounted(false)}>Unmount import page</button>
+    </>
+  );
+};
+
 const renderImportNavigation = () => renderWithRoutes([
-  {
-    path: 'import',
-    element: (
-      <>
-        <ImportsPage />
-        <Link to="/destination">Leave import page</Link>
-      </>
-    ),
-  },
+  { path: 'import', element: <ImportNavigationPage /> },
   { path: 'destination', element: <div>Destination page</div> },
 ], { route: '/import' });
 
@@ -488,6 +493,20 @@ describe('ImportsPage retries', () => {
 
     expect(await screen.findByText('Destination page')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Import videos to AnimalMatch' })).not.toBeInTheDocument();
+  });
+
+  it('removes an open navigation warning when the import page unmounts', async () => {
+    renderImportNavigation();
+
+    const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [makeVideoFile('clip.mp4')] } });
+    await waitFor(() => expect(screen.getByRole('button', { name: /Upload/ })).toBeEnabled());
+    await userEvent.click(screen.getByRole('link', { name: 'Leave import page' }));
+    expect(await screen.findAllByText('Leave this import?')).not.toHaveLength(0);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Unmount import page' }));
+
+    await waitFor(() => expect(screen.getByRole('dialog')).toHaveClass('ant-zoom-leave'));
   });
 
   it('offers to keep or cancel the active upload queue when leaving', async () => {
