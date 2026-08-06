@@ -39,7 +39,7 @@ export const getNeedsMetadataWarning = (video: Partial<VideoMetadata>): string |
   const missingFields = getMissingVideoMetadataFields(video);
   if (missingFields.length === 0) return undefined;
 
-  return `This video is marked as having metadata, but is missing: ${missingFields.join(", ")}. The manual override will still be saved.`;
+  return `Required metadata is missing: ${missingFields.join(", ")}. Are you sure you want to mark this video as having metadata?`;
 };
 
 export const prepareVideoUpdatePayload = (
