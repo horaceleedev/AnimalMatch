@@ -242,6 +242,54 @@ describe('ImportsPage retries', () => {
     expect(mockedCreateVideoThumbnail).toHaveBeenCalledWith(expect.objectContaining({ name: 'first.mp4' }));
   });
 
+  it('lazily creates a thumbnail when a duplicate is selected as the keeper', async () => {
+    mockedHashFileSample.mockResolvedValue({ hash: 'same-hash', bytesHashed: 100 });
+    mockedUploadVideo.mockResolvedValueOnce({ id: 'video-2', filename: 'second.mp4' });
+
+    await addTestVideos(['first.mp4', 'second.mp4']);
+    expect(mockedCreateVideoThumbnail).toHaveBeenCalledTimes(1);
+
+    await userEvent.click(screen.getByText('Use this file instead'));
+
+    await waitFor(() => expect(mockedCreateVideoThumbnail).toHaveBeenCalledTimes(2));
+    expect(mockedCreateVideoThumbnail).toHaveBeenLastCalledWith(expect.objectContaining({ name: 'second.mp4' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /Upload/ })).toBeEnabled());
+
+    await userEvent.click(screen.getByRole('button', { name: /Upload/ }));
+    await screen.findByText('uploaded');
+
+    expect(mockedUploadVideo).toHaveBeenCalledWith(
+      expect.objectContaining({ filename: 'second.mp4', thumbnailFile: expect.any(File) }),
+      expect.any(Function),
+      expect.any(AbortSignal),
+    );
+  });
+
+  it('promotes and thumbnails a duplicate when the original keeper is removed', async () => {
+    mockedHashFileSample.mockResolvedValue({ hash: 'same-hash', bytesHashed: 100 });
+
+    await addTestVideos(['first.mp4', 'second.mp4']);
+    await userEvent.click(screen.getByRole('button', { name: /Remove first\.mp4 from the import list/ }));
+
+    await waitFor(() => expect(mockedCreateVideoThumbnail).toHaveBeenCalledTimes(2));
+    expect(mockedCreateVideoThumbnail).toHaveBeenLastCalledWith(expect.objectContaining({ name: 'second.mp4' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /Upload/ })).toBeEnabled());
+  });
+
+  it('does not let a failed thumbnail keeper block another copy', async () => {
+    mockedHashFileSample.mockResolvedValue({ hash: 'same-hash', bytesHashed: 100 });
+    mockedCreateVideoThumbnail.mockRejectedValueOnce(new Error('Thumbnail failed'));
+
+    renderWithProviders(<ImportsPage />);
+    const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [makeVideoFile('first.mp4'), makeVideoFile('second.mp4')] } });
+
+    await screen.findByText('invalid');
+    await waitFor(() => expect(mockedCreateVideoThumbnail).toHaveBeenCalledTimes(2));
+    expect(mockedCreateVideoThumbnail).toHaveBeenLastCalledWith(expect.objectContaining({ name: 'second.mp4' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /Upload/ })).toBeEnabled());
+  });
+
   it('skips thumbnail generation for a video that already exists on the server', async () => {
     mockedUseVideoStore.mockImplementation((selector) => selector({
       processedRecords: [{ file_hash: 'existing-hash', filename: 'existing.mp4' }],

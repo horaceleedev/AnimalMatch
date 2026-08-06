@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { App, Button, Card, Collapse, Flex, Progress, Space, Table, Tag, Tooltip, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, FolderOpenOutlined, LoadingOutlined, ReloadOutlined, SwapOutlined, UploadOutlined, WarningOutlined } from "@ant-design/icons";
@@ -77,14 +77,16 @@ const getDuplicateVideo = (
     if (preferredKeeperId === video.localId) return undefined;
 
     const keeper = videos.find((candidate) => candidate.localId === preferredKeeperId);
-    if (keeper) return keeper;
+    if (keeper && keeper.isValid !== false) return keeper;
     // The chosen keeper was removed from the list - fall back to the default below.
   }
 
   const videoIndex = videos.findIndex((candidate) => candidate.localId === video.localId);
   if (videoIndex === -1) return undefined;
 
-  return videos.slice(0, videoIndex).find((candidate) => candidate.fileHash === video.fileHash);
+  return videos.slice(0, videoIndex).find((candidate) => (
+    candidate.fileHash === video.fileHash && candidate.isValid !== false
+  ));
 };
 
 const getUploadedDuplicateVideo = (video: ImportVideo, uploadedVideos: Video[]) => {
@@ -100,9 +102,10 @@ const getUploadedDuplicateVideo = (video: ImportVideo, uploadedVideos: Video[]) 
 // the active group before that too, but could still turn out invalid or a duplicate.
 const hasFinishedProcessing = (video: ImportVideo) => (
   video.isValid === true && !video.needsWebOptimisation && Boolean(video.fileHash)
+  && !video.isLoading && video.status !== "pending"
 );
 
-const canUploadVideo = (
+const isSelectedUploadCandidate = (
   video: ImportVideo,
   videos: ImportVideo[],
   uploadedVideos: Video[],
@@ -114,6 +117,16 @@ const canUploadVideo = (
   && !getDuplicateVideo(video, videos, preferredDuplicateKeepers)
   && !getUploadedDuplicateVideo(video, uploadedVideos)
   && (video.status === "ready" || video.status === "failed" || video.status === "cancelled")
+);
+
+const canUploadVideo = (
+  video: ImportVideo,
+  videos: ImportVideo[],
+  uploadedVideos: Video[],
+  preferredDuplicateKeepers: PreferredDuplicateKeepers,
+) => (
+  isSelectedUploadCandidate(video, videos, uploadedVideos, preferredDuplicateKeepers)
+  && Boolean(video.thumbnailFile)
 );
 
 // A cancelled video already passed validation to start uploading, so it
@@ -137,7 +150,8 @@ const hasUnfinishedWork = (
 ) => (
   video.status === "pending"
   || video.status === "uploading"
-  || canUploadVideo(video, videos, uploadedVideos, preferredDuplicateKeepers)
+  || video.isLoading
+  || isSelectedUploadCandidate(video, videos, uploadedVideos, preferredDuplicateKeepers)
 );
 
 // "Already uploaded" and "invalid" share the "wontUpload" bucket - neither is
@@ -280,6 +294,7 @@ const ImportsPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
   const uploadAbortControllerRef = useRef<AbortController | null>(null);
+  const thumbnailPreparationIdsRef = useRef<Set<string>>(new Set());
 
   // The source of truth for videos - updateVideo/addFiles/removeVideo write to
   // it synchronously and setVideos just mirrors it for rendering, rather than
@@ -364,7 +379,7 @@ const ImportsPage: React.FC = () => {
     Object.values(thumbnailUrlsRef.current).forEach((url) => URL.revokeObjectURL(url));
   }, []);
 
-  const updateVideo = (localId: string, changes: Partial<ImportVideo>) => {
+  const updateVideo = useCallback((localId: string, changes: Partial<ImportVideo>) => {
     // Computed from videosRef rather than via setVideos' own updater callback,
     // which React only invokes once it gets around to processing the update -
     // videosRef.current needs to be correct immediately, since async pipeline
@@ -375,9 +390,9 @@ const ImportsPage: React.FC = () => {
     ));
     videosRef.current = nextVideos;
     setVideos(nextVideos);
-  };
+  }, []);
 
-  const failVideo = (localId: string, validationMessage: string) => {
+  const failVideo = useCallback((localId: string, validationMessage: string) => {
     updateVideo(localId, {
       status: "failed",
       isLoading: false,
@@ -387,7 +402,7 @@ const ImportsPage: React.FC = () => {
       wasWebOptimised: false,
       validationMessage,
     });
-  };
+  }, [updateVideo]);
 
   const validateVideo = async (video: ImportVideo) => {
     try {
@@ -471,7 +486,7 @@ const ImportsPage: React.FC = () => {
     }
   };
 
-  const createThumbnailForVideo = async (video: ImportVideo, file: File) => {
+  const createThumbnailForVideo = useCallback(async (video: ImportVideo, file: File) => {
     try {
       updateVideo(video.localId, {
         isLoading: true,
@@ -486,7 +501,7 @@ const ImportsPage: React.FC = () => {
       failVideo(video.localId, "Could not create a thumbnail. The video may not be playable in this browser.");
       return false;
     }
-  };
+  }, [failVideo, updateVideo]);
 
   const prepareVideo = async (video: ImportVideo) => {
     const validationResult = await validateVideo(video);
@@ -524,6 +539,39 @@ const ImportsPage: React.FC = () => {
       await prepareVideo(video);
     }
   };
+
+  // Duplicates skip thumbnail work while they are inactive. If swapping/removing
+  // a keeper promotes one later, prepare its thumbnail before making it uploadable.
+  useEffect(() => {
+    const videosNeedingThumbnails = videosRef.current.filter((video) => (
+      !video.thumbnailFile
+      && !video.isLoading
+      && video.status === "ready"
+      && !thumbnailPreparationIdsRef.current.has(video.localId)
+      && isSelectedUploadCandidate(
+        video,
+        videosRef.current,
+        uploadedVideosRef.current,
+        preferredDuplicateKeepersRef.current,
+      )
+    ));
+
+    for (const video of videosNeedingThumbnails) {
+      thumbnailPreparationIdsRef.current.add(video.localId);
+
+      void createThumbnailForVideo(video, video.file).then((hasThumbnail) => {
+        if (hasThumbnail) {
+          updateVideo(video.localId, {
+            status: "ready",
+            isLoading: false,
+            loadingMessage: undefined,
+          });
+        }
+      }).finally(() => {
+        thumbnailPreparationIdsRef.current.delete(video.localId);
+      });
+    }
+  }, [createThumbnailForVideo, updateVideo, videos, uploadedVideos, preferredDuplicateKeepers]);
 
   const addFiles = (files: FileList | FileWithRelativePath[] | null) => {
     if (!files) return;
