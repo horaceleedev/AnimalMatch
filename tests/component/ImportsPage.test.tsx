@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { Link } from 'react-router-dom';
 
 // not sure I like having to mock all these but alternatives worse?
 vi.mock('../../src/lib/importVideoValidation', () => ({
@@ -425,5 +426,54 @@ describe('ImportsPage retries', () => {
 
     await screen.findByText('readable.mp4');
     expect(await screen.findByText('Could not read 1 dropped item. The remaining files were added.')).toBeInTheDocument();
+  });
+
+  it('warns that leaving abandons the import session without affecting the original files', async () => {
+    renderWithProviders(
+      <>
+        <ImportsPage />
+        <Link to="/somewhere-else">Leave import page</Link>
+      </>,
+    );
+
+    const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [makeVideoFile('clip.mp4')] } });
+    await waitFor(() => expect(screen.getByRole('button', { name: /Upload/ })).toBeEnabled());
+
+    await userEvent.click(screen.getByRole('link', { name: 'Leave import page' }));
+
+    expect(await screen.findByText(
+      'This import session and its progress will be lost. Your original files are unaffected.',
+    )).toBeInTheDocument();
+  });
+
+  it('offers to keep or cancel the active upload queue when leaving', async () => {
+    mockedUploadVideo.mockImplementationOnce((_video, _onProgress, signal) => new Promise((_resolve, reject) => {
+      signal?.addEventListener('abort', () => reject(new DOMException('Upload cancelled.', 'AbortError')));
+    }));
+
+    renderWithProviders(
+      <>
+        <ImportsPage />
+        <Link to="/somewhere-else">Leave import page</Link>
+      </>,
+    );
+
+    const fileInput = document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement;
+    fireEvent.change(fileInput, { target: { files: [makeVideoFile('clip.mp4')] } });
+    await waitFor(() => expect(screen.getByRole('button', { name: /Upload/ })).toBeEnabled());
+    await userEvent.click(screen.getByRole('button', { name: /Upload/ }));
+    await screen.findByText('uploading');
+
+    await userEvent.click(screen.getByRole('link', { name: 'Leave import page' }));
+
+    expect(await screen.findByText(
+      "The active upload queue will continue. Videos not yet queued and this page's progress and controls will be lost. Your original files are unaffected.",
+    )).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Leave & keep uploading' })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel uploads & leave' }));
+
+    expect(mockedUploadVideo.mock.calls[0][2]?.aborted).toBe(true);
   });
 });
