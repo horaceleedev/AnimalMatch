@@ -14,6 +14,7 @@ import { isValidVideoForImport } from "../lib/importVideoValidation";
 import { optimiseMp4ForWeb } from "../lib/optimiseMp4ForWeb";
 import { createVideoThumbnail } from "../lib/videoThumbnail";
 import { readDroppedFiles, type FileWithRelativePath } from "../lib/readDroppedFiles";
+import useIsMounted from "../hooks/useIsMounted";
 import { useVideoStore } from "../DataStores";
 import type { Video } from "../types";
 
@@ -295,6 +296,7 @@ const ImportsPage: React.FC = () => {
   const folderInputRef = useRef<HTMLInputElement>(null);
   const uploadAbortControllerRef = useRef<AbortController | null>(null);
   const thumbnailPreparationIdsRef = useRef<Set<string>>(new Set());
+  const isPreparationActive = useIsMounted();
 
   // The source of truth for videos - updateVideo/addFiles/removeVideo write to
   // it synchronously and setVideos just mirrors it for rendering, rather than
@@ -436,6 +438,7 @@ const ImportsPage: React.FC = () => {
       });
 
       const result = await isValidVideoForImport(video.file);
+      if (!isPreparationActive()) return undefined;
 
       updateVideo(video.localId, {
         // Not "ready" yet even when no web optimisation is needed - hashing and
@@ -453,6 +456,7 @@ const ImportsPage: React.FC = () => {
 
       return result;
     } catch {
+      if (!isPreparationActive()) return undefined;
       failVideo(video.localId, "Video validation failed.");
       return undefined;
     }
@@ -466,11 +470,13 @@ const ImportsPage: React.FC = () => {
       });
 
       const result = await hashFileSample(file);
+      if (!isPreparationActive()) return undefined;
 
       updateVideo(video.localId, { fileHash: result.hash });
 
       return result.hash;
     } catch {
+      if (!isPreparationActive()) return undefined;
       failVideo(video.localId, "Could not hash video source.");
       return undefined;
     }
@@ -484,7 +490,10 @@ const ImportsPage: React.FC = () => {
       });
 
       const result = await optimiseMp4ForWeb(video.file);
+      if (!isPreparationActive()) return undefined;
+
       const validationResult = await isValidVideoForImport(result.file);
+      if (!isPreparationActive()) return undefined;
 
       if (!validationResult.isValid || validationResult.needsWebOptimisation) {
         failVideo(video.localId, "Video web optimisation failed.");
@@ -505,6 +514,7 @@ const ImportsPage: React.FC = () => {
 
       return result.file;
     } catch {
+      if (!isPreparationActive()) return undefined;
       failVideo(video.localId, "Video web optimisation failed.");
       return undefined;
     }
@@ -518,16 +528,21 @@ const ImportsPage: React.FC = () => {
       });
 
       const thumbnailFile = await createVideoThumbnail(file);
+      if (!isPreparationActive()) return false;
+
       updateVideo(video.localId, { thumbnailFile });
 
       return true;
     } catch {
+      if (!isPreparationActive()) return false;
       failVideo(video.localId, "Could not create a thumbnail. The video may not be playable in this browser.");
       return false;
     }
-  }, [failVideo, updateVideo]);
+  }, [failVideo, isPreparationActive, updateVideo]);
 
   const prepareVideo = async (video: ImportVideo) => {
+    if (!isPreparationActive()) return;
+
     const validationResult = await validateVideo(video);
     if (!validationResult?.isValid) return;
 
@@ -535,10 +550,10 @@ const ImportsPage: React.FC = () => {
       ? await optimiseVideoForWeb(video)
       : video.file;
 
-    if (!fileToUpload) return;
+    if (!fileToUpload || !isPreparationActive()) return;
 
     const fileHash = await hashVideoSource(video, fileToUpload);
-    if (!fileHash) return;
+    if (!fileHash || !isPreparationActive()) return;
 
     // Hash first, then only spend time on a thumbnail if this copy will actually be
     // uploaded - a duplicate or already-uploaded video is going to be skipped either way.
@@ -551,6 +566,8 @@ const ImportsPage: React.FC = () => {
       if (!hasThumbnail) return;
     }
 
+    if (!isPreparationActive()) return;
+
     updateVideo(video.localId, {
       status: "ready",
       isLoading: false,
@@ -560,6 +577,7 @@ const ImportsPage: React.FC = () => {
 
   const prepareVideos = async (videosToPrepare: ImportVideo[]) => {
     for (const video of videosToPrepare) {
+      if (!isPreparationActive()) break;
       await prepareVideo(video);
     }
   };
@@ -567,6 +585,8 @@ const ImportsPage: React.FC = () => {
   // Duplicates skip thumbnail work while they are inactive. If swapping/removing
   // a keeper promotes one later, prepare its thumbnail before making it uploadable.
   useEffect(() => {
+    if (!isPreparationActive()) return;
+
     const videosNeedingThumbnails = videosRef.current.filter((video) => (
       !video.thumbnailFile
       && !video.isLoading
@@ -595,7 +615,7 @@ const ImportsPage: React.FC = () => {
         thumbnailPreparationIdsRef.current.delete(video.localId);
       });
     }
-  }, [createThumbnailForVideo, updateVideo, videos, uploadedVideos, preferredDuplicateKeepers]);
+  }, [createThumbnailForVideo, isPreparationActive, updateVideo, videos, uploadedVideos, preferredDuplicateKeepers]);
 
   const addFiles = (files: FileList | FileWithRelativePath[] | null) => {
     if (!files) return;
