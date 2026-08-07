@@ -9,8 +9,8 @@ import type { RuleGroupType, RuleType, ValueEditorProps } from 'react-querybuild
 import { QueryBuilder } from 'react-querybuilder';
 import 'react-querybuilder/dist/query-builder.css';
 import { AntDValueEditor, QueryBuilderAntD } from '@react-querybuilder/antd';
-import type { DefaultOptionType } from 'rc-select/lib/Select';
-import Icon, { ClearOutlined, CloseOutlined, FilterOutlined, GroupOutlined, SearchOutlined } from "@ant-design/icons";
+import type { DefaultOptionType, LabelInValueType } from 'rc-select/lib/Select';
+import Icon, { ClearOutlined, CloseCircleOutlined, CloseOutlined, FilterOutlined, GroupOutlined, SearchOutlined } from "@ant-design/icons";
 import SwapVert from '../../assets/material_symbols/swap_vert_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
 import type { MetadataFieldsType } from "../../types.ts";
@@ -130,6 +130,10 @@ const renderDropdownOption = (
   return <AnnotationStatusLabel status={id} />;
 };
 
+const renderSelectedValue = (
+  renderType: NonNullable<MetadataFieldsType[string]['renderType']>,
+  option: DefaultOptionType | LabelInValueType
+) => renderDropdownOption(renderType, option as DefaultOptionType);
 
 const RenderAwareValueEditor = (props: ValueEditorProps) => {
   const renderType = (props.fieldData as QueryBuilderFieldData | undefined)?.renderType;
@@ -164,17 +168,37 @@ const RenderAwareValueEditor = (props: ValueEditorProps) => {
     return <AntDValueEditor {...props} />;
   }
 
-  let normalizedOptions = (props.values ?? []).map(option => ({
+  const normalizedOptions = (props.values ?? []).map(option => ({
     value: String(option.value),
     label: option.label ?? option.name ?? option.value,
   }));
-  if (renderType) {
-    // If the field has a renderType, render the options using the appropriate component (e.g. VideoLabel, IndividualLabel, UserLabel, AnnotationStatusLabel)
-    normalizedOptions = normalizedOptions.map(option => ({
-      ...option,
-      label: renderDropdownOption(renderType, option),
-    }));
-  }
+  const labelRender: NonNullable<SelectProps['labelRender']> | undefined = renderType
+    ? option => renderSelectedValue(renderType, option)
+    : undefined;
+  const tagRender: NonNullable<SelectProps['tagRender']> | undefined = renderType ? ({ value, closable, onClose }) => (
+    <span
+      onMouseDown={event => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+      style={{ display: 'inline-flex', alignItems: 'flex-start', marginInlineEnd: 4 }}
+    >
+      {renderSelectedValue(renderType, { value })}
+      {
+        closable ?
+          <CloseCircleOutlined
+            onMouseDown={event => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+            onClick={onClose}
+            style={{ cursor: 'pointer', marginInlineStart: 4, marginTop: 4 }}
+          />
+        :
+          null
+      }
+    </span>
+  ) : undefined;
 
   return (
     <span title={props.title} className={props.className}>
@@ -193,6 +217,9 @@ const RenderAwareValueEditor = (props: ValueEditorProps) => {
           props.handleOnChange(nextValue);
         }}
         options={normalizedOptions}
+        optionRender={renderType ? option => renderDropdownOption(renderType, option.data) : undefined}
+        labelRender={labelRender}
+        tagRender={props.type === 'multiselect' ? tagRender : undefined}
       />
     </span>
   );
