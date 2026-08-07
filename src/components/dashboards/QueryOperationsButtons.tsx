@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import dayjs from 'dayjs';
-import { Button, DatePicker, Input, Popover, Select, Space } from "antd";
+import { Button, DatePicker, Input, Popover, Select, Space, Tag } from "antd";
 import type { SelectProps } from 'antd';
 import { QueryBuilderDnD } from '@react-querybuilder/dnd';
 import * as ReactDnD from 'react-dnd';
@@ -10,7 +10,7 @@ import { QueryBuilder } from 'react-querybuilder';
 import 'react-querybuilder/dist/query-builder.css';
 import { AntDValueEditor, QueryBuilderAntD } from '@react-querybuilder/antd';
 import type { DefaultOptionType, LabelInValueType } from 'rc-select/lib/Select';
-import Icon, { ClearOutlined, CloseCircleOutlined, CloseOutlined, FilterOutlined, GroupOutlined, SearchOutlined } from "@ant-design/icons";
+import Icon, { ClearOutlined, CloseOutlined, FilterOutlined, GroupOutlined, SearchOutlined } from "@ant-design/icons";
 import SwapVert from '../../assets/material_symbols/swap_vert_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
 import type { MetadataFieldsType } from "../../types.ts";
@@ -176,28 +176,9 @@ const RenderAwareValueEditor = (props: ValueEditorProps) => {
     ? option => renderSelectedValue(renderType, option)
     : undefined;
   const tagRender: NonNullable<SelectProps['tagRender']> | undefined = renderType ? ({ value, closable, onClose }) => (
-    <span
-      onMouseDown={event => {
-        event.preventDefault();
-        event.stopPropagation();
-      }}
-      style={{ display: 'inline-flex', alignItems: 'flex-start', marginInlineEnd: 4 }}
-    >
+    <Tag closable={closable} onClose={onClose} style={{ display: 'inline-flex' }}>
       {renderSelectedValue(renderType, { value })}
-      {
-        closable ?
-          <CloseCircleOutlined
-            onMouseDown={event => {
-              event.preventDefault();
-              event.stopPropagation();
-            }}
-            onClick={onClose}
-            style={{ cursor: 'pointer', marginInlineStart: 4, marginTop: 4 }}
-          />
-        :
-          null
-      }
-    </span>
+    </Tag>
   ) : undefined;
 
   return (

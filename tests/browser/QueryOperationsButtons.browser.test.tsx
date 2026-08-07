@@ -602,7 +602,7 @@ test('allows deselecting render-aware multiselect values', async () => {
   const hasSelectedValue = (populatedValue as unknown[]).length > 0;
   expect(hasSelectedValue).toBe(true);
 
-  const closeIcons = Array.from(document.querySelectorAll('.rule-value .anticon-close-circle')) as HTMLElement[];
+  const closeIcons = Array.from(document.querySelectorAll('.rule-value .ant-tag-close-icon')) as HTMLElement[];
   if (closeIcons.length === 0) throw new Error('Could not find render-aware tag close icon');
   for (const closeIcon of closeIcons) {
     closeIcon.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, composed: true }));
