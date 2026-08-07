@@ -42,7 +42,11 @@ async function main() {
   console.log(`Fetched ${records.length} records.`);
 
   let updated = 0;
-  let skipped = 0;
+  let skipped = {
+    missingFilepath: 0,
+    alreadyUploaded: 0,
+    videoNotFound: 0,
+  };
   let errors = 0;
 
   for (let i = 0; i < records.length; i++) {
@@ -51,7 +55,13 @@ async function main() {
 
     const filepath = record.filepath;
     if (!filepath) {
-      skipped++;
+      skipped.missingFilepath++;
+      continue;
+    }
+
+    if (record.file && record.thumbnail) {
+      // Skip if both video and thumbnail are already uploaded
+      skipped.alreadyUploaded++;
       continue;
     }
 
@@ -65,7 +75,7 @@ async function main() {
 
     if (!fs.existsSync(videoPath)) {
       console.warn(`\nVideo not found for record ${record.id}: ${videoPath}`);
-      skipped++;
+      skipped.videoNotFound++;
       continue;
     }
 
@@ -93,7 +103,7 @@ async function main() {
   }
 
   progressBar(records.length, records.length);
-  console.log(`\nDone. Updated: ${updated}, Skipped: ${skipped}, Errors: ${errors}`);
+  console.log(`\nDone. Updated: ${updated}, Skipped (missing filepath): ${skipped.missingFilepath}, Skipped (already uploaded): ${skipped.alreadyUploaded}, Skipped (video not found): ${skipped.videoNotFound}, Upload errors: ${errors}`);
 }
 
 main();
