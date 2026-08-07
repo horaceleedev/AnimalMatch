@@ -1,9 +1,10 @@
 import React from 'react';
-import { Flex, Image } from 'antd';
+import { Flex } from 'antd';
 
 // import Compare from '../assets/material_symbols/compare_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
 import RecordMetadataForm from './RecordMetadataForm.tsx';
+import CropImage from '../smart-components/CropImage.tsx';
 import { cropsMetadataFields } from '../../metadata.tsx';
 import { Crop, RecordType } from '../../types.ts';
 
@@ -27,7 +28,12 @@ const CropDetailView: React.FC<CropDetailViewProps> = ({
   return (
     <>
       <Flex justify="center" style={{marginBottom: 10}}>
-        <Image src={crop.imageUrl} style={{height: 300, objectFit: 'contain'}} />
+        <CropImage
+          crop={crop}
+          preview
+          wrapperStyle={{ display: 'inline-block' }}
+          imageStyle={{ height: 300, objectFit: 'contain', borderRadius: 4 }}
+        />
       </Flex>
       <RecordMetadataForm
         processedRecord={crop}
