@@ -1,8 +1,9 @@
 import { Avatar, Card, Flex, Space, Tooltip, Typography } from "antd";
 import { generatePath, Link } from "react-router-dom";
+
 import { useIndividualsStoreWithCrops, useUsersStore, useVideoStore } from "../../DataStores";
 import { RecordType } from "../../types";
-
+import "./LinkButtons.scss";
 
 interface LinkButtonProps {
   id: string;
@@ -10,7 +11,11 @@ interface LinkButtonProps {
   openModal?: (type: RecordType, id: string) => void;
 };
 
-export const IndividualLinkButton: React.FC<LinkButtonProps> = ({ id, linkTemplate = "/individuals/:individualId", openModal }: LinkButtonProps) => {
+export const IndividualLinkButton: React.FC<LinkButtonProps> = ({
+  id,
+  linkTemplate = "/individuals/:individualId",
+  openModal,
+}: LinkButtonProps) => {
   // TODO see if there is an efficient implementation without loading all individuals
   const { individuals } = useIndividualsStoreWithCrops();
   const individual = individuals.find(i => i.id === id);
@@ -40,7 +45,11 @@ export const IndividualLinkButton: React.FC<LinkButtonProps> = ({ id, linkTempla
   );
 };
 
-export const VideoLinkButton: React.FC<LinkButtonProps> = ({ id, linkTemplate = "/videos/:videoId", openModal }: LinkButtonProps) => {
+export const VideoLinkButton: React.FC<LinkButtonProps> = ({
+  id,
+  linkTemplate = "/videos/:videoId",
+  openModal,
+}: LinkButtonProps) => {
   const video = useVideoStore((state) => state.processedRecords.find(v => v.id === id));
 
   return (
@@ -68,6 +77,30 @@ export const VideoLinkButton: React.FC<LinkButtonProps> = ({ id, linkTemplate = 
   );
 };
 
+export const IndividualLabel: React.FC<{id: string}> = ({id}) => {
+  // TODO see if there is an efficient implementation without loading all individuals
+  const { individuals } = useIndividualsStoreWithCrops();
+  const individual = individuals.find(i => i.id === id);
+
+  return (
+    <Flex gap="small" align="center">
+      <img src={individual?.crops[0]?.imageUrl} className="individual-label-image" />
+      {individual?.name}
+    </Flex>
+  );
+};
+
+export const VideoLabel: React.FC<{id: string}> = ({id}) => {
+    const video = useVideoStore((state) => state.processedRecords.find(v => v.id === id));
+
+    return (
+      <Flex gap="small" align="center">
+        <img src={video?.thumbnailUrl} className="video-label-image" />
+        {video?.filename}
+      </Flex>
+    );
+};
+
 export const UserLabel: React.FC<{id: string}> = ({id}) => {
   const user = useUsersStore((state) => state.processedRecords.find(u => u.id === id));
 
@@ -87,7 +120,7 @@ export const UserLabel: React.FC<{id: string}> = ({id}) => {
 export const UsersListLabel: React.FC<{ids: string[]}> = ({ids}) => {
   // Displays a list of users in a compact way
   const users = useUsersStore((state) => state.processedRecords).filter(u => ids.includes(u.id));
-  
+
   if (users.length === 0) return <></>;
   return (
     <Avatar.Group size="small" max={{count: 4, style: {background: '#555'}}}>
