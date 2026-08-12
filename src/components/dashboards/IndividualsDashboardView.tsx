@@ -114,6 +114,15 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
     return getUniqueLocationsFromIndividuals(searchFilteredIndividuals, videos);
   }, [searchFilteredIndividuals, videos]);
 
+  const bodyPartSelect = (
+    <BodyPartSelect
+      bodyPartOptions={bodyPartOptions}
+      selectedBodyPart={selectedBodyPart}
+      setSelectedBodyPart={setSelectedBodyPart}
+      availableBodyParts={availableBodyParts}
+    />
+  );
+
   return (
     <>
       <QueryOperationsButtons
@@ -123,17 +132,15 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
         query={query} setQuery={setQuery}
         handleSearch={setSearchQuery}
       />
-      <div style={{marginTop: 8, marginBottom: 8}}>
-        <BodyPartSelect
-          bodyPartOptions={bodyPartOptions}
-          selectedBodyPart={selectedBodyPart}
-          setSelectedBodyPart={setSelectedBodyPart}
-          availableBodyParts={availableBodyParts}
-        />
-      </div>
       {
-        !onlyShowListView &&
-        <Tabs defaultActiveKey="list" items={viewsTabsItems} onChange={setView} />
+        onlyShowListView
+          ? bodyPartSelect
+          : <Tabs
+              defaultActiveKey="list"
+              items={viewsTabsItems}
+              onChange={setView}
+              tabBarExtraContent={{ right: bodyPartSelect }}
+            />
       }
       {
         description &&

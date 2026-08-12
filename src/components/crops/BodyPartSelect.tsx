@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Select, Space } from 'antd';
 
 import { ANY_BODY_PART, getBodyPartOptions, isBodyPartOptionDisabled } from './bodyPartFilters';
+import './BodyPartSelect.scss';
 
 type BodyPartSelectProps = {
   bodyPartOptions: string[];
@@ -21,7 +22,7 @@ const BodyPartSelect: React.FC<BodyPartSelectProps> = ({
   const options = useMemo(() => getBodyPartOptions(bodyPartOptions), [bodyPartOptions]);
 
   return (
-    <Space>
+    <Space className="body-part-select">
       <span>{label}</span>
       <Select
         variant="borderless"
