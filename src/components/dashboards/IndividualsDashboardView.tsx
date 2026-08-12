@@ -103,7 +103,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
     [searchFilteredIndividuals, selectedBodyPart]
   );
   const hiddenCount = searchFilteredIndividuals.length - visibleIndividuals.length;
-  const hiddenMessage = selectedBodyPart
+  const hiddenMessage = selectedBodyPart && hiddenCount > 0
     ? `${hiddenCount} out of ${searchFilteredIndividuals.length} individuals are hidden by selection of body part "${selectedBodyPart}"`
     : '';
   const description = [listDescription, hiddenMessage].filter(Boolean).join(' ');
