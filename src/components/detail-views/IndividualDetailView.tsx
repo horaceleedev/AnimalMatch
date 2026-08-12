@@ -105,6 +105,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
               >
                 <CropImage
                   crop={crop}
+                  showPinButton
                   wrapperStyle={{ flexShrink: 0 }}
                   imageClassName="individual-preview-image"
                   imageStyle={{ height: 150, borderRadius: 4 }}

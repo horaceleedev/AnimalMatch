@@ -382,13 +382,13 @@ export const useIndividualsStoreWithCrops = () => {
     useShallow((state) => [state.processedRecords, state.create, state.update, state.uniqueValuesPerField])
   );
 
-  // Add a `crops` field to each individual, with featured crops sorted first
+  // Add a `crops` field to each individual, with pinned crops sorted first
   const individualsWithCrops: Individual[] = useMemo(() => {
     return individuals.map(indiv => ({
       ...indiv,
       crops: crops
         .filter(crop => crop.individual === indiv.id)
-        .sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0)),
+        .sort((a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0)),
     }));
   }, [individuals, crops]);
 

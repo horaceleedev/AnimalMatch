@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Button, Image, Skeleton, Tooltip } from 'antd';
-import { StarFilled, StarOutlined } from '@ant-design/icons';
+import { App, Button, Image, Skeleton, Tooltip } from 'antd';
+import { PushpinFilled, PushpinOutlined } from '@ant-design/icons';
+import { ClientResponseError } from 'pocketbase';
 
 import { Crop } from '../../types.ts';
 import { useCropsStore } from '../../DataStores.tsx';
+import { PINNED_COLOR } from '../../constants.ts';
 import './CropImage.scss';
-
-const FEATURED_COLOR = '#faad14';
 
 type CropImageProps = {
   crop: Crop;
@@ -20,6 +20,8 @@ type CropImageProps = {
   wrapperStyle?: React.CSSProperties;
   // Applied to the underlying image element (e.g. hover effects).
   imageClassName?: string;
+  // Show the pin toggle, off by default.
+  showPinButton?: boolean;
 };
 
 const CropImage: React.FC<CropImageProps> = ({
@@ -30,11 +32,32 @@ const CropImage: React.FC<CropImageProps> = ({
   imageStyle,
   wrapperStyle,
   imageClassName,
+  showPinButton = false,
 }: CropImageProps) => {
+  const { message } = App.useApp();
+
   // CropImage is a smart component, so it owns the store interaction for
-  // toggling the featured flag (only the is_featured field is ever updated).
+  // toggling the pinned flag (only the is_pinned field is ever updated).
   const updateCrop = useCropsStore((state) => state.update);
-  const toggleFeatured = () => updateCrop(crop.id, { is_featured: !crop.is_featured });
+  const [isPinning, setIsPinning] = useState(false);
+
+  const togglePinned = async () => {
+    setIsPinning(true);
+    try {
+      await updateCrop(crop.id, { is_pinned: !crop.is_pinned });
+    } catch (e) {
+      // Clicking several pins in quick succession makes PocketBase auto-cancel the
+      // earlier requests, which isn't a failure worth reporting to the user.
+      if (!(e instanceof ClientResponseError && e.isAbort)) {
+        let errorMessage = `Unable to ${crop.is_pinned ? 'unpin' : 'pin'} this crop. Please try again later.`;
+        if (e instanceof ClientResponseError) {
+          errorMessage = e.message;
+        }
+        message.error(errorMessage, 10);
+      }
+    }
+    setIsPinning(false);
+  };
 
   const [loaded, setLoaded] = useState(!withSkeleton);
 
@@ -62,16 +85,18 @@ const CropImage: React.FC<CropImageProps> = ({
           }}
         />
       )}
-      {loaded && (
-        <Tooltip title={crop.is_featured ? 'Remove from featured' : 'Mark as featured'}>
+      {showPinButton && loaded && (
+        <Tooltip title={crop.is_pinned ? 'Unpin crop' : 'Pin crop'}>
           <Button
-            className="crop-featured-button"
+            className="crop-pin-button"
+            aria-label={crop.is_pinned ? 'Unpin crop' : 'Pin crop'}
             type="text"
             size="small"
+            disabled={isPinning}
             icon={
-              crop.is_featured
-                ? <StarFilled style={{ color: FEATURED_COLOR }} />
-                : <StarOutlined style={{ color: 'white' }} />
+              crop.is_pinned
+                ? <PushpinFilled style={{ color: PINNED_COLOR }} />
+                : <PushpinOutlined style={{ color: 'white' }} />
             }
             style={{
               position: 'absolute',
@@ -83,7 +108,7 @@ const CropImage: React.FC<CropImageProps> = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              toggleFeatured();
+              togglePinned();
             }}
           />
         </Tooltip>

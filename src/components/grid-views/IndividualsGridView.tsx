@@ -71,6 +71,7 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
                       key={crop.id}
                       crop={crop}
                       withSkeleton
+                      showPinButton
                       wrapperStyle={{ flexShrink: 0 }}
                       imageStyle={{ height: 150, borderRadius: 5 }}
                     />

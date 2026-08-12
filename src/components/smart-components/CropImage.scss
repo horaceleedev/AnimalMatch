@@ -1,11 +1,11 @@
 .crop-image {
-  .crop-featured-button {
+  .crop-pin-button {
     opacity: 0;
     transition: opacity var(--ant-motion-duration-slow);
   }
 
   // Only show the toggle button (filled or outline) while hovering the crop.
-  &:hover .crop-featured-button {
+  &:hover .crop-pin-button {
     opacity: 1;
   }
 }

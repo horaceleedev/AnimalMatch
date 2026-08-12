@@ -1,6 +1,6 @@
 import { blue, gray, green, orange } from '@ant-design/colors';
 
-import Icon, { ClockCircleOutlined, ColumnHeightOutlined, ColumnWidthOutlined, FileTextOutlined, IdcardOutlined, PlaySquareOutlined, StarFilled, TagsOutlined, UserOutlined } from "@ant-design/icons";
+import Icon, { ClockCircleOutlined, ColumnHeightOutlined, ColumnWidthOutlined, FileTextOutlined, IdcardOutlined, PlaySquareOutlined, PushpinFilled, TagsOutlined, UserOutlined } from "@ant-design/icons";
 import Location from './assets/material_symbols/location_on_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import CalendarMonth from './assets/material_symbols/calendar_month_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import PIN from './assets/material_symbols/pin_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -11,6 +11,7 @@ import FaceZone from "./assets/material_symbols/familiar_face_and_zone_24dp_5F63
 import PendingActions from "./assets/material_symbols/pending_actions_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 
 import { MetadataFieldsType } from './types';
+import { PINNED_COLOR } from './constants.ts';
 
 // -------- Column metadata --------
 
@@ -251,10 +252,13 @@ export const cropsMetadataFields: MetadataFieldsType = {
     inputType: 'number',
     isUneditable: true,
   },
-  'is_featured': {
-    displayName: 'Featured',
-    icon: <StarFilled style={{ color: '#faad14' }} />,
+  'is_pinned': {
+    displayName: 'Pinned',
+    icon: <PushpinFilled style={{ color: PINNED_COLOR }} />,
     type: 'boolean',
-    displayBooleanValuesAs: ['Not featured', 'Featured'],
+    displayBooleanValuesAs: ['Not pinned', 'Pinned'],
+    // Pinning is done with the pin button on the crop itself, which is only shown
+    // where it makes sense (see CropImage), so keep this read-only here.
+    isUneditable: true,
   },
 };
