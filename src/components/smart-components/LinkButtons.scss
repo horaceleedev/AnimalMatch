@@ -1,4 +1,6 @@
 .individual-link-button-card {
+  vertical-align: middle;
+
   .ant-flex {
     > img {
       height: 26px;
@@ -7,12 +9,15 @@
     }
     > h5 {
       margin: 0;
+      margin-right: 8px;
       font-size: 12px;
     }
   }
 }
 
 .video-link-button-card {
+  vertical-align: middle;
+
   .ant-flex {
     > img {
       height: 26px;
@@ -21,6 +26,7 @@
     }
     > h5 {
       margin: 0;
+      margin-right: 8px;
       font-size: 12px;
     }
   }

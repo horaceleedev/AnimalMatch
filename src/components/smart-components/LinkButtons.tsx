@@ -39,7 +39,7 @@ export const IndividualLinkButton: React.FC<LinkButtonProps> = ({
       >
         <Flex gap="small" align="center">
           <img src={individual?.crops[0]?.imageUrl} />
-          <Typography.Title level={5}>{individual?.name}</Typography.Title>
+          <Typography.Title level={5} ellipsis>{individual?.name}</Typography.Title>
         </Flex>
       </Card>
     </Link>
@@ -72,7 +72,7 @@ export const VideoLinkButton: React.FC<LinkButtonProps> = ({
       >
         <Flex gap="small" align="center">
           <img src={video?.thumbnailUrl}  />
-          <Typography.Title level={5}>{video?.filename}</Typography.Title>
+          <Typography.Title level={5} ellipsis>{video?.filename}</Typography.Title>
         </Flex>
       </Card>
     </Link>
