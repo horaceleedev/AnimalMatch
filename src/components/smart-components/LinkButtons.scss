@@ -1,3 +1,32 @@
+.individual-link-button-card {
+  .ant-flex {
+    > img {
+      height: 26px;
+      margin: 3px;
+      border-radius: 5px;
+    }
+    > h5 {
+      margin: 0;
+      font-size: 12px;
+    }
+  }
+}
+
+.video-link-button-card {
+  .ant-flex {
+    > img {
+      height: 26px;
+      margin: 3px;
+      border-radius: 5px;
+    }
+    > h5 {
+      margin: 0;
+      font-size: 12px;
+    }
+  }
+}
+
+
 img.individual-label-image {
   height: 30px;
   width: 30px;

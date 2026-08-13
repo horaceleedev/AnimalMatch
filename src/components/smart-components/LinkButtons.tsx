@@ -35,10 +35,11 @@ export const IndividualLinkButton: React.FC<LinkButtonProps> = ({
         size="small"
         style={{ overflow: 'hidden' }}
         styles={{ body: { padding: 0 } }}
+        className="individual-link-button-card"
       >
         <Flex gap="small" align="center">
-          <img src={individual?.crops[0]?.imageUrl} height={26} style={{margin: 3, borderRadius: 5}} />
-          <Typography.Title level={5} style={{margin: 0, fontSize: 12}}>{individual?.name}</Typography.Title>
+          <img src={individual?.crops[0]?.imageUrl} />
+          <Typography.Title level={5}>{individual?.name}</Typography.Title>
         </Flex>
       </Card>
     </Link>
@@ -67,10 +68,11 @@ export const VideoLinkButton: React.FC<LinkButtonProps> = ({
         size="small"
         style={{ overflow: 'hidden' }}
         styles={{ body: { padding: 0 } }}
+        className="video-link-button-card"
       >
         <Flex gap="small" align="center">
-          <img src={video?.thumbnailUrl} height={26} style={{margin: 3, borderRadius: 5}} />
-          <Typography.Title level={5} style={{margin: 0, fontSize: 12}}>{video?.filename}</Typography.Title>
+          <img src={video?.thumbnailUrl}  />
+          <Typography.Title level={5}>{video?.filename}</Typography.Title>
         </Flex>
       </Card>
     </Link>
