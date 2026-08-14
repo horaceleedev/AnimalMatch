@@ -71,6 +71,7 @@ export interface IndividualRecord extends RecordModel {
   custom_tags: string[];
 };
 export interface Individual extends IndividualRecord {
+  num_recaptures: number;
   crops: Crop[];
 };
 
