@@ -22,6 +22,7 @@ import IndividualsGridView from '../components/grid-views/IndividualsGridView.ts
 import IndividualsDashboardView from '../components/dashboards/IndividualsDashboardView.tsx';
 import CropsDashboardView from '../components/dashboards/CropsDashboardView.tsx';
 import RecordActionsButton from '../components/ui/RecordActionsButton.tsx';
+import IndividualMergeModal from '../components/smart-components/IndividualMergeModal.tsx';
 import { Individual, Video } from '../types.ts';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import "./CompareModal.scss";
@@ -163,23 +164,7 @@ const CompareModal: FC = () => {
     if (rightPanelRef.current) rightPanelRef.current.scrollTop = 0;
   }, [compareId]);
 
-  const showSameIndividualConfirm = () => {
-    // TODO:
-    // - check if age, sex match before merging
-    // - determine which individual to merge into the other
-    // - figure out what to do metadata when merging
-    Modal.confirm({
-      title: 'Do you want to merge these two individuals?',
-      content: 'This action cannot be undone.',
-      onOk: () => {
-        alert("Not implemented yet");
-        // return new Promise((resolve, reject) => {
-        //   setTimeout(Math.random() > 0.5 ? resolve : reject, 1000);
-        // }).catch(() => console.log('Oops errors!'));
-      },
-      onCancel: () => {},
-    });
-  };
+  const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
   const showDifferentIndividualConfirm = () => {
     Modal.confirm({
       title: 'Mark as different individuals',
@@ -646,10 +631,16 @@ const CompareModal: FC = () => {
           zIndex: 1000,
         }}>
           <span>Are these two individuals the same?</span>
-          <Button onClick={showSameIndividualConfirm} icon={<CheckOutlined />} type="primary">Same individual</Button>
+          <Button onClick={() => setIsMergeModalOpen(true)} icon={<CheckOutlined />} type="primary">Same individual</Button>
           <Button onClick={showDifferentIndividualConfirm} icon={<CloseOutlined />} type="primary" danger>Different individual</Button>
         </Space>
       }
+      <IndividualMergeModal
+        isOpen={isMergeModalOpen}
+        setIsOpen={setIsMergeModalOpen}
+        leftIndividual={individualDetailProps?.individual}
+        rightIndividual={compareIndividualDetailProps?.individual}
+      />
     </Modal>
   );
 };
