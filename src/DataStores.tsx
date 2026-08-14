@@ -324,6 +324,7 @@ export const useIndividualsStore = createRealtimeCollectionStore<IndividualRecor
     const processedIndividuals: Individual[] = records.map((record: IndividualRecord) => {
       return {
         ...record,
+        num_recaptures: record.videos.length - 1,
         crops: [], // To be filled in later
       };
     });
@@ -332,8 +333,8 @@ export const useIndividualsStore = createRealtimeCollectionStore<IndividualRecor
     const uniqueValuesPerField = getUniqueValuesPerField(individualsMetadataFields, processedIndividuals);
     return { processedRecords: processedIndividuals, uniqueValuesPerField };
   },
-  // For now ignore the crops key
-  ignoredUpdateKeys: ['crops'],
+  // For now ignore the num_recaptures and crops keys
+  ignoredUpdateKeys: ['num_recaptures', 'crops'],
 });
 
 

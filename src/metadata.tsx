@@ -148,6 +148,13 @@ export const individualsMetadataFields: MetadataFieldsType = {
     valueEditorType: 'radio', // TODO change this later
     displayBooleanValuesAs: ["Prospective", "Known"],
   },
+  'num_recaptures': {
+    displayName: 'Number of recaptures',
+    icon: <NumberOutlined />,
+    type: 'number',
+    inputType: 'number',
+    isUneditable: true,
+  },
   'age': {
     displayName: 'Age',
     icon: <Icon component={Cake} />,
