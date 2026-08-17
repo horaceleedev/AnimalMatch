@@ -3,8 +3,8 @@ import { generatePath, Link } from "react-router-dom";
 import { Card, Flex, Space, Tag, Tooltip, Typography } from "antd";
 
 import type { Crop, MetadataFieldsType, RecordType } from "../../types.ts";
+import CropImage from '../smart-components/CropImage.tsx';
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
-import CropWithSkeleton from './CropWithSkeleton.tsx';
 import "./CropsGridView.scss"
 
 interface BasicCropsGridViewProps {
@@ -33,14 +33,17 @@ const BasicCropsGridView: React.FC<BasicCropsGridViewProps> = ({
           >
             <Card
               hoverable
-              style={{ overflow: 'hidden' }}
+              style={{
+                overflow: 'hidden',
+              }}
               styles={{ body: { padding: 0 } }}
             >
               <Flex vertical justify="space-between">
-                <CropWithSkeleton
+                <CropImage
                   crop={crop}
-                  imageHeight={180}
-                  imageStyle={{objectFit: 'contain', width: '100%', backgroundColor: '#eee'}}
+                  withSkeleton
+                  skeletonHeight={180}
+                  imageStyle={{ height: 180, objectFit: 'contain', width: '100%', backgroundColor: '#eee' }}
                 />
                 <Flex vertical style={{ padding: '8px 12px 12px 12px', width: '100%' }}>
                   <Space wrap size={4}>
