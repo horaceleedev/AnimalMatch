@@ -28,6 +28,7 @@ type TaggableRecord = { id: string; custom_tags: string[] };
 type VideoBatchValues = {
   assignees?: string[];
   annotation_status?: string;
+  location_name?: string;
 };
 
 type IndividualBatchValues = {
@@ -206,6 +207,7 @@ const VideosBatchEditingForm: FC<Omit<BatchEditingFormProps, "recordType">> = ({
   const [form] = Form.useForm<VideoBatchValues>();
   const [assigneesTouched, setAssigneesTouched] = useState(false);
   const [annotationStatusTouched, setAnnotationStatusTouched] = useState(false);
+  const [locationNameTouched, setLocationNameTouched] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const selectedVideos = useSelectedVideos();
   const users = useUsersStore((state) => state.processedRecords);
@@ -220,6 +222,10 @@ const VideosBatchEditingForm: FC<Omit<BatchEditingFormProps, "recordType">> = ({
   );
   const sharedAnnotationStatusState = useMemo(
     () => getSharedStringValue(selectedVideos.map((video) => video.annotation_status)),
+    [selectedVideos],
+  );
+  const sharedLocationNameState = useMemo(
+    () => getSharedStringValue(selectedVideos.map((video) => video.location_name)),
     [selectedVideos],
   );
   const tagState = useBatchTagState(
@@ -239,17 +245,26 @@ const VideosBatchEditingForm: FC<Omit<BatchEditingFormProps, "recordType">> = ({
   useEffect(() => {
     setAssigneesTouched(false);
     setAnnotationStatusTouched(false);
+    setLocationNameTouched(false);
     form.resetFields();
     form.setFieldsValue({
       assignees: sharedAssigneeState.value,
       annotation_status: sharedAnnotationStatusState.value,
+      location_name: sharedLocationNameState.value,
     });
-  }, [form, selectionSignature, sharedAnnotationStatusState.value, sharedAssigneeState.value]);
+  }, [
+    form,
+    selectionSignature,
+    sharedAnnotationStatusState.value,
+    sharedAssigneeState.value,
+    sharedLocationNameState.value,
+  ]);
 
   const onFinish = async (values: VideoBatchValues) => {
     const updatedFields: Partial<{
       assignees: string[];
       annotation_status: string;
+      location_name: string;
       custom_tags: { add: string[]; remove: string[] };
     }> = {};
 
@@ -258,6 +273,9 @@ const VideosBatchEditingForm: FC<Omit<BatchEditingFormProps, "recordType">> = ({
     }
     if (annotationStatusTouched) {
       updatedFields.annotation_status = values.annotation_status;
+    }
+    if (locationNameTouched) {
+      updatedFields.location_name = values.location_name;
     }
     if (tagState.pendingTagAdds.size > 0 || tagState.pendingTagRemovals.size > 0) {
       updatedFields.custom_tags = {
@@ -323,6 +341,23 @@ const VideosBatchEditingForm: FC<Omit<BatchEditingFormProps, "recordType">> = ({
           labelRender={(option) => (
             <AnnotationStatusLabel status={option.value as string} />
           )}
+          popupMatchSelectWidth={false}
+        />
+      </Form.Item>
+      <Form.Item label="Location name" name="location_name">
+        <Select
+          placeholder={
+            sharedLocationNameState.isMixed && !locationNameTouched
+              ? "Mixed"
+              : undefined
+          }
+          showSearch
+          optionFilterProp="label"
+          options={(uniqueValuesPerField.location_name ?? []).map((value) => ({
+            value,
+            label: value,
+          }))}
+          onChange={() => setLocationNameTouched(true)}
           popupMatchSelectWidth={false}
         />
       </Form.Item>

@@ -171,6 +171,7 @@ export const useUpdateSelectedVideos = () => {
     updatedFields: Partial<{
       assignees: string[];
       annotation_status: string;
+      location_name: string;
       custom_tags: {
         add: string[];
         remove: string[];
@@ -181,6 +182,7 @@ export const useUpdateSelectedVideos = () => {
       const payload: Partial<{
         assignees: string[];
         annotation_status: string;
+        location_name: string;
         custom_tags: string[];
       }> = {};
 
@@ -189,6 +191,9 @@ export const useUpdateSelectedVideos = () => {
       }
       if (updatedFields.annotation_status) {
         payload.annotation_status = updatedFields.annotation_status;
+      }
+      if (updatedFields.location_name !== undefined) {
+        payload.location_name = updatedFields.location_name;
       }
       if (updatedFields.custom_tags) {
         const nextTags = new Set(video.custom_tags);
