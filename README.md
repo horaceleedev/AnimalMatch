@@ -35,8 +35,9 @@ AnimalMatch is a web application designed to make wildlife individual identifica
 
 > [!NOTE]
 > This codebase is still in active development. The database schema is subject to change and we may introduce breaking changes between updates.
-
-We will be updating this section soon to provide some basic setup instructions. 
+>
+> We will be updating this section soon to provide some basic setup instructions.
+> In the meantime, please contact horace.lee@eng.ox.ac.uk if you are interested in using AnimalMatch.
 
 1. Download the prebuilt frontend from the [Releases](https://github.com/horaceleedev/AnimalMatch/releases) page
 
