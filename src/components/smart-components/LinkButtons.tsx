@@ -50,12 +50,12 @@ export const IndividualLinkButton: React.FC<LinkButtonProps> = ({
   );
 };
 
-export const VideoLinkButton: React.FC<LinkButtonProps> = ({
+export const VideoLinkButton: React.FC<VideoLinkButtonProps> = ({
   id,
   linkTemplate = "/videos/:videoId",
   timestamp,
   openModal,
-}: LinkButtonProps) => {
+}: VideoLinkButtonProps ) => {
   const video = useVideoStore((state) => state.processedRecords.find(v => v.id === id));
 
   // append timestamp to video URL
