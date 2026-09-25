@@ -11,6 +11,10 @@ interface LinkButtonProps {
   openModal?: (type: RecordType, id: string) => void;
 };
 
+interface VideoLinkButtonProps extends LinkButtonProps {
+  timestamp?: number;
+}
+
 export const IndividualLinkButton: React.FC<LinkButtonProps> = ({
   id,
   linkTemplate = "/individuals/:individualId",
@@ -46,17 +50,24 @@ export const IndividualLinkButton: React.FC<LinkButtonProps> = ({
   );
 };
 
-export const VideoLinkButton: React.FC<LinkButtonProps> = ({
+export const VideoLinkButton: React.FC<VideoLinkButtonProps> = ({
   id,
   linkTemplate = "/videos/:videoId",
+  timestamp,
   openModal,
-}: LinkButtonProps) => {
+}: VideoLinkButtonProps ) => {
   const video = useVideoStore((state) => state.processedRecords.find(v => v.id === id));
+
+  // append timestamp to video URL
+  let url = generatePath(linkTemplate, { videoId: id });
+  if (timestamp !== undefined) {
+    url += `?t=${timestamp}`;
+  }
 
   return (
     <Link
       key={id}
-      to={generatePath(linkTemplate, { videoId: id })}
+      to={url}
       onClick={(e) => {
         if (!openModal) return;
         e.preventDefault();
