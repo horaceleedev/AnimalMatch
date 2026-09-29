@@ -3,7 +3,6 @@ import { generatePath, Link } from 'react-router-dom';
 import { Card, Empty, Select, Space, Tag, Tooltip } from 'antd';
 
 import { Individual, MetadataFieldsType, RecordType } from '../../types.ts';
-import { useIndividualsStore } from '../../DataStores.tsx';
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
 import CropWithSkeleton from './CropWithSkeleton.tsx';
 import "./IndividualsGridView.scss";
