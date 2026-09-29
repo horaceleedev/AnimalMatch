@@ -2,7 +2,7 @@ import React from 'react'
 import { Outlet } from 'react-router-dom';
 import { Layout } from 'antd';
 
-import { useAuth, useIndividualsStoreWithCrops, useVideoStore } from '../DataStores.tsx';
+import { useAuth, useIndividualsStore, useIndividualsStoreWithCrops, useVideoStore } from '../DataStores.tsx';
 import { individualsMetadataFields } from '../metadata.tsx';
 import DashboardContent from '../components/dashboards/DashboardContent.tsx';
 import IndividualsDashboardView from '../components/dashboards/IndividualsDashboardView.tsx';
@@ -11,6 +11,7 @@ import { IndividualsDashboardSider, useIndividualsDashboardSiderState } from '..
 const IndividualsDashboardPage: React.FC = () => {
   const { individuals, individualsUniqueValuesPerField: uniqueValuesPerField } = useIndividualsStoreWithCrops();
   const videos = useVideoStore((state) => state.processedRecords);
+  const isFetched = useIndividualsStore((state) => state.isFetched);
   const { user } = useAuth();
 
   const [selectedSiderKey, setSelectedSiderKey, individualsBySiderKey, individualsFiltered] = useIndividualsDashboardSiderState(individuals, individualsMetadataFields, user);
@@ -29,12 +30,14 @@ const IndividualsDashboardPage: React.FC = () => {
           uniqueValuesPerField={uniqueValuesPerField}
         />
         <DashboardContent>
-          <IndividualsDashboardView
-            individuals={individualsFiltered}
-            videos={videos}
-            uniqueValuesPerField={uniqueValuesPerField}
-            individualsMetadataFields={individualsMetadataFields}
-          />
+          {isFetched ? (
+            <IndividualsDashboardView
+              individuals={individualsFiltered}
+              videos={videos}
+              uniqueValuesPerField={uniqueValuesPerField}
+              individualsMetadataFields={individualsMetadataFields}
+            />
+          ) : null}
         </DashboardContent>
       </Layout>
       <Outlet />

@@ -1,6 +1,6 @@
 import React from 'react';
 import { generatePath, Link } from 'react-router-dom';
-import { Card, Select, Space, Tag, Tooltip } from 'antd';
+import { Card, Empty, Select, Space, Tag, Tooltip } from 'antd';
 
 import { Individual, MetadataFieldsType, RecordType } from '../../types.ts';
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
@@ -25,6 +25,9 @@ interface BasicIndividualsGridViewProps {
 const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
   individuals, individualsMetadataFields, isListView, linkTemplate = "/individuals/:individualId", buttons, allowEditingAgeAndSex, openModal,
 }: BasicIndividualsGridViewProps) => {
+  if (individuals.length === 0) {
+    return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />;
+  }
   return (
     <div className={isListView ? "individuals-list" : "individuals-grid"}>
       {
