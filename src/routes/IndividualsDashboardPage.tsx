@@ -7,6 +7,7 @@ import { individualsMetadataFields } from '../metadata.tsx';
 import DashboardContent from '../components/dashboards/DashboardContent.tsx';
 import IndividualsDashboardView from '../components/dashboards/IndividualsDashboardView.tsx';
 import { IndividualsDashboardSider, useIndividualsDashboardSiderState } from '../components/dashboards/IndividualsDashboardSider.tsx';
+import useDashboardNavigationRecords from '../hooks/useDashboardNavigationRecords.ts';
 
 const IndividualsDashboardPage: React.FC = () => {
   const { individuals, individualsUniqueValuesPerField: uniqueValuesPerField, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
@@ -14,6 +15,7 @@ const IndividualsDashboardPage: React.FC = () => {
   const { user } = useAuth();
 
   const [selectedSiderKey, setSelectedSiderKey, individualsBySiderKey, individualsFiltered] = useIndividualsDashboardSiderState(individuals, individualsMetadataFields, user);
+  const { outletContext, updateNavigationRecords } = useDashboardNavigationRecords(individualsFiltered, '/individuals', 'individuals');
 
   return (
     <>
@@ -35,10 +37,12 @@ const IndividualsDashboardPage: React.FC = () => {
             uniqueValuesPerField={uniqueValuesPerField}
             bodyPartOptions={cropsUniqueValuesPerField['body_part'] ?? []}
             individualsMetadataFields={individualsMetadataFields}
+            onNavigationRecordsChange={updateNavigationRecords}
           />
         </DashboardContent>
       </Layout>
-      <Outlet />
+      {/* Outlet for IndividualDetailView */}
+      <Outlet context={outletContext} />
     </>
   )
 };

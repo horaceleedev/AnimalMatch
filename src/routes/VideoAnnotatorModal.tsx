@@ -7,6 +7,7 @@ import { useVideoStore, useIndividualsStoreWithCrops, useAuth } from "../DataSto
 import InnerModal from './InnerModal.tsx';
 import AnnotationStatusLabel from '../components/ui/AnnotationStatusLabel.tsx';
 import { PrevNextVideoButtons } from '../components/ui/PrevNextButtons.tsx';
+import { DashboardNavigationOutletContext } from '../hooks/useDashboardNavigationRecords.ts';
 import { Individual, RecordType, Video, Crop } from '../types.ts';
 
 // TODO: Once this component is in the repo then we can remove this hack
@@ -31,9 +32,7 @@ const VideoAnnotatorModal: React.FC = () => {
   console.log(videoId)
   
   // Get videos for navigation (previous/next video) from outlet context (passed from VideosDashboardPage)
-  const outletContext = useOutletContext<{
-    videos?: Video[],
-  }>();
+  const outletContext = useOutletContext<DashboardNavigationOutletContext>();
   const navigationVideos = outletContext?.videos || [];
 
   const [isModalOpen, setIsModalOpen] = useState(true);

@@ -8,6 +8,7 @@ import AnnotationStatusLabel from "../ui/AnnotationStatusLabel";
 import { MetadataFieldsType, RecordType } from "../../types";
 
 interface BasicGridViewProps {
+  onSelectRecord?: () => void;
   openModal?: (type: RecordType, id: string) => void
 };
 

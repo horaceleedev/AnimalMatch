@@ -23,7 +23,8 @@ import IndividualsDashboardView from '../components/dashboards/IndividualsDashbo
 import CropsDashboardView from '../components/dashboards/CropsDashboardView.tsx';
 import RecordActionsButton from '../components/ui/RecordActionsButton.tsx';
 import IndividualMergeModal from '../components/smart-components/IndividualMergeModal.tsx';
-import { Individual, Video } from '../types.ts';
+import { Individual } from '../types.ts';
+import { DashboardNavigationOutletContext } from '../hooks/useDashboardNavigationRecords.ts';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import "./CompareModal.scss";
 
@@ -47,10 +48,10 @@ const CompareModal: FC = () => {
   const compareType = recordTypeShortNameToLongName[routeSplits[5]];
   console.log(videoId, individualId, cropId, compareId, routerLocation, isCompareView, compareType)
   // Outlet context contains filtered videos from the parent dashboard view.
-  const outletContext = useOutletContext<{
-    videos?: Video[],
-  }>();
+  const outletContext = useOutletContext<DashboardNavigationOutletContext>();
   const leftPanelVideos = outletContext?.videos || [];
+  const leftPanelIndividuals = outletContext?.individuals || [];
+  const leftPanelCrops = outletContext?.crops || [];
 
   const [isModalOpen, setIsModalOpen] = useState(true);
   const handleDismiss = () => {
@@ -245,6 +246,7 @@ const CompareModal: FC = () => {
         videosLinkTemplate={leftPanelVideosLinkTemplate}
         individualsLinkTemplate={leftPanelIndividualsLinkTemplate}
         cropsLinkTemplate={leftPanelCropsLinkTemplate}
+        navigationIndividuals={leftPanelIndividuals}
         updateIndividual={updateIndividual}
       />
     );
@@ -253,8 +255,10 @@ const CompareModal: FC = () => {
       <CropDetailView
         crop={cropDetailProps.crop}
         uniqueValuesPerField={cropsUniqueValuesPerField}
+        cropLinkTemplate={leftPanelCropsLinkTemplate}
         videoLinkTemplate={leftPanelVideosLinkTemplate}
         individualLinkTemplate={leftPanelIndividualsLinkTemplate}
+        navigationCrops={leftPanelCrops}
         updateCrop={updateCrop}
       />
     )
@@ -293,6 +297,7 @@ const CompareModal: FC = () => {
           videosLinkTemplate={rightPanelVideosLinkTemplate}
           individualsLinkTemplate={rightPanelIndividualsLinkTemplate}
           cropsLinkTemplate={rightPanelCropsLinkTemplate}
+          navigationIndividuals={individuals}
           updateIndividual={updateIndividual}
         />
       );
@@ -301,8 +306,10 @@ const CompareModal: FC = () => {
         <CropDetailView key={compareCropDetailProps.crop.id}
           crop={compareCropDetailProps.crop}
           uniqueValuesPerField={cropsUniqueValuesPerField}
+          cropLinkTemplate={rightPanelCropsLinkTemplate}
           videoLinkTemplate={rightPanelVideosLinkTemplate}
           individualLinkTemplate={rightPanelIndividualsLinkTemplate}
+          navigationCrops={crops}
           updateCrop={updateCrop}
         />
       );

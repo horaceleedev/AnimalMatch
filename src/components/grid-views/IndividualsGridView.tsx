@@ -21,11 +21,12 @@ interface BasicIndividualsGridViewProps {
   buttons?: (individual: Individual) => JSX.Element;
   allowEditingAgeAndSex?: boolean;
   cropBodyPart?: string;
+  onSelectRecord?: () => void;
   openModal?: (type: RecordType, id: string) => void;
 };
 
 const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
-  individuals, individualsMetadataFields, isListView, linkTemplate = "/individuals/:individualId", buttons, allowEditingAgeAndSex, cropBodyPart, openModal,
+  individuals, individualsMetadataFields, isListView, linkTemplate = "/individuals/:individualId", buttons, allowEditingAgeAndSex, cropBodyPart, onSelectRecord, openModal,
 }: BasicIndividualsGridViewProps) => {
   return (
     <div className={isListView ? "individuals-list" : "individuals-grid"}>
@@ -59,6 +60,7 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
             key={individual.id}
             to={generatePath(linkTemplate, { individualId: individual.id })}
             onClick={(e) => {
+              onSelectRecord?.();
               if (!openModal) return;
               e.preventDefault();
               openModal("individual", individual.id);

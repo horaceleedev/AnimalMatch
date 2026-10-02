@@ -11,12 +11,13 @@ interface BasicCropsGridViewProps {
   crops: Crop[];
   cropsMetadataFields: MetadataFieldsType;
   linkTemplate?: string;
+  onSelectRecord?: () => void;
   openModal?: (type: RecordType , id: string) => void;
 };
 
 // Basic crops grid view (without grouping and sorting)
 const BasicCropsGridView: React.FC<BasicCropsGridViewProps> = ({
-  crops, cropsMetadataFields, linkTemplate = "/crops/:cropId", openModal,
+  crops, cropsMetadataFields, linkTemplate = "/crops/:cropId", onSelectRecord, openModal,
 }: BasicCropsGridViewProps) => {
   return (
     <div className="crops-grid">
@@ -26,6 +27,7 @@ const BasicCropsGridView: React.FC<BasicCropsGridViewProps> = ({
             key={crop.id}
             to={generatePath(linkTemplate, {cropId: crop.id})}
             onClick={(e) => {
+              onSelectRecord?.();
               if (!openModal) return;
               e.preventDefault();
               openModal("crop", crop.id);

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Splitter, Tabs, Typography, type TabsProps } from "antd";
 import Icon from "@ant-design/icons";
 import { RuleGroupType } from 'react-querybuilder';
@@ -49,11 +49,13 @@ interface IndividualsDashboardViewProps {
   listViewButtons?: (individual: Individual) => JSX.Element;
   defaultGroupFields?: string[];
   defaultGroupOrders?: ("asc" | "desc")[];
+  onNavigationRecordsChange?: (records: Individual[]) => void;
 }
 const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
   individuals, videos, uniqueValuesPerField, bodyPartOptions, individualsMetadataFields,
   onlyShowListView, listDescription, linkTemplate, listViewButtons,
   defaultGroupFields, defaultGroupOrders,
+  onNavigationRecordsChange,
 }: IndividualsDashboardViewProps) => {
   const [view, setView] = useState(viewsTabsItems[0].key);
 
@@ -87,6 +89,11 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
     ? `${hiddenCount} individuals are hidden because they have no crops matching "${selectedBodyPart}"`
     : '';
   const description = [listDescription, hiddenMessage].filter(Boolean).join(' ');
+
+  // Update navigation records when the filtered records change
+  useEffect(() => {
+    onNavigationRecordsChange?.(visibleIndividuals);
+  }, [onNavigationRecordsChange, visibleIndividuals]);
 
   const uniqueLocations = useMemo(() => {
     return getUniqueLocationsFromIndividuals(visibleIndividuals, videos);
@@ -136,12 +143,13 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
           groupFields={groupFields}
           groupOrders={groupOrders}
           cropBodyPart={selectedBodyPart}
+          onSelectGroup={onNavigationRecordsChange}
         />
         :
         (
           (view === 'table') ?
           <IndividualsTableView
-            individuals={searchFilteredIndividuals}
+            individuals={visibleIndividuals}
             individualsMetadataFields={individualsMetadataFields}
             linkTemplate={linkTemplate}
           />
@@ -159,6 +167,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
                 groupFields={groupFields}
                 groupOrders={groupOrders}
                 cropBodyPart={selectedBodyPart}
+                onSelectGroup={onNavigationRecordsChange}
               />
             </Splitter.Panel>
             <Splitter.Panel style={{paddingLeft: 12}}>

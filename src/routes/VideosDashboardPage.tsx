@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { matchPath, Outlet, useLocation } from "react-router-dom";
+import React, { useMemo, useState } from 'react';
+import { Outlet } from "react-router-dom";
 import { Layout, Splitter, Tabs } from "antd";
 import type { TabsProps } from 'antd';
 import Icon, { AppstoreOutlined, NumberOutlined } from "@ant-design/icons";
@@ -18,51 +18,9 @@ import BasicMapView from '../components/ui/BasicMapView.tsx';
 import { useVideosDashboardSiderState, VideosDashboardSider } from '../components/dashboards/VideosDashboardSider.tsx';
 import { filterByQuery } from '../lib/filtering/filterEngine.ts';
 import VideosTableView from '../components/table-views/VideosTableView.tsx';
+import useDashboardNavigationRecords from '../hooks/useDashboardNavigationRecords.ts';
 import { MetadataFieldsType, Video } from '../types.ts';
 import "./VideosDashboardPage.scss";
-
-/**
- * Cache a list of videos used for the previous/next navigation buttons in VideoDetailView.
- * This list is only updated when the input list of videos (videosFiltered) changes
- * while the user is on the dashboard page, such as when the sider selection is changed
- * or a text search is performed. It is also updated when the user clicks on a video within
- * a group in VideosGridView, in which case it is set to the list of videos in that group.
- * However, it is not updated when the user edits a video's metadata in VideoDetailView,
- * such as by changing its annotation status or custom tags, to ensure a consistent
- * navigation experience.
- *
- * @param videosFiltered - The current filtered list of videos from the dashboard (search + sider filters applied)
- * @returns An object with:
- *   - `outletContext`: Video list to pass to `<Outlet />` for prev/next navigation
- *   - `onSelectGroup`: Callback to update the outlet video list when a group is selected in VideosGridView
- */
-function useNavigationVideosManager(videosFiltered: Video[]) {
-  /*
-    outletVideos state stores the video list used to navigate between videos in VideoDetailView.
-    This is kept separate from videosFiltered to prevent the navigation list from changing
-    when the user edits a video's metadata.
-  */
-  const [outletVideos, setOutletVideos] = useState<Video[]>(videosFiltered);
-
-  // Keep outletVideos updated while the user is on the dashboard page.
-  const { pathname } = useLocation();
-  useEffect(() => {
-    if (matchPath("/videos", pathname)) {
-      setOutletVideos(videosFiltered);
-    }
-  }, [pathname, videosFiltered]);
-
-  const outletContext = useMemo(() => ({
-    videos: outletVideos,
-  }), [outletVideos]);
-
-  // Update outlet videos after selecting a group in VideosGridView.
-  const onSelectGroup = useCallback((groupRecords: Video[]) => {
-    setOutletVideos(groupRecords);
-  }, []);
-
-  return { outletContext, onSelectGroup };
-}
 
 const viewsTabsItems: TabsProps['items'] = [
   {
@@ -150,7 +108,7 @@ const VideosDashboardPage: React.FC = () => {
   );
 
   // Manage list of videos used for navigation in VideoDetailView
-  const { outletContext, onSelectGroup } = useNavigationVideosManager(videosFiltered);
+  const { outletContext, updateNavigationRecords } = useDashboardNavigationRecords(videosFiltered, '/videos', 'videos');
 
   const highlightLocationIds = useMemo(
     () => new Set(videosFiltered.map(video => JSON.stringify([video.lat, video.long]))),
@@ -191,7 +149,7 @@ const VideosDashboardPage: React.FC = () => {
                 sortOrders={sortOrders}
                 groupFields={groupFields}
                 groupOrders={groupOrders}
-                onSelectGroup={onSelectGroup}
+                onSelectGroup={updateNavigationRecords}
               />
             :
             (
@@ -215,7 +173,7 @@ const VideosDashboardPage: React.FC = () => {
                     sortOrders={sortOrders}
                     groupFields={groupFields}
                     groupOrders={groupOrders}
-                    onSelectGroup={onSelectGroup}
+                    onSelectGroup={updateNavigationRecords}
                   />
                 </Splitter.Panel>
                 <Splitter.Panel style={{paddingLeft: 12}}>

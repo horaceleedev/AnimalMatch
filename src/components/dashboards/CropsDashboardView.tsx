@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Tabs, type TabsProps } from "antd";
 import Icon, { AppstoreOutlined } from "@ant-design/icons";
 import { RuleGroupType } from 'react-querybuilder';
@@ -39,12 +39,14 @@ interface CropsDashboardViewProps {
   // gridViewButtons?: (crop: Crop) => JSX.Element;
   defaultGroupFields?: string[];
   defaultGroupOrders?: ("asc" | "desc")[];
+  onNavigationRecordsChange?: (records: Crop[]) => void;
   openModal?: (type: RecordType, id: string) => void;
 }
 const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
   crops, uniqueValuesPerField, cropsMetadataFields,
   onlyShowGridView, linkTemplate, // gridViewButtons,
   defaultGroupFields, defaultGroupOrders,
+  onNavigationRecordsChange,
   openModal,
 }: CropsDashboardViewProps) => {
   const [view, setView] = useState(viewsTabsItems[0].key);
@@ -64,6 +66,11 @@ const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
     filteredCrops,
     cropsMetadataFields,
   );
+
+  // Update navigation records when the filtered records change
+  useEffect(() => {
+    onNavigationRecordsChange?.(searchFilteredCrops);
+  }, [onNavigationRecordsChange, searchFilteredCrops]);
 
   return (
     <>
@@ -90,6 +97,7 @@ const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
           sortOrders={sortOrders}
           groupFields={groupFields}
           groupOrders={groupOrders}
+          onSelectGroup={onNavigationRecordsChange}
         />
         :
         (

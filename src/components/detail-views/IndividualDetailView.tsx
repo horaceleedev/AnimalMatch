@@ -10,6 +10,7 @@ import { Individual, LocationInfo, RecordType, Video } from '../../types.ts';
 import BasicMapView from '../ui/BasicMapView.tsx';
 import RecordMetadataForm from './RecordMetadataForm.tsx';
 import CropsDashboardView from '../dashboards/CropsDashboardView.tsx';
+import { PrevNextIndividualButtons } from '../ui/PrevNextButtons.tsx';
 import BodyPartSelect from '../ui/BodyPartSelect.tsx';
 import { filterCropsByBodyPart, getAvailableBodyParts } from '../../utils/bodyPartFilters.ts';
 import "./IndividualDetailView.scss";
@@ -26,6 +27,7 @@ type IndividualDetailViewProps = {
   videosLinkTemplate?: string;
   individualsLinkTemplate?: string;
   cropsLinkTemplate?: string;
+  navigationIndividuals?: Individual[];
   openModal?: (type: RecordType , id: string) => void;
   updateIndividual: (id: string, data: Partial<Individual>) => Promise<Individual>;
 }
@@ -40,6 +42,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
   videosLinkTemplate,
   individualsLinkTemplate,
   cropsLinkTemplate,
+  navigationIndividuals = [],
   openModal,
   updateIndividual,
 }: IndividualDetailViewProps) => {
@@ -79,12 +82,19 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
     <div className="individual-detail-view">
       {/* Images display */}
       {/* Body part selector */}
-      <BodyPartSelect
-        bodyPartOptions={bodyPartOptions}
-        selectedBodyPart={selectedBodyPart}
-        setSelectedBodyPart={setSelectedBodyPart}
-        availableBodyParts={availableBodyParts}
-      />
+      <Flex justify="space-between" align="center" gap="middle" wrap>
+        <BodyPartSelect
+          bodyPartOptions={bodyPartOptions}
+          selectedBodyPart={selectedBodyPart}
+          setSelectedBodyPart={setSelectedBodyPart}
+          availableBodyParts={availableBodyParts}
+        />
+        <PrevNextIndividualButtons
+          record={individual}
+          recordLinkTemplate={individualsLinkTemplate}
+          records={navigationIndividuals}
+        />
+      </Flex>
       <Flex gap={5} style={{marginTop: 10, marginBottom: 20, width: 'fit-content', maxWidth: '100%', overflow: 'scroll'}}>
         {
           filteredPreviewCrops
