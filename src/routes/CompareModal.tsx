@@ -386,7 +386,7 @@ const CompareModal: FC = () => {
               bodyPartOptions={cropsUniqueValuesPerField['body_part'] ?? []}
               individualsMetadataFields={individualsMetadataFields}
               onlyShowListView={true}
-              listDescription={individualDetailProps ? "Note: the individual on the left and its co-occurrences have no crops." : undefined}
+              listDescription={individualDetailProps ? "Note: the individual on the left and its co-occurrences have been omitted from the list below." : undefined}
               linkTemplate={routerLocation.pathname + "/:individualId"}
               listViewButtons={individualDetailProps ? shortlistButton : undefined}
               defaultGroupFields={[]}

@@ -126,6 +126,6 @@ describe('IndividualsDashboardView', () => {
     // Individual 2 only has an ear crop, so it is removed entirely once "face" is selected.
     expect(screen.getByText('Individual 1')).toBeInTheDocument();
     expect(screen.queryByText('Individual 2')).not.toBeInTheDocument();
-    expect(screen.getByText(/1 out of 2 individuals are hidden by selection of body part "face"/)).toBeInTheDocument();
+    expect(screen.getByText(/1 out of 2 individuals are hidden because they have no crops matching "face"/)).toBeInTheDocument();
   });
 });
