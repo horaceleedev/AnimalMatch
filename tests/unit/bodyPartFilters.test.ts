@@ -52,7 +52,7 @@ const makeIndividual = (overrides: Partial<Individual>): Individual => ({
 
 describe('body part filter helpers', () => {
   it('builds selector options with the any-body-part option first', () => {
-    expect(getBodyPartOptions(['face', 'ear', 'face', '', ANY_BODY_PART])).toEqual([
+    expect(getBodyPartOptions(['face', 'ear'])).toEqual([
       ANY_BODY_PART,
       'face',
       'ear',

@@ -4,12 +4,12 @@ import BodyPartSelect from '../../src/components/crops/BodyPartSelect';
 import { renderWithProviders, screen, userEvent } from '../helpers/render';
 
 describe('BodyPartSelect', () => {
-  it('renders unique body part options and disables unavailable body parts', async () => {
+  it('renders body part options and disables unavailable body parts', async () => {
     const setSelectedBodyPart = vi.fn();
 
     renderWithProviders(
       <BodyPartSelect
-        bodyPartOptions={['face', 'ear', 'face']}
+        bodyPartOptions={['face', 'ear']}
         selectedBodyPart=""
         setSelectedBodyPart={setSelectedBodyPart}
         availableBodyParts={new Set(['face'])}

@@ -2,10 +2,7 @@ import type { Crop, Individual } from '../../types';
 
 export const ANY_BODY_PART = "any body part";
 
-export const getBodyPartOptions = (bodyPartOptions: string[]): string[] => {
-  const uniqueBodyParts = Array.from(new Set(bodyPartOptions.filter(Boolean)));
-  return [ANY_BODY_PART, ...uniqueBodyParts.filter(bodyPart => bodyPart !== ANY_BODY_PART)];
-};
+export const getBodyPartOptions = (bodyPartOptions: string[]): string[] => [ANY_BODY_PART, ...bodyPartOptions];
 
 export const isBodyPartOptionDisabled = (
   bodyPart: string,
