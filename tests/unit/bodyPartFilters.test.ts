@@ -7,7 +7,7 @@ import {
   getAvailableBodyParts,
   getBodyPartOptions,
   isBodyPartOptionDisabled,
-} from '../../src/components/crops/bodyPartFilters';
+} from '../../src/utils/bodyPartFilters';
 import type { Crop, Individual } from '../../src/types';
 
 const makeCrop = (overrides: Partial<Crop>): Crop => ({

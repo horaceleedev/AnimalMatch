@@ -10,8 +10,8 @@ import { Individual, LocationInfo, RecordType, Video } from '../../types.ts';
 import BasicMapView from '../ui/BasicMapView.tsx';
 import RecordMetadataForm from './RecordMetadataForm.tsx';
 import CropsDashboardView from '../dashboards/CropsDashboardView.tsx';
-import BodyPartSelect from '../crops/BodyPartSelect.tsx';
-import { filterCropsByBodyPart, getAvailableBodyParts } from '../crops/bodyPartFilters.ts';
+import BodyPartSelect from '../ui/BodyPartSelect.tsx';
+import { filterCropsByBodyPart, getAvailableBodyParts } from '../../utils/bodyPartFilters.ts';
 import "./IndividualDetailView.scss";
 
 const numCropsToShow = 10;

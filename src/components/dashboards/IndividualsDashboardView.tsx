@@ -10,8 +10,8 @@ import ViewList from '../../assets/material_symbols/view_list_24dp_5F6368_FILL0_
 import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
 import BasicMapView from '../ui/BasicMapView.tsx';
-import BodyPartSelect from '../crops/BodyPartSelect.tsx';
-import { filterIndividualsByBodyPart, getAvailableBodyParts } from '../crops/bodyPartFilters.ts';
+import BodyPartSelect from '../ui/BodyPartSelect.tsx';
+import { filterIndividualsByBodyPart, getAvailableBodyParts } from '../../utils/bodyPartFilters.ts';
 import { getUniqueLocationsFromIndividuals } from '../../utils/utils.ts';
 import useSearchFilter from '../../hooks/useSearchFilter.ts';
 import { Individual, MetadataFieldsType, Video } from '../../types.ts';

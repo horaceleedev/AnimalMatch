@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import BodyPartSelect from '../../src/components/crops/BodyPartSelect';
+import BodyPartSelect from '../../src/components/ui/BodyPartSelect';
 import { renderWithProviders, screen, userEvent } from '../helpers/render';
 
 describe('BodyPartSelect', () => {
