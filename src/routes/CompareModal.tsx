@@ -370,8 +370,10 @@ const CompareModal: FC = () => {
               }
               videos={videos}
               uniqueValuesPerField={individualsUniqueValuesPerField}
+              bodyPartOptions={cropsUniqueValuesPerField['body_part'] ?? []}
               individualsMetadataFields={individualsMetadataFields}
               onlyShowListView={true}
+              listDescription={individualDetailProps ? "Note: the individual on the left and its co-occurrences have been omitted from the list below." : undefined}
               linkTemplate={routerLocation.pathname + "/:individualId"}
               listViewButtons={individualDetailProps ? shortlistButton : undefined}
               defaultGroupFields={[]}
@@ -577,11 +579,6 @@ const CompareModal: FC = () => {
                   "Select a video, individual, or crop for comparison"
                 }
               </h3>
-              {
-                (individualDetailProps && !compareId && compareType === "individuals") && 
-                <span>Note: the individual on the left and its co-occurrences have been omitted from the list below.</span>
-              }
-
               {rightPanel}
             </>
           }
