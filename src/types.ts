@@ -33,15 +33,11 @@ export interface VideoRecord extends RecordModel {
   filename: string;
   file: string;
   thumbnail: string;
-  habitat: string;
   location_name: string;
-  month_of_SD_retrieval: string;
   notes: string;
   recording_date: string;
   utm_easting: number;
   utm_northing: number;
-  altitude: number;
-  num_individuals: number;
   custom_tags: string[];
   assignees: string[];
   annotation_status: string;

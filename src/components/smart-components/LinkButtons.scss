@@ -1,0 +1,61 @@
+.individual-link-button-card {
+  vertical-align: middle;
+
+  .ant-flex {
+    > img {
+      height: 26px;
+      margin: 3px;
+      border-radius: 5px;
+    }
+    > h5 {
+      margin: 0;
+      margin-right: 8px;
+      font-size: 12px;
+    }
+  }
+}
+
+.video-link-button-card {
+  vertical-align: middle;
+
+  .ant-flex {
+    > img {
+      height: 26px;
+      margin: 3px;
+      border-radius: 5px;
+    }
+    > h5 {
+      margin: 0;
+      margin-right: 8px;
+      font-size: 12px;
+    }
+  }
+}
+
+
+img.individual-label-image {
+  height: 30px;
+  width: 30px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+// styles specific to the selected label (not the options in the dropdown)
+.ant-select-selection-item {
+  img.individual-label-image {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+img.video-label-image {
+  height: 30px;
+  border-radius: 5px;
+}
+
+// styles specific to the selected label (not the options in the dropdown)
+.ant-select-selection-item {
+  img.video-label-image {
+    height: 24px;
+  }
+}

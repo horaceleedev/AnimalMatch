@@ -113,8 +113,6 @@ const BasicVideosGridView: FC<BasicVideosGridViewProps> = ({
                 <Flex wrap gap={4}>
                   {[
                     "location_name",
-                    "month_of_SD_retrieval",
-                    "habitat",
                     "recording_date",
                   ].map((field) => (
                     <Tooltip
