@@ -104,15 +104,13 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
   );
   const hiddenCount = searchFilteredIndividuals.length - visibleIndividuals.length;
   const hiddenMessage = selectedBodyPart && hiddenCount > 0
-    ? `${hiddenCount} out of ${searchFilteredIndividuals.length} individuals are hidden because they have no crops matching "${selectedBodyPart}"`
+    ? `${hiddenCount} individuals are hidden because they have no crops matching "${selectedBodyPart}"`
     : '';
   const description = [listDescription, hiddenMessage].filter(Boolean).join(' ');
 
-  // The map intentionally shows all (search-filtered) individuals' locations,
-  // regardless of the selected body part.
   const uniqueLocations = useMemo(() => {
-    return getUniqueLocationsFromIndividuals(searchFilteredIndividuals, videos);
-  }, [searchFilteredIndividuals, videos]);
+    return getUniqueLocationsFromIndividuals(visibleIndividuals, videos);
+  }, [visibleIndividuals, videos]);
 
   const bodyPartSelect = (
     <BodyPartSelect

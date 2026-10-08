@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { Select, Space } from 'antd';
 
 import { ANY_BODY_PART, getBodyPartOptions, isBodyPartOptionDisabled } from '../../utils/bodyPartFilters';
-import './BodyPartSelect.scss';
 
 type BodyPartSelectProps = {
   bodyPartOptions: string[];

@@ -1,8 +1,12 @@
-import type { Crop, Individual } from '../../types';
+import type { Crop, Individual } from '../types';
 
 export const ANY_BODY_PART = "any body part";
 
 export const getBodyPartOptions = (bodyPartOptions: string[]): string[] => [ANY_BODY_PART, ...bodyPartOptions];
+
+export const getAvailableBodyParts = (crops: Crop[]): Set<string> => (
+  new Set(crops.map(crop => crop.body_part).filter(Boolean))
+);
 
 export const isBodyPartOptionDisabled = (
   bodyPart: string,
@@ -13,10 +17,6 @@ export const filterCropsByBodyPart = (crops: Crop[], selectedBodyPart?: string):
   if (!selectedBodyPart || selectedBodyPart === ANY_BODY_PART) return crops;
   return crops.filter(crop => crop.body_part === selectedBodyPart);
 };
-
-export const getAvailableBodyParts = (crops: Crop[]): Set<string> => (
-  new Set(crops.map(crop => crop.body_part).filter(Boolean))
-);
 
 export const filterIndividualsByBodyPart = (
   individuals: Individual[],
