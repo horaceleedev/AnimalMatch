@@ -1,0 +1,15 @@
+# Frontend dev image: runs the Vite dev server with hot-module-reload.
+# Source is bind-mounted at runtime (see docker-compose.yml); node_modules lives
+# in an anonymous volume so the host mount does not shadow the installed deps.
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install deps in a cached layer keyed on the lockfile.
+COPY package.json package-lock.json ./
+RUN npm ci
+
+EXPOSE 5173
+
+# --host binds 0.0.0.0 so the dev server is reachable from outside the container.
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

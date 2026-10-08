@@ -1,0 +1,38 @@
+services:
+  pocketbase:
+    build:
+      context: ./docker/pocketbase
+      args:
+        PB_VERSION: "0.23.12"
+    ports:
+      - "8090:8090"
+    env_file: .env
+    volumes:
+      - pb_data:/pb/pb_data
+      - ./pb_migrations:/pb/pb_migrations:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8090/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile.dev
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_DATABASE_URL: http://localhost:8090
+    volumes:
+      - ./:/app
+      # Anonymous volume keeps the container's node_modules from being shadowed
+      # by the host bind mount above.
+      - /app/node_modules
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+
+volumes:
+  pb_data:
