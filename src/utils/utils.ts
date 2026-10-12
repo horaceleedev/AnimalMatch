@@ -24,29 +24,32 @@ export const getUniqueLocationsFromIndividuals = (individuals: Individual[], all
     return [];
   }
 
-  let videos: Video[] = []; // list of videos where the individuals appear in
+  const videosById = new Map(allVideos.map(v => [v.id, v]));
+  // Map from a unique location (as a JSON string of [lat, long]) to a set of individual IDs seen at that location
+  const individualIdsPerLocation = new Map<string, Set<string>>();
   for (const indiv of individuals) {
     for (const videoId of indiv.videos) {
-      const video = allVideos.find(v => v.id === videoId);
+      const video = videosById.get(videoId);
       if (!video) {
         console.error(`Error when computing individual locations: video ${videoId} not found`);
-      } else {
-        videos.push(video);
+        continue;
       }
+      const latLongString = JSON.stringify([video.lat, video.long]);
+      const individualIds = individualIdsPerLocation.get(latLongString) ?? new Set<string>();
+      individualIds.add(indiv.id);
+      individualIdsPerLocation.set(latLongString, individualIds);
     }
   }
-  
-  const numVideosPerUniqueLocation = countBy(videos, x => JSON.stringify([x.lat, x.long]));
-  const uniqueLocations = Object.entries(numVideosPerUniqueLocation).map(([latLongString, numVideos]) => {
+
+  return Array.from(individualIdsPerLocation, ([latLongString, individualIds]) => {
     const [lat, long] = JSON.parse(latLongString);
     return {
       id: latLongString,
       lat: lat,
       long: long,
-      tooltipText: `${numVideos} individuals in this location`,
+      tooltipText: `${individualIds.size} individuals in this location`,
     } as LocationInfo;
   });
-  return uniqueLocations;
 }
 
 export const getUniqueValuesPerField = (metadataFields: MetadataFieldsType, processedRecords: Record<string, any>[]) => {

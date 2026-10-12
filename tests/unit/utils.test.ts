@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { Individual, MetadataFieldsType, Video } from '../../src/types';
 import {
@@ -82,6 +82,10 @@ describe('getUniqueLocationsFromVideos', () => {
 });
 
 describe('getUniqueLocationsFromIndividuals', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('returns an empty array and warns when videos are not yet loaded', () => {
     const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -136,6 +140,25 @@ describe('getUniqueLocationsFromIndividuals', () => {
         id: '[2.5,37.5]',
         lat: 2.5,
         long: 37.5,
+        tooltipText: '1 individuals in this location',
+      },
+    ]);
+  });
+
+  it('counts an individual once per location even if it appears in several videos there', () => {
+    const locations = getUniqueLocationsFromIndividuals(
+      [makeIndividual({ id: 'individual-1', videos: ['video-1', 'video-2'] })],
+      [
+        makeVideo({ id: 'video-1', lat: 1.23, long: 36.54 }),
+        makeVideo({ id: 'video-2', lat: 1.23, long: 36.54 }),
+      ],
+    );
+
+    expect(locations).toEqual([
+      {
+        id: '[1.23,36.54]',
+        lat: 1.23,
+        long: 36.54,
         tooltipText: '1 individuals in this location',
       },
     ]);
