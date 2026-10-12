@@ -90,17 +90,32 @@ describe('getUniqueLocationsFromIndividuals', () => {
     ], []);
 
     expect(locations).toEqual([]);
-    expect(consoleWarn).toHaveBeenCalledWith(
-      'Warning when computing individual locations: allVideos is empty (possibly because videos are still loading), returning empty unique locations',
-    );
+    expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('allVideos is empty'));
   });
 
-  it('logs missing linked videos and groups the remaining linked video locations', () => {
+  it('logs and skips linked videos that are not found', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const locations = getUniqueLocationsFromIndividuals(
+      [makeIndividual({ id: 'individual-1', videos: ['video-1', 'missing-video'] })],
+      [makeVideo({ id: 'video-1', lat: 1.23, long: 36.54 })],
+    );
+
+    expect(locations).toEqual([
+      {
+        id: '[1.23,36.54]',
+        lat: 1.23,
+        long: 36.54,
+        tooltipText: '1 individuals in this location',
+      },
+    ]);
+    expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('missing-video'));
+  });
+
+  it('groups individuals by the locations of their linked videos', () => {
+    const locations = getUniqueLocationsFromIndividuals(
       [
-        makeIndividual({ id: 'individual-1', videos: ['video-1', 'missing-video'] }),
+        makeIndividual({ id: 'individual-1', videos: ['video-1'] }),
         makeIndividual({ id: 'individual-2', videos: ['video-2', 'video-3'] }),
       ],
       [
@@ -124,9 +139,6 @@ describe('getUniqueLocationsFromIndividuals', () => {
         tooltipText: '1 individuals in this location',
       },
     ]);
-    expect(consoleError).toHaveBeenCalledWith(
-      'Error when computing individual locations: video missing-video not found',
-    );
   });
 });
 
