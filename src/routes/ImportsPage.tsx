@@ -1068,7 +1068,7 @@ const ImportsPage: React.FC = () => {
                     rowKey="localId"
                     columns={columns}
                     dataSource={section.videos}
-                    pagination={{ pageSize: 25, showSizeChanger: true }}
+                    pagination={{ defaultPageSize: 25, pageSizeOptions: [10, 25, 50, 100], showSizeChanger: true }}
                   />
                 ),
               };
