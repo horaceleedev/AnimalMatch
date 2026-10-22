@@ -1,0 +1,23 @@
+.git
+node_modules
+dist
+dist-ssr
+
+# PocketBase local data / large snapshot — must never enter the build context.
+pb_data
+pb_data.zip
+
+# Local env / secrets
+.env
+
+# Test artifacts
+test-results
+playwright-report
+.vitest-attachments
+__screenshots__
+
+# Editor / OS
+.vscode
+.idea
+.DS_Store
+*.log
