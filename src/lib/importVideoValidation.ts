@@ -17,8 +17,31 @@ const hasSupportedVideoCodec = (codec: string) => (
   supportedVideoCodecPrefixes.some((prefix) => codec.toLowerCase().startsWith(prefix))
 );
 
+const codecAliases: Record<string, string> = {
+  // Chromium-based browsers are strict on following the grammar of OTI
+  // which states OTI should be A-F but not a-f
+  // See https://www.rfc-editor.org/info/rfc6381/#section-3.4
+  // Currently only '6b' must be '6B' but not others
+  // see its source code media/base/mime_util_internal.cc
+  // prefer mapping over converting all to uppercase for simplicity
+  "mp4a.6b": "mp4a.6B",
+  // for futureproof we include the below (note the TODO in its source code)
+  "mp4a.a5": "mp4a.A5",
+  "mp4a.a6": "mp4a.A6",
+  "mp4a.a9": "mp4a.A9",
+  "mp4a.ac": "mp4a.AC",
+  "mp4a.b2": "mp4a.B2",
+  "mp4a.ae": "mp4a.AE",
+};
+
 const canBrowserPlayMimeType = (mimeType: string) => {
   const video = document.createElement("video");
+
+  // we map all known incompatible codecs to compliant one
+  for (const [alias, compliant] of Object.entries(codecAliases)) {
+    mimeType = mimeType.replace(alias, compliant);
+  }
+
   return video.canPlayType(mimeType) !== "";
 };
 
