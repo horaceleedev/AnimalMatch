@@ -381,15 +381,17 @@ export const useIndividualsStoreWithCrops = () => {
   const [individuals, createIndividual, updateIndividual, deleteIndividual, individualsUniqueValuesPerField] = useIndividualsStore(
     useShallow((state) => [state.processedRecords, state.create, state.update, state.delete, state.uniqueValuesPerField])
   );
-  const [crops, createCrop, cropsUniqueValuesPerField] = useCropsStore(
-    useShallow((state) => [state.processedRecords, state.create, state.uniqueValuesPerField])
+  const [crops, createCrop, updateCrop, cropsUniqueValuesPerField] = useCropsStore(
+    useShallow((state) => [state.processedRecords, state.create, state.update, state.uniqueValuesPerField])
   );
 
-  // Add a `crops` field to each individual
+  // Add a `crops` field to each individual, with pinned crops sorted first
   const individualsWithCrops: Individual[] = useMemo(() => {
     return individuals.map(indiv => ({
       ...indiv,
-      crops: crops.filter(crop => crop.individual === indiv.id),
+      crops: crops
+        .filter(crop => crop.individual === indiv.id)
+        .sort((a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0)),
     }));
   }, [individuals, crops]);
 
@@ -400,6 +402,7 @@ export const useIndividualsStoreWithCrops = () => {
     deleteIndividual,
     individualsUniqueValuesPerField,
     createCrop,
+    updateCrop,
     cropsUniqueValuesPerField,
   };
 };
