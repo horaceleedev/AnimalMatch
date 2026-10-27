@@ -5,7 +5,6 @@ import { ClientResponseError } from 'pocketbase';
 
 import { Crop } from '../../types.ts';
 import { useCropsStore } from '../../DataStores.tsx';
-import { PINNED_COLOR } from '../../constants.ts';
 import './CropImage.scss';
 
 type CropImageProps = {
@@ -95,7 +94,7 @@ const CropImage: React.FC<CropImageProps> = ({
             disabled={isPinning}
             icon={
               crop.is_pinned
-                ? <PushpinFilled style={{ color: PINNED_COLOR }} />
+                ? <PushpinFilled style={{ color: 'white' }} />
                 : <PushpinOutlined style={{ color: 'white' }} />
             }
             style={{
