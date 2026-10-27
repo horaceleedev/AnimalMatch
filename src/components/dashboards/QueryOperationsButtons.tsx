@@ -44,11 +44,11 @@ const FieldSelector: React.FC<FieldSelectorProps> = ({
   );
 
   const optionRender: NonNullable<SelectProps['optionRender']> = (option) => (
-    <Space>{option.data.icon} {option.label}</Space>
+    <Space size={5}>{option.data.icon} {option.label}</Space>
   );
   const labelRender: NonNullable<SelectProps['labelRender']> = (option) => {
     const fieldValue = String(option.value);
-    return <Space>{metadataFields[fieldValue]?.icon} {option.label}</Space>;
+    return <Space size={5}>{metadataFields[fieldValue]?.icon} {option.label}</Space>;
   };
   
   return <Select
@@ -371,25 +371,8 @@ const QueryOperationsButtons: React.FC<QueryOperationsButtonsProps> = ({
           }
         </Space>
       } content={
-        <Space>
-          <CustomQueryBuilder metadataFields={metadataFields} uniqueValuesPerField={uniqueValuesPerField} query={query} setQuery={setQuery} />
-          {/* <FieldSelector metadataFields={metadataFields} value={groupFields[0]} onChange={handleGroupFieldSelect} />
-          {
-            groupFields.length > 0 &&
-              <>
-                <Select
-                  value={groupOrders[0]}
-                  onChange={(val: string) => setGroupOrders([val])}
-                  options={[{ value: 'asc', label: 'Ascending' }, { value: 'desc', label: 'Descending' }]}
-                />
-                <Button type="text" icon={<CloseOutlined />} onClick={() => clearGroup()} />
-              </>
-          } */}
-        </Space>
+        <CustomQueryBuilder metadataFields={metadataFields} uniqueValuesPerField={uniqueValuesPerField} query={query} setQuery={setQuery} />
       } trigger="click" arrow={false} placement="bottomLeft" >
-        {/* <Button type="text" icon={<GroupOutlined />} color={(groupFields.length > 0) ? "primary" : "default"} variant={(groupFields.length > 0) ? "filled" : "text"}>
-          {(groupFields.length > 0) ? `Grouped by ${metadataFields[groupFields[0]].displayName}` : "Group"}
-        </Button> */}
         <Button type="text" icon={<FilterOutlined />}
           color={filterRuleCount > 0 ? "primary" : "default"}
           variant={filterRuleCount > 0 ? "filled" : "text"}

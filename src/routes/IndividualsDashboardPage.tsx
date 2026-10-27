@@ -9,7 +9,7 @@ import IndividualsDashboardView from '../components/dashboards/IndividualsDashbo
 import { IndividualsDashboardSider, useIndividualsDashboardSiderState } from '../components/dashboards/IndividualsDashboardSider.tsx';
 
 const IndividualsDashboardPage: React.FC = () => {
-  const { individuals, individualsUniqueValuesPerField: uniqueValuesPerField } = useIndividualsStoreWithCrops();
+  const { individuals, individualsUniqueValuesPerField: uniqueValuesPerField, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
   const videos = useVideoStore((state) => state.processedRecords);
   const { user } = useAuth();
 
@@ -33,6 +33,7 @@ const IndividualsDashboardPage: React.FC = () => {
             individuals={individualsFiltered}
             videos={videos}
             uniqueValuesPerField={uniqueValuesPerField}
+            bodyPartOptions={cropsUniqueValuesPerField['body_part'] ?? []}
             individualsMetadataFields={individualsMetadataFields}
           />
         </DashboardContent>

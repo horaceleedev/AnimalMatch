@@ -85,6 +85,8 @@ migrate((app) => {
       { name: "custom_tags", type: "json" },
       { name: "assignees", type: "relation", collectionId: collectionIds.users, maxSelect: 2147483647 },
       { name: "annotation_status", type: "text" },
+      { name: "created", type: "autodate", onCreate: true, onUpdate: false },
+      { name: "updated", type: "autodate", onCreate: true, onUpdate: true },
     ],
   });
   app.save(videos);
@@ -107,6 +109,8 @@ migrate((app) => {
       { name: "sex", type: "text" },
       { name: "notes", type: "editor" },
       { name: "custom_tags", type: "json" },
+      { name: "created", type: "autodate", onCreate: true, onUpdate: false },
+      { name: "updated", type: "autodate", onCreate: true, onUpdate: true },
     ],
   });
   app.save(individuals);
@@ -134,6 +138,8 @@ migrate((app) => {
       { name: "crop_coordinates", type: "json" },
       { name: "width", type: "number" },
       { name: "height", type: "number" },
+      { name: "created", type: "autodate", onCreate: true, onUpdate: false },
+      { name: "updated", type: "autodate", onCreate: true, onUpdate: true },
     ],
   });
   app.save(crops);

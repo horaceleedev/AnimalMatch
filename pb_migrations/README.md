@@ -1,39 +1,43 @@
 # PocketBase Development Environment
 
-This should become part of some kind of dev guide at some point.
+<!-- TODO this should become part of some kind of dev guide at some point. -->
+
+> [!NOTE]
+> All commands below should be run from the repository root.
 
 ## Fresh Local Instance
 
-Install the PocketBase binary if you haven't already, then from the repository root create a local `.env` file. You only have to do this once per checkout.
+Download the PocketBase executable:
+
+1. Go to the [PocketBase v0.36.9 release page](https://github.com/pocketbase/pocketbase/releases/tag/v0.36.9). (Any newer v0.36.x release should also work.)
+2. Download the zip file for your operating system and processor (for example, `darwin_arm64` for an Apple Silicon Mac, or `windows_amd64` for most Windows PCs).
+3. Unzip it and move the `pocketbase` file into the root of this repository.
+
+Then create a local `.env` file. You only have to do this once per checkout.
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and change the credentials if you like. Then create a fresh local database from migrations. Fresh means using an empty or deleted `pb_data` directory. You can use a different directory if you do not want the database under `/tmp`.
+Edit `.env` and change the credentials if you like. Then create a fresh local database from the migrations by running the command below, which will create a `pb_data` directory within the repository root:
 
 ```bash
-rm -rf /tmp/animalmatch-pb
-mkdir -p /tmp/animalmatch-pb
-pocketbase migrate up \
-  --dir /tmp/animalmatch-pb/pb_data \
-  --migrationsDir pb_migrations
+./pocketbase migrate up
 ```
+
+Note: to store the database elsewhere, add `--dir /path/to/pb_data --migrationsDir /path/to/pb_migrations` to this and every later `./pocketbase` command.
 
 Create a local admin account or pocketbase will not start completely:
 
 ```bash
 source .env
-pocketbase superuser create "$POCKETBASE_SUPERUSER_EMAIL" "$POCKETBASE_SUPERUSER_PASSWORD" \
-  --dir /tmp/animalmatch-pb/pb_data
+./pocketbase superuser create "$POCKETBASE_SUPERUSER_EMAIL" "$POCKETBASE_SUPERUSER_PASSWORD"
 ```
 
 Start pocketbase:
 
 ```bash
-pocketbase serve \
-  --dir /tmp/animalmatch-pb/pb_data \
-  --migrationsDir pb_migrations
+./pocketbase serve
 ```
 
 The admin dashboard is available at:
@@ -62,36 +66,29 @@ PocketBase stores applied migration filenames in its internal `_migrations` tabl
 Apply all pending app migrations:
 
 ```bash
-pocketbase migrate up \
-  --dir /tmp/animalmatch-pb/pb_data \
-  --migrationsDir pb_migrations
+./pocketbase migrate up
 ```
 
 Revert the last migration:
 
 ```bash
-pocketbase migrate down 1 \
-  --dir /tmp/animalmatch-pb/pb_data \
-  --migrationsDir pb_migrations
+./pocketbase migrate down 1
 ```
 
 Revert the last N migrations:
 
 ```bash
-pocketbase migrate down 3 \
-  --dir /tmp/animalmatch-pb/pb_data \
-  --migrationsDir pb_migrations
+./pocketbase migrate down 3
 ```
 
-Note: I discovered that PocketBase has its own internal migrations as well as our user-defined migrations.
-Always be consistent by passing `--migrationsDir pb_migrations` when running `migrate up`, `migrate down`, or `serve`, otherwise you can get funky behaviour.
+Note: PocketBase has its own internal migrations in addition to our user-defined migrations.
+By default PocketBase looks for a `pb_migrations` folder right next to the `pb_data` folder. If your `pb_data` folder is not located in the repository root, make sure to pass `--migrationsDir /<repo root here>/pb_migrations` when running `migrate up`, `migrate down`, or `serve`, otherwise you can get funky behaviour.
 Before confirming a `migrate down`, check the filenames PocketBase prints.
 
 Create a new blank migration:
 
 ```bash
-pocketbase migrate create some_changes_to_schema \
-  --migrationsDir pb_migrations
+./pocketbase migrate create some_changes_to_schema
 ```
 
 Include both up and down migration code where a safe rollback is possible.
