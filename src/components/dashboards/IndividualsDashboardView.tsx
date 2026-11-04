@@ -9,6 +9,7 @@ import ViewList from '../../assets/material_symbols/view_list_24dp_5F6368_FILL0_
 
 import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
+import type { PaginationResetProps } from '../grid-views/withSortingGroupingAndPagination.tsx';
 import IndividualsTableView from '../table-views/IndividualsTableView.tsx';
 import BasicMapView from '../ui/BasicMapView.tsx';
 import BodyPartSelect from '../ui/BodyPartSelect.tsx';
@@ -37,7 +38,7 @@ const viewsTabsItems: TabsProps['items'] = [
 ];
 const initialQuery: RuleGroupType = { combinator: 'and', rules: [] };
 
-interface IndividualsDashboardViewProps {
+interface IndividualsDashboardViewProps extends PaginationResetProps {
   individuals: Individual[];
   videos: Video[];
   uniqueValuesPerField: Record<string, string[]>;
@@ -54,6 +55,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
   individuals, videos, uniqueValuesPerField, bodyPartOptions, individualsMetadataFields,
   onlyShowListView, listDescription, linkTemplate, listViewButtons,
   defaultGroupFields, defaultGroupOrders,
+  paginationResetKey,
 }: IndividualsDashboardViewProps) => {
   const [view, setView] = useState(viewsTabsItems[0].key);
 
@@ -136,6 +138,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
           groupFields={groupFields}
           groupOrders={groupOrders}
           cropBodyPart={selectedBodyPart}
+          paginationResetKey={paginationResetKey}
         />
         :
         (
@@ -159,6 +162,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
                 groupFields={groupFields}
                 groupOrders={groupOrders}
                 cropBodyPart={selectedBodyPart}
+                paginationResetKey={paginationResetKey}
               />
             </Splitter.Panel>
             <Splitter.Panel style={{paddingLeft: 12}}>

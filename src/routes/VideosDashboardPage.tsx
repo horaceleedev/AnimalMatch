@@ -192,6 +192,7 @@ const VideosDashboardPage: React.FC = () => {
                 groupFields={groupFields}
                 groupOrders={groupOrders}
                 onSelectGroup={onSelectGroup}
+                paginationResetKey={selectedSiderKey}
               />
             :
             (
@@ -216,6 +217,7 @@ const VideosDashboardPage: React.FC = () => {
                     groupFields={groupFields}
                     groupOrders={groupOrders}
                     onSelectGroup={onSelectGroup}
+                    paginationResetKey={selectedSiderKey}
                   />
                 </Splitter.Panel>
                 <Splitter.Panel style={{paddingLeft: 12}}>

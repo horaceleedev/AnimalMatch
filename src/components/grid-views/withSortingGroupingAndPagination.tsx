@@ -1,4 +1,4 @@
-import { ComponentType, useMemo, useState } from "react";
+import { ComponentType, type Key, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { RecordModel } from "pocketbase";
 import { groupBy, orderBy } from "es-toolkit";
 import { Collapse, Space, Pagination } from "antd";
@@ -147,6 +147,35 @@ const withSortingAndGrouping = <P extends BasicGridViewProps, T extends RecordMo
 };
 
 
+/**
+ * If the top of `element` is scrolled out of view (i.e. above the visible area of its nearest
+ * scrollable ancestor), scroll that ancestor up so that the top of `element` is visible again.
+ * Only the nearest scrollable ancestor is scrolled, so that outer containers (e.g. the dashboard
+ * content area when a grid view is shown within a group) are left untouched.
+ */
+const scrollElementTopIntoView = (element: HTMLElement, margin = 16) => {
+  let scrollParent = element.parentElement;
+  while (scrollParent) {
+    const { overflowY } = window.getComputedStyle(scrollParent);
+    if (/auto|scroll|overlay/.test(overflowY) && scrollParent.scrollHeight > scrollParent.clientHeight) break;
+    scrollParent = scrollParent.parentElement;
+  }
+
+  const elementTop = element.getBoundingClientRect().top;
+  if (scrollParent) {
+    const offset = elementTop - (scrollParent.getBoundingClientRect().top + scrollParent.clientTop);
+    if (offset < 0) scrollParent.scrollBy({ top: offset - margin });
+  } else if (elementTop < 0) {
+    window.scrollBy({ top: elementTop - margin });
+  }
+};
+
+export interface PaginationResetProps {
+  // Changing this value resets the pagination back to the first page
+  // (e.g. pass in the selected sider key to reset the page when the sider selection changes)
+  paginationResetKey?: Key;
+};
+
 const withPagination = <P extends BasicGridViewProps, T extends RecordModel>(
   BasicGridView: ComponentType<P>,
   {
@@ -157,28 +186,58 @@ const withPagination = <P extends BasicGridViewProps, T extends RecordModel>(
     pageSize?: number;
   },
 ) => {
-  return (props: P) => {
+  return (props: P & PaginationResetProps) => {
     if (!(processedRecordsProp in props)) {
       throw new Error(`Missing prop "${processedRecordsProp}" in ${BasicGridView.displayName || BasicGridView.name || "BasicGridView"} wrapped by withPagination`);
     }
 
+    // paginationResetKey is only used here, so it is not passed on to BasicGridView
+    const { paginationResetKey, ...basicGridViewProps } = props;
+
     const [currentPageNum, setcurrentPageNum] = useState(1); // 1-based index for Pagination component
     const processedRecords = props[processedRecordsProp] as T[];
+
+    // Reset to the first page when paginationResetKey changes.
+    // This adjusts the state during rendering (instead of in an effect) to avoid briefly rendering the stale page,
+    // see https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+    // Object.is is used (like React does for state) so that a NaN key doesn't trigger a reset on every render
+    const [prevPaginationResetKey, setPrevPaginationResetKey] = useState(paginationResetKey);
+    if (!Object.is(paginationResetKey, prevPaginationResetKey)) {
+      setPrevPaginationResetKey(paginationResetKey);
+      setcurrentPageNum(1);
+    }
+
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // After a reset, scroll back up to the top of the grid view (once the first page has been rendered),
+    // so that the user doesn't land partway down the first page of the new records
+    const scrolledPaginationResetKeyRef = useRef(paginationResetKey);
+    useLayoutEffect(() => {
+      if (Object.is(scrolledPaginationResetKeyRef.current, paginationResetKey)) return;
+      scrolledPaginationResetKeyRef.current = paginationResetKey;
+      if (containerRef.current) scrollElementTopIntoView(containerRef.current);
+    }, [paginationResetKey]);
+
+    const onChangePage = (page: number) => {
+      setcurrentPageNum(page);
+      // Scroll back up to the top of the grid view so that the new page is viewed from the start
+      if (containerRef.current) scrollElementTopIntoView(containerRef.current);
+    };
 
     const startIndex = (currentPageNum - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     const paginatedRecords = processedRecords.slice(startIndex, endIndex);
 
     return (
-      <div>
-        <BasicGridView {...props} {...{ [processedRecordsProp]: paginatedRecords }} />
+      <div ref={containerRef}>
+        <BasicGridView {...basicGridViewProps as P} {...{ [processedRecordsProp]: paginatedRecords }} />
         {
           // Only show pagination buttons if there is more than one page of records
           (processedRecords.length > pageSize) && 
           <Pagination
             simple
             current={currentPageNum}
-            onChange={(page: number) => setcurrentPageNum(page)}
+            onChange={onChangePage}
             total={processedRecords.length}
             showTotal={(total, range) => `${range[0]}-${range[1]} of ${total} items`}
             pageSize={pageSize}
@@ -202,7 +261,7 @@ const withSortingGroupingAndPagination = <P extends BasicGridViewProps, T extend
     pageSize?: number;
   },
 ) => {
-  return withSortingAndGrouping<P, T>(
+  return withSortingAndGrouping<P & PaginationResetProps, T>(
     withPagination<P, T>(
       BasicGridView,
       { processedRecordsProp: opts.processedRecordsProp, pageSize: opts.pageSize }

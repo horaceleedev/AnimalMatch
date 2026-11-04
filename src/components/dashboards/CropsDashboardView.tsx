@@ -7,6 +7,7 @@ import Table from '../../assets/material_symbols/table_24dp_5F6368_FILL0_wght400
 
 import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import CropsGridView from '../grid-views/CropsGridView.tsx';
+import type { PaginationResetProps } from '../grid-views/withSortingGroupingAndPagination.tsx';
 import useSearchFilter from '../../hooks/useSearchFilter.ts';
 import { Crop, MetadataFieldsType, RecordType } from '../../types.ts';
 import { filterByQuery } from '../../lib/filtering/filterEngine.ts';
@@ -30,7 +31,7 @@ const viewsTabsItems: TabsProps['items'] = [
 ];
 const initialQuery: RuleGroupType = { combinator: 'and', rules: [] };
 
-interface CropsDashboardViewProps {
+interface CropsDashboardViewProps extends PaginationResetProps {
   crops: Crop[];
   uniqueValuesPerField: Record<string, string[]>;
   cropsMetadataFields: MetadataFieldsType;
@@ -46,6 +47,7 @@ const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
   onlyShowGridView, linkTemplate, // gridViewButtons,
   defaultGroupFields, defaultGroupOrders,
   openModal,
+  paginationResetKey,
 }: CropsDashboardViewProps) => {
   const [view, setView] = useState(viewsTabsItems[0].key);
 
@@ -90,6 +92,7 @@ const CropsDashboardView: React.FC<CropsDashboardViewProps> = ({
           sortOrders={sortOrders}
           groupFields={groupFields}
           groupOrders={groupOrders}
+          paginationResetKey={paginationResetKey}
         />
         :
         (
