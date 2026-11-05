@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { assert, describe, expect, it } from 'vitest';
 
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from '../../src/metadata';
 import { buildQueryBuilderFields } from '../../src/lib/filtering/filterBuilderConfig';
@@ -19,10 +19,10 @@ describe('buildQueryBuilderFields', () => {
       'null',
       'notNull',
     ]);
-    expect(typeof locationNameField?.valueEditorType).toBe('function');
-    expect(locationNameField?.valueEditorType?.('=')).toBe('select');
-    expect(locationNameField?.valueEditorType?.('in')).toBe('multiselect');
-    expect(locationNameField?.valueEditorType?.('notIn')).toBe('multiselect');
+    assert(typeof locationNameField?.valueEditorType === 'function');
+    expect(locationNameField?.valueEditorType('=')).toBe('select');
+    expect(locationNameField?.valueEditorType('in')).toBe('multiselect');
+    expect(locationNameField?.valueEditorType('notIn')).toBe('multiselect');
   });
 
   it('preserves render-aware field metadata for UI value rendering', () => {
