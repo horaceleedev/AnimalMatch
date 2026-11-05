@@ -78,8 +78,9 @@ const findTopLevelBoxes = async (file: File) => {
   return boxes;
 };
 
-// Only bytes in [minChunkOffset, maxChunkOffset) move when the moov is
-// relocated; offsets outside that range can't be patched, so reject the file.
+// Chunk offsets in [minChunkOffset, maxChunkOffset) increase by delta
+// Offsets at or beyond the original moov end are unchanged
+// Offsets before minChunkOffset or inside the original moov are rejected
 interface ChunkOffsetPatch {
   delta: number;
   minChunkOffset: number;
@@ -109,6 +110,7 @@ const patchStcoBox = (view: DataView, box: Mp4BoxLocation, patch: ChunkOffsetPat
   for (let index = 0; index < entryCount; index += 1) {
     const offset = entriesOffset + index * 4;
     const chunkOffset = view.getUint32(offset);
+    if (chunkOffset >= patch.maxChunkOffset + patch.delta) continue;
     assertChunkOffsetInPatchableRange(chunkOffset, patch);
 
     const patchedOffset = chunkOffset + patch.delta;
@@ -129,6 +131,7 @@ const patchCo64Box = (view: DataView, box: Mp4BoxLocation, patch: ChunkOffsetPat
   for (let index = 0; index < entryCount; index += 1) {
     const offset = entriesOffset + index * 8;
     const chunkOffset = view.getBigUint64(offset);
+    if (chunkOffset >= BigInt(patch.maxChunkOffset) + bigDelta) continue;
     assertChunkOffsetInPatchableRange(Number(chunkOffset), patch);
     view.setBigUint64(offset, chunkOffset + bigDelta);
   }
@@ -172,13 +175,13 @@ const optimiseMp4ForFastStart = async (file: File) => {
     throw new Error("Could not find MP4 metadata or media data.");
   }
 
-  if (moovBox.offset < mdatBox.offset) {
-    return { file, wasOptimised: false };
-  }
-
   const insertionOffset = ftypBox ? ftypBox.offset + ftypBox.size : 0;
   if (insertionOffset > mdatBox.offset) {
     throw new Error("Unsupported MP4 box layout for browser web optimisation.");
+  }
+
+  if (moovBox.offset === insertionOffset) {
+    return { file, wasOptimised: false };
   }
 
   const moovBuffer = await file.slice(moovBox.offset, moovBox.offset + moovBox.size).arrayBuffer();
