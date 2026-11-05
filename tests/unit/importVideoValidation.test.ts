@@ -6,11 +6,13 @@ vi.mock("mp4box", () => ({
   },
   createFile: vi.fn(() => {
     const parser: {
+      boxes: { type: string }[];
       onReady?: (info: unknown) => void;
       onError?: (error: unknown) => void;
       appendBuffer: ReturnType<typeof vi.fn>;
       flush: () => void;
     } = {
+      boxes: [{ type: "ftyp" }, { type: "moov" }],
       appendBuffer: vi.fn(),
       flush: () => parser.onReady?.({
         videoTracks: [{ codec: "avc1.64001f" }],
