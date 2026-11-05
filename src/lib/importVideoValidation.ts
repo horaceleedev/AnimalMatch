@@ -45,7 +45,10 @@ const canBrowserPlayMimeType = (mimeType: string) => {
   return video.canPlayType(mimeType) !== "";
 };
 
-const parseMp4Info = async (file: File): Promise<Movie> => {
+const parseMp4Info = async (file: File): Promise<{
+  info: Movie;
+  isMoovAfterFtyp: boolean;
+}> => {
   const headArrayBuffer = await file.slice(0, mp4MetadataReadByteLimit).arrayBuffer();
   const headBuffer = MP4BoxBuffer.fromArrayBuffer(headArrayBuffer, 0);
   const tailStart = Math.max(file.size - mp4MetadataReadByteLimit, headArrayBuffer.byteLength);
@@ -59,7 +62,10 @@ const parseMp4Info = async (file: File): Promise<Movie> => {
 
     mp4boxFile.onReady = (info: Movie) => {
       hasResolved = true;
-      resolve(info);
+      resolve({
+        info,
+        isMoovAfterFtyp: mp4boxFile.boxes[0].type === "ftyp" && mp4boxFile.boxes[1].type === "moov",
+      });
     };
     mp4boxFile.onError = (error: unknown) => reject(error);
 
@@ -87,9 +93,10 @@ export const isValidVideoForImport = async (file: File): Promise<ImportVideoVali
   }
 
   let info: Movie;
+  let isMoovAfterFtyp: boolean;
   try {
     // https://github.com/gpac/mp4box.js?tab=readme-ov-file#onreadyinfo
-    info = await parseMp4Info(file);
+    ({ info, isMoovAfterFtyp } = await parseMp4Info(file));
   } catch {
     return {
       isValid: false,
@@ -125,7 +132,7 @@ export const isValidVideoForImport = async (file: File): Promise<ImportVideoVali
     };
   }
 
-  if (!info.isProgressive) {
+  if (!info.isProgressive || !isMoovAfterFtyp) {
     return {
       isValid: true,
       needsWebOptimisation: true,
