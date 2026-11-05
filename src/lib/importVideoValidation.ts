@@ -1,0 +1,144 @@
+import { createFile, MP4BoxBuffer, type Movie } from "mp4box";
+
+export interface ImportVideoValidationResult {
+  isValid: boolean;
+  needsWebOptimisation?: boolean;
+  message?: string;
+}
+
+// mp4box only needs the metadata, which sits at one end of the file or the
+// other, so avoid loading whole videos into memory.
+const mp4MetadataReadByteLimit = 16 * 1024 * 1024;
+const supportedVideoCodecPrefixes = ["avc1", "avc3"];
+
+const isMp4Extension = (file: File) => file.name.toLowerCase().endsWith(".mp4");
+
+const hasSupportedVideoCodec = (codec: string) => (
+  supportedVideoCodecPrefixes.some((prefix) => codec.toLowerCase().startsWith(prefix))
+);
+
+const codecAliases: Record<string, string> = {
+  // Chromium-based browsers are strict on following the grammar of OTI
+  // which states OTI should be A-F but not a-f
+  // See https://www.rfc-editor.org/info/rfc6381/#section-3.4
+  // Currently only '6b' must be '6B' but not others
+  // see its source code media/base/mime_util_internal.cc
+  // prefer mapping over converting all to uppercase for simplicity
+  "mp4a.6b": "mp4a.6B",
+  // for futureproof we include the below (note the TODO in its source code)
+  "mp4a.a5": "mp4a.A5",
+  "mp4a.a6": "mp4a.A6",
+  "mp4a.a9": "mp4a.A9",
+  "mp4a.ac": "mp4a.AC",
+  "mp4a.b2": "mp4a.B2",
+  "mp4a.ae": "mp4a.AE",
+};
+
+const canBrowserPlayMimeType = (mimeType: string) => {
+  const video = document.createElement("video");
+
+  // we map all known incompatible codecs to compliant one
+  for (const [alias, compliant] of Object.entries(codecAliases)) {
+    mimeType = mimeType.replace(alias, compliant);
+  }
+
+  return video.canPlayType(mimeType) !== "";
+};
+
+const parseMp4Info = async (file: File): Promise<{
+  info: Movie;
+  isMoovAfterFtyp: boolean;
+}> => {
+  const headArrayBuffer = await file.slice(0, mp4MetadataReadByteLimit).arrayBuffer();
+  const headBuffer = MP4BoxBuffer.fromArrayBuffer(headArrayBuffer, 0);
+  const tailStart = Math.max(file.size - mp4MetadataReadByteLimit, headArrayBuffer.byteLength);
+  const tailBuffer = tailStart < file.size
+    ? MP4BoxBuffer.fromArrayBuffer(await file.slice(tailStart).arrayBuffer(), tailStart)
+    : undefined;
+
+  return new Promise((resolve, reject) => {
+    const mp4boxFile = createFile();
+    let hasResolved = false;
+
+    mp4boxFile.onReady = (info: Movie) => {
+      hasResolved = true;
+      resolve({
+        info,
+        isMoovAfterFtyp: mp4boxFile.boxes[0].type === "ftyp" && mp4boxFile.boxes[1].type === "moov",
+      });
+    };
+    mp4boxFile.onError = (error: unknown) => reject(error);
+
+    mp4boxFile.appendBuffer(headBuffer);
+    if (tailBuffer) {
+      mp4boxFile.appendBuffer(tailBuffer);
+    }
+    mp4boxFile.flush();
+
+    window.setTimeout(() => {
+      if (!hasResolved) {
+        reject(new Error("MP4 metadata was not found in the checked file sections."));
+      }
+    }, 0);
+  });
+};
+
+export const isValidVideoForImport = async (file: File): Promise<ImportVideoValidationResult> => {
+  // Folder uploads can bypass the input's `accept` filter.
+  if (!isMp4Extension(file)) {
+    return {
+      isValid: false,
+      message: "Only .mp4 files are supported.",
+    };
+  }
+
+  let info: Movie;
+  let isMoovAfterFtyp: boolean;
+  try {
+    // https://github.com/gpac/mp4box.js?tab=readme-ov-file#onreadyinfo
+    ({ info, isMoovAfterFtyp } = await parseMp4Info(file));
+  } catch {
+    return {
+      isValid: false,
+      message: "This file could not be read as a valid MP4.",
+    };
+  }
+
+  const videoTrack = info.videoTracks[0];
+
+  // Audio-only MP4s parse fine but there is nothing to annotate.
+  if (!videoTrack) {
+    return {
+      isValid: false,
+      message: "No video track was found in this MP4.",
+    };
+  }
+
+  const videoCodec = videoTrack.codec;
+
+  // Imported videos must play in any browser, so only H.264 is accepted.
+  if (!hasSupportedVideoCodec(videoCodec)) {
+    return {
+      isValid: false,
+      message: `Unsupported video codec: ${videoCodec}. Please use H.264 MP4.`,
+    };
+  }
+
+  // Even valid H.264 can use profile/level combinations this browser won't play.
+  if (!canBrowserPlayMimeType(info.mime)) {
+    return {
+      isValid: false,
+      message: `This browser cannot play ${info.mime}.`,
+    };
+  }
+
+  if (!info.isProgressive || !isMoovAfterFtyp) {
+    return {
+      isValid: true,
+      needsWebOptimisation: true,
+      message: "This MP4 is not web-optimised. It needs to be optimised before upload.",
+    };
+  }
+
+  return { isValid: true };
+};

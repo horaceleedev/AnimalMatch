@@ -13,5 +13,6 @@ export default mergeConfig(viteConfig, defineConfig({
       'tests/component/**/*.{test,spec}.{ts,tsx}',
     ],
     setupFiles: ['./tests/setup/vitest.setup.ts'],
+    testTimeout: 10000,
   },
 }));

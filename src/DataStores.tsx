@@ -17,6 +17,8 @@ const pb = new PocketBase(pocketBaseUrl);
 
 dayjs.extend(utc);
 
+import { prepareVideoUpdatePayload } from './lib/videoMetadata.ts';
+
 // Show a message when the realtime client disconnects / reconnects
 let isConnected: boolean | undefined = undefined;
 export const useDisconnectedMessage = () => {
@@ -52,6 +54,7 @@ export const useDisconnectedMessage = () => {
 
 interface AuthContextType {
   user: UserRecord | null;
+  isEditor: boolean;
   login: (usernameOrEmail: string, password: string) => Promise<void>;
   logout: () => void;
 }
@@ -103,7 +106,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, isEditor: user?.role === "editor", login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -135,10 +138,11 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
   extraInitialState?: TExtra;
   processRecords: (records: TRecord[]) => { processedRecords: TProcessed[]; uniqueValuesPerField: Record<string, string[]>; extra?: TExtra };
   ignoredUpdateKeys?: string[];
+  preparePayload?: (payload: Partial<TProcessed>, currentRecord?: TProcessed) => Partial<TProcessed>;
 }) => {
-  const { collectionName, sortField, extraInitialState = {}, processRecords, ignoredUpdateKeys = [] } = opts;
+  const { collectionName, sortField, extraInitialState = {}, processRecords, ignoredUpdateKeys = [], preparePayload } = opts;
 
-  return create<CollectionStore<TRecord, TProcessed, TExtra>>()((set) => ({
+  return create<CollectionStore<TRecord, TProcessed, TExtra>>()((set, get) => ({
     unprocessedRecords: [] as TRecord[],
     processedRecords: [] as TProcessed[],
     uniqueValuesPerField: {} as Record<string, string[]>,
@@ -225,9 +229,13 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
     },
     update: async (id: string, data: Partial<TProcessed>) => {
       // remove some keys before sending to backend
-      const payload = { ...data };
+      let payload = { ...data };
       for (const k of ignoredUpdateKeys) {
         if (k in payload) delete payload[k];
+      }
+      if (preparePayload) {
+        const currentRecord = get().processedRecords.find((record) => record.id === id);
+        payload = preparePayload(payload, currentRecord);
       }
       const updatedRecord = await pb.collection(collectionName).update<TRecord>(id, payload);
 
@@ -297,7 +305,7 @@ export const useVideoStore = createRealtimeCollectionStore<VideoRecord, Video, {
       return {
         ...record,
         // Parse timestamp in UTC to avoid converting to local timezone
-        recording_date: dayjs.utc(record.recording_date).format("YYYY-MM-DD HH:mm:ss"),
+        recording_date: record.recording_date ? dayjs.utc(record.recording_date).format("YYYY-MM-DD HH:mm:ss") : "",
         url: pb.files.getURL(record, record.file),
         thumbnailUrl: pb.files.getURL(record, record.thumbnail),
         lat,
@@ -312,9 +320,10 @@ export const useVideoStore = createRealtimeCollectionStore<VideoRecord, Video, {
 
     return { processedRecords: processedVideos, uniqueValuesPerField, extra: { uniqueLocations } };
   },
-  // For now ignore the recording_date/url/lat/long key
+  // For now ignore the derived URL/coordinate keys
   // TODO later maybe convert back from URLs to filenames (and verify what happens in the backend)
-  ignoredUpdateKeys: ['recording_date', 'url', 'thumbnailUrl', 'lat', 'long'],
+  ignoredUpdateKeys: ['url', 'thumbnailUrl', 'lat', 'long'],
+  preparePayload: prepareVideoUpdatePayload,
 });
 
 

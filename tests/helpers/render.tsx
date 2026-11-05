@@ -1,33 +1,42 @@
 /* eslint-disable react-refresh/only-export-components */
 import { render, type RenderOptions } from '@testing-library/react';
 import { App as AntApp } from 'antd';
-import type { PropsWithChildren, ReactElement } from 'react';
-import { MemoryRouter } from 'react-router-dom';
-
-type TestProvidersProps = PropsWithChildren<{
-  route?: string;
-}>;
-
-const TestProviders = ({ children, route = '/' }: TestProvidersProps) => (
-  <MemoryRouter
-    future={{ v7_relativeSplatPath: true, v7_startTransition: true }}
-    initialEntries={[route]}
-  >
-    <AntApp>{children}</AntApp>
-  </MemoryRouter>
-);
+import type { ReactElement } from 'react';
+import { createMemoryRouter, Outlet, RouterProvider, type RouteObject } from 'react-router-dom';
 
 type AppRenderOptions = Omit<RenderOptions, 'wrapper'> & {
   route?: string;
 };
 
+// A plain <MemoryRouter> isn't enough for components that use data-router-only
+// hooks like useBlocker, so tests render through a real data router instead.
 export const renderWithProviders = (
   ui: ReactElement,
   { route = '/', ...options }: AppRenderOptions = {},
-) => render(ui, {
-  wrapper: ({ children }) => <TestProviders route={route}>{children}</TestProviders>,
-  ...options,
-});
+) => {
+  const router = createMemoryRouter(
+    [{ path: '*', element: <AntApp>{ui}</AntApp> }],
+    { initialEntries: [route], future: { v7_relativeSplatPath: true } },
+  );
+
+  return render(<RouterProvider router={router} future={{ v7_startTransition: true }} />, options);
+};
+
+export const renderWithRoutes = (
+  routes: RouteObject[],
+  { route = '/', ...options }: AppRenderOptions = {},
+) => {
+  const router = createMemoryRouter(
+    [{
+      path: '/',
+      element: <AntApp><Outlet /></AntApp>,
+      children: routes,
+    }],
+    { initialEntries: [route], future: { v7_relativeSplatPath: true } },
+  );
+
+  return render(<RouterProvider router={router} future={{ v7_startTransition: true }} />, options);
+};
 
 export { default as userEvent } from '@testing-library/user-event';
 export * from '@testing-library/react';
