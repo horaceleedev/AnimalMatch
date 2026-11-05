@@ -6,6 +6,7 @@ import { isValidVideoForImport } from "../../src/lib/importVideoValidation";
 const faststartVideoUrl = new URL("../fixtures/videos/faststart.mp4", import.meta.url).href;
 const needsFaststartVideoUrl = new URL("../fixtures/videos/needs-faststart.mp4", import.meta.url).href;
 const invalidVideoUrl = new URL("../fixtures/videos/invalid.mp4", import.meta.url).href;
+const ftypFreeMoovMdatVideoUrl = new URL("../fixtures/videos/ftyp_free_moov_mdat.mp4", import.meta.url).href;
 
 const fileFromFixture = async (url: string, filename: string, type = "video/mp4") => {
   const response = await fetch(url);
@@ -66,6 +67,25 @@ const expectVideoMetadataLoads = async (file: File) => {
 describe("optimiseMp4ForWeb", () => {
   it("faststarts a valid non-web-optimised MP4", async () => {
     const file = await fileFromFixture(needsFaststartVideoUrl, "needs-faststart.mp4");
+    const validationBefore = await isValidVideoForImport(file);
+
+    expect(validationBefore).toMatchObject({
+      isValid: true,
+      needsWebOptimisation: true,
+    });
+
+    const result = await optimiseMp4ForWeb(file);
+    const validationAfter = await isValidVideoForImport(result.file);
+
+    expect(result.wasOptimised).toBe(true);
+    expect(validationAfter).toMatchObject({ isValid: true });
+    expect(validationAfter.needsWebOptimisation).toBeUndefined();
+
+    await expectVideoMetadataLoads(result.file);
+  });
+
+  it("faststarts when moov is before mdat but not right after ftyp", async () => {
+    const file = await fileFromFixture(ftypFreeMoovMdatVideoUrl, "ftyp_free_moov_mdat.mp4");
     const validationBefore = await isValidVideoForImport(file);
 
     expect(validationBefore).toMatchObject({
