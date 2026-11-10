@@ -194,7 +194,7 @@ const withPagination = <P extends BasicGridViewProps, T extends RecordModel>(
     // paginationResetKey is only used here, so it is not passed on to BasicGridView
     const { paginationResetKey, ...basicGridViewProps } = props;
 
-    const [currentPageNum, setcurrentPageNum] = useState(1); // 1-based index for Pagination component
+    const [currentPageNum, setCurrentPageNum] = useState(1); // 1-based index for Pagination component
     const processedRecords = props[processedRecordsProp] as T[];
 
     // Reset to the first page when paginationResetKey changes.
@@ -204,7 +204,7 @@ const withPagination = <P extends BasicGridViewProps, T extends RecordModel>(
     const [prevPaginationResetKey, setPrevPaginationResetKey] = useState(paginationResetKey);
     if (!Object.is(paginationResetKey, prevPaginationResetKey)) {
       setPrevPaginationResetKey(paginationResetKey);
-      setcurrentPageNum(1);
+      setCurrentPageNum(1);
     }
 
     const containerRef = useRef<HTMLDivElement>(null);
@@ -219,7 +219,7 @@ const withPagination = <P extends BasicGridViewProps, T extends RecordModel>(
     }, [paginationResetKey]);
 
     const onChangePage = (page: number) => {
-      setcurrentPageNum(page);
+      setCurrentPageNum(page);
       // Scroll back up to the top of the grid view so that the new page is viewed from the start
       if (containerRef.current) scrollElementTopIntoView(containerRef.current);
     };
