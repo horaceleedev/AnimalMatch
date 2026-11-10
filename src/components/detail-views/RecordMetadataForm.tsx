@@ -142,7 +142,14 @@ const RecordMetadataForm = <T extends RecordModel>({
             inputElement = <InputNumber disabled={disabled} />;
           }
           return (
-            <Form.Item key={fieldName} label={metadataField.displayName} name={fieldName}>
+            // Use `hidden` rather than not rendering: hidden items stay registered, so useFormManager's
+            // dirty check and save still see every field
+            <Form.Item
+              key={fieldName}
+              label={metadataField.displayName}
+              name={fieldName}
+              hidden={!!metadataField.coordinateSystem && metadataField.coordinateSystem !== (formData as Record<string, unknown>).coordinate_system}
+            >
               {inputElement}
             </Form.Item>
           );

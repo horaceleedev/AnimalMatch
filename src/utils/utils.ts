@@ -5,14 +5,13 @@ import { Individual, LocationInfo, MetadataFieldsType, Video, VideoRecord } from
 
 const isNonNullString = (value: unknown): value is string => typeof value === "string";
 
-// Returns [lat, long] for placing a video on the map: stored lat/long takes precedence, otherwise UTM is converted.
-// Returns null if the video has no usable coordinates. 
-// NOTE: PocketBase stores empty number fields as 0
+// Returns [lat, long] for placing a video on the map, using the video's coordinate_system (UTM is converted).
+// Returns null if the video has no usable coordinates.
 export const getVideoLatLong = (record: VideoRecord): [number, number] | null => {
-  if (record.latitude || record.longitude) {
+  if (record.coordinate_system === 'latlong') {
     return [record.latitude, record.longitude];
   }
-  if ((record.utm_easting || record.utm_northing) && record.utm_zone) {
+  if (record.coordinate_system === 'utm' && record.utm_zone) {
     // https://stackoverflow.com/a/18621244
     const [long, lat] = proj4(
       `+proj=utm +zone=${record.utm_zone}${record.utm_hemisphere === 'S' ? ' +south' : ''}`,

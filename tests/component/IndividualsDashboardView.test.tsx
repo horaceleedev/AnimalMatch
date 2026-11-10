@@ -69,6 +69,7 @@ const makeVideo = (overrides: Partial<Video> = {}): Video => ({
   utm_northing: 0,
   utm_zone: 0,
   utm_hemisphere: '',
+  coordinate_system: '',
   latitude: 0,
   longitude: 0,
   altitude: 0,

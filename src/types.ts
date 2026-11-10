@@ -24,6 +24,8 @@ export interface User extends UserRecord {
   avatarUrl: string;
 };
 
+export type CoordinateSystem = 'latlong' | 'utm';
+
 export interface VideoRecord extends RecordModel {
   collectionId: string;
   collectionName: string;
@@ -38,6 +40,7 @@ export interface VideoRecord extends RecordModel {
   recording_date: string;
   utm_easting: number;
   utm_northing: number;
+  coordinate_system: '' | CoordinateSystem;
   utm_zone: number;
   utm_hemisphere: '' | 'N' | 'S';
   latitude: number;
@@ -110,6 +113,8 @@ export type MetadataFieldsType = Record<string, {
   allowAddingNewOptions?: boolean;
   isInternal?: boolean;
   isUneditable?: boolean;
+  // Only shown in the edit form when the record's coordinate_system matches
+  coordinateSystem?: CoordinateSystem;
 }>;
 
 export interface LocationInfo {

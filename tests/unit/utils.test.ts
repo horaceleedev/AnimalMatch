@@ -37,6 +37,7 @@ const makeVideo = (overrides: Partial<Video> = {}): Video => ({
   utm_northing: 0,
   utm_zone: 0,
   utm_hemisphere: '',
+  coordinate_system: '',
   latitude: 0,
   longitude: 0,
   ...overrides,
@@ -60,27 +61,31 @@ const makeIndividual = (overrides: Partial<Individual> = {}): Individual => ({
 });
 
 describe('getVideoLatLong', () => {
-  it('prefers stored lat/long over UTM', () => {
+  it('uses lat/long when coordinate_system is latlong, ignoring UTM fields', () => {
     expect(getVideoLatLong(makeVideo({
-      latitude: 11.5, longitude: -15.6, utm_easting: 500000, utm_northing: 1000000, utm_zone: 29, utm_hemisphere: 'N',
+      coordinate_system: 'latlong', latitude: 11.5, longitude: -15.6, utm_easting: 500000, utm_northing: 1000000, utm_zone: 29, utm_hemisphere: 'N',
     }))).toEqual([11.5, -15.6]);
+    // 0 is a real coordinate once the system is explicit
+    expect(getVideoLatLong(makeVideo({ coordinate_system: 'latlong' }))).toEqual([0, 0]);
   });
 
-  it('converts UTM using the stored zone and hemisphere', () => {
+  it('converts UTM using the stored zone and hemisphere, ignoring lat/long fields', () => {
     // Easting 500000 is the zone's central meridian: zone 29 is centred on -9 degrees longitude
-    const [lat, long] = getVideoLatLong(makeVideo({ utm_easting: 500000, utm_northing: 1000000, utm_zone: 29, utm_hemisphere: 'N' }))!;
+    const [lat, long] = getVideoLatLong(makeVideo({
+      coordinate_system: 'utm', latitude: 50, longitude: 50, utm_easting: 500000, utm_northing: 1000000, utm_zone: 29, utm_hemisphere: 'N',
+    }))!;
     expect(lat).toBeCloseTo(9.047, 3);
     expect(long).toBeCloseTo(-9, 5);
 
-    const [southLat, southLong] = getVideoLatLong(makeVideo({ utm_easting: 500000, utm_northing: 9000000, utm_zone: 33, utm_hemisphere: 'S' }))!;
+    const [southLat, southLong] = getVideoLatLong(makeVideo({ coordinate_system: 'utm', utm_easting: 500000, utm_northing: 9000000, utm_zone: 33, utm_hemisphere: 'S' }))!;
     expect(southLat).toBeCloseTo(-9.047, 3);
     expect(southLong).toBeCloseTo(15, 5);
   });
 
   it('returns null when there are no usable coordinates', () => {
-    expect(getVideoLatLong(makeVideo())).toBeNull();
+    expect(getVideoLatLong(makeVideo({ latitude: 11.5, longitude: -15.6 }))).toBeNull();
     // UTM without a zone can't be converted
-    expect(getVideoLatLong(makeVideo({ utm_easting: 500000, utm_northing: 1000000 }))).toBeNull();
+    expect(getVideoLatLong(makeVideo({ coordinate_system: 'utm', utm_easting: 500000, utm_northing: 1000000 }))).toBeNull();
   });
 });
 
