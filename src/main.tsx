@@ -5,7 +5,7 @@ import {
   redirect,
   RouterProvider,
 } from "react-router-dom";
-import { App as AntApp } from 'antd';
+import { App as AntApp, ConfigProvider } from 'antd';
 
 import App from './App.tsx';
 import ErrorPage from "./routes/ErrorPage.tsx";
@@ -148,10 +148,12 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <AntApp>
-      <AuthProvider>
-        <RouterProvider router={router} />
-      </AuthProvider>
-    </AntApp>
+    <ConfigProvider theme={{ cssVar: true }}>
+      <AntApp>
+        <AuthProvider>
+          <RouterProvider router={router} />
+        </AuthProvider>
+      </AntApp>
+    </ConfigProvider>
   </React.StrictMode>,
 )

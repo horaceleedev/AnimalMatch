@@ -3,9 +3,10 @@ import { generatePath, Link } from 'react-router-dom';
 import { Card, Select, Space, Tag, Tooltip } from 'antd';
 
 import { Individual, MetadataFieldsType, RecordType } from '../../types.ts';
+import CropImage from '../smart-components/CropImage.tsx';
 import { filterCropsByBodyPart } from '../../utils/bodyPartFilters.ts';
+
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
-import CropWithSkeleton from './CropWithSkeleton.tsx';
 import "./IndividualsGridView.scss";
 
 // const imgStyle: React.CSSProperties = {
@@ -69,7 +70,16 @@ const BasicIndividualsGridView: React.FC<BasicIndividualsGridViewProps> = ({
               <div style={{display: 'flex', overflow: 'scroll', height: 150, columnGap: 5, borderRadius: 5}}>
                 {
                   filterCropsByBodyPart(individual.crops, cropBodyPart)
-                    .map(crop => (<CropWithSkeleton crop={crop} imageHeight={150} imageStyle={{borderRadius: 5}} key={crop.id} />))
+                    .map(crop => (
+                      <CropImage
+                        key={crop.id}
+                        crop={crop}
+                        withSkeleton
+                        showPinButton
+                        wrapperStyle={{ flexShrink: 0 }}
+                        imageStyle={{ height: 150, borderRadius: 5 }}
+                      />
+                    ))
                 }
               </div>
             }>

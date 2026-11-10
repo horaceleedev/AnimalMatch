@@ -1,6 +1,6 @@
 import { blue, gray, green, orange } from '@ant-design/colors';
 
-import Icon, { ClockCircleOutlined, ColumnHeightOutlined, ColumnWidthOutlined, FileTextOutlined, IdcardOutlined, PlaySquareOutlined, TagsOutlined, UserOutlined } from "@ant-design/icons";
+import Icon, { ClockCircleOutlined, ColumnHeightOutlined, ColumnWidthOutlined, FileTextOutlined, IdcardOutlined, PlaySquareOutlined, PushpinOutlined, TagsOutlined, UserOutlined } from "@ant-design/icons";
 import Location from './assets/material_symbols/location_on_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import CalendarMonth from './assets/material_symbols/calendar_month_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import PIN from './assets/material_symbols/pin_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -249,6 +249,15 @@ export const cropsMetadataFields: MetadataFieldsType = {
     icon: <ColumnHeightOutlined />,
     type: 'number',
     inputType: 'number',
+    isUneditable: true,
+  },
+  'is_pinned': {
+    displayName: 'Pinned',
+    icon: <PushpinOutlined />,
+    type: 'boolean',
+    displayBooleanValuesAs: ['Not pinned', 'Pinned'],
+    // Pinning is done with the pin button on the crop itself, which is only shown
+    // where it makes sense (see CropImage), so keep this read-only here.
     isUneditable: true,
   },
 };
