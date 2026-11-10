@@ -38,6 +38,10 @@ export interface VideoRecord extends RecordModel {
   recording_date: string;
   utm_easting: number;
   utm_northing: number;
+  utm_zone: number;
+  utm_hemisphere: '' | 'N' | 'S';
+  latitude: number;
+  longitude: number;
   custom_tags: string[];
   assignees: string[];
   annotation_status: string;
@@ -45,8 +49,9 @@ export interface VideoRecord extends RecordModel {
 export interface Video extends VideoRecord {
   url: string;
   thumbnailUrl: string;
-  lat: number;
-  long: number;
+  // Derived from latitude/longitude or UTM fields, only used for the map; null if the video has no coordinates
+  lat: number | null;
+  long: number | null;
 };
 
 export interface IndividualRecord extends RecordModel {

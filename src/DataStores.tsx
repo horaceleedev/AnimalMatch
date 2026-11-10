@@ -2,7 +2,6 @@
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import proj4 from "proj4";
 import PocketBase, { ClientResponseError, RecordModel } from 'pocketbase';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -10,7 +9,7 @@ import { App } from 'antd';
 
 import type { Video, VideoRecord, LocationInfo, Individual, IndividualRecord, CropRecord, Crop, UserRecord, User } from "./types.ts";
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from "./metadata.tsx";
-import { getUniqueLocationsFromVideos, getUniqueValuesPerField } from './utils/utils.ts';
+import { getUniqueLocationsFromVideos, getUniqueValuesPerField, getVideoLatLong } from './utils/utils.ts';
 
 const pocketBaseUrl = import.meta.env.VITE_DATABASE_URL || 'http://127.0.0.1:8090';
 const pb = new PocketBase(pocketBaseUrl);
@@ -292,8 +291,7 @@ export const useVideoStore = createRealtimeCollectionStore<VideoRecord, Video, {
   extraInitialState: { uniqueLocations: [] },
   processRecords: (records: VideoRecord[]) => {
     const processedVideos: Video[] = records.map((record: VideoRecord) => {
-      // https://stackoverflow.com/a/18621244
-      const [long, lat] = proj4("+proj=utm +zone=29", "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",[record.utm_easting, record.utm_northing]);
+      const [lat, long] = getVideoLatLong(record) ?? [null, null];
       return {
         ...record,
         // Parse timestamp in UTC to avoid converting to local timezone

@@ -29,6 +29,10 @@ const makeVideo = (overrides: Partial<Video> = {}): Video => ({
   url: 'https://example.com/video.mp4',
   utm_easting: 0,
   utm_northing: 0,
+  utm_zone: 0,
+  utm_hemisphere: '',
+  latitude: 0,
+  longitude: 0,
   ...overrides,
 });
 

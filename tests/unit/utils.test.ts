@@ -5,6 +5,7 @@ import {
   getUniqueLocationsFromIndividuals,
   getUniqueLocationsFromVideos,
   getUniqueValuesPerField,
+  getVideoLatLong,
 } from '../../src/utils/utils';
 
 // This is an example of a pure unit test, identical to unit tests in any non frontend codebase.
@@ -34,6 +35,10 @@ const makeVideo = (overrides: Partial<Video> = {}): Video => ({
   url: 'https://example.com/video.mp4',
   utm_easting: 0,
   utm_northing: 0,
+  utm_zone: 0,
+  utm_hemisphere: '',
+  latitude: 0,
+  longitude: 0,
   ...overrides,
 });
 
@@ -54,7 +59,36 @@ const makeIndividual = (overrides: Partial<Individual> = {}): Individual => ({
   ...overrides,
 });
 
+describe('getVideoLatLong', () => {
+  it('prefers stored lat/long over UTM', () => {
+    expect(getVideoLatLong(makeVideo({
+      latitude: 11.5, longitude: -15.6, utm_easting: 500000, utm_northing: 1000000, utm_zone: 29, utm_hemisphere: 'N',
+    }))).toEqual([11.5, -15.6]);
+  });
+
+  it('converts UTM using the stored zone and hemisphere', () => {
+    // Easting 500000 is the zone's central meridian: zone 29 is centred on -9 degrees longitude
+    const [lat, long] = getVideoLatLong(makeVideo({ utm_easting: 500000, utm_northing: 1000000, utm_zone: 29, utm_hemisphere: 'N' }))!;
+    expect(lat).toBeCloseTo(9.047, 3);
+    expect(long).toBeCloseTo(-9, 5);
+
+    const [southLat, southLong] = getVideoLatLong(makeVideo({ utm_easting: 500000, utm_northing: 9000000, utm_zone: 33, utm_hemisphere: 'S' }))!;
+    expect(southLat).toBeCloseTo(-9.047, 3);
+    expect(southLong).toBeCloseTo(15, 5);
+  });
+
+  it('returns null when there are no usable coordinates', () => {
+    expect(getVideoLatLong(makeVideo())).toBeNull();
+    // UTM without a zone can't be converted
+    expect(getVideoLatLong(makeVideo({ utm_easting: 500000, utm_northing: 1000000 }))).toBeNull();
+  });
+});
+
 describe('getUniqueLocationsFromVideos', () => {
+  it('skips videos without coordinates', () => {
+    expect(getUniqueLocationsFromVideos([makeVideo({ lat: null, long: null })])).toEqual([]);
+  });
+
   // A small fixture builder like makeVideo keeps the test focused on the fields that matter for this behaviour.
   it('groups videos that share the same coordinates', () => {
     const locations = getUniqueLocationsFromVideos([

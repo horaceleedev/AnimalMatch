@@ -55,6 +55,18 @@ export const videoMetadataFields: MetadataFieldsType = {
     type: 'rich_text',
     inputType: 'text',
   },
+  'latitude': {
+    displayName: 'Latitude',
+    icon: <Icon component={Location} />,
+    type: 'number',
+    inputType: 'number',
+  },
+  'longitude': {
+    displayName: 'Longitude',
+    icon: <Icon component={Location} />,
+    type: 'number',
+    inputType: 'number',
+  },
   'utm_easting': {
     displayName: 'UTM easting',
     icon: <Icon component={Location} />,
@@ -66,6 +78,19 @@ export const videoMetadataFields: MetadataFieldsType = {
     icon: <Icon component={Location} />,
     type: 'number',
     inputType: 'number',
+  },
+  'utm_zone': {
+    displayName: 'UTM zone',
+    icon: <Icon component={Location} />,
+    type: 'number',
+    inputType: 'number',
+  },
+  'utm_hemisphere': {
+    displayName: 'UTM hemisphere',
+    icon: <Icon component={Location} />,
+    type: 'select',
+    valueEditorType: 'select',
+    presetOptions: ['N', 'S'],
   },
   'custom_tags': {
     displayName: 'Custom tags',

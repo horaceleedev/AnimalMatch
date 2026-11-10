@@ -1,10 +1,31 @@
 import { countBy } from "es-toolkit";
+import proj4 from "proj4";
 
-import { Individual, LocationInfo, MetadataFieldsType, Video } from "../types";
+import { Individual, LocationInfo, MetadataFieldsType, Video, VideoRecord } from "../types";
 
 const isNonNullString = (value: unknown): value is string => typeof value === "string";
 
-export const getUniqueLocationsFromVideos = (videos: Video[]) => {
+// Returns [lat, long] for placing a video on the map: stored lat/long takes precedence, otherwise UTM is converted.
+// Returns null if the video has no usable coordinates. 
+// NOTE: PocketBase stores empty number fields as 0
+export const getVideoLatLong = (record: VideoRecord): [number, number] | null => {
+  if (record.latitude || record.longitude) {
+    return [record.latitude, record.longitude];
+  }
+  if ((record.utm_easting || record.utm_northing) && record.utm_zone) {
+    // https://stackoverflow.com/a/18621244
+    const [long, lat] = proj4(
+      `+proj=utm +zone=${record.utm_zone}${record.utm_hemisphere === 'S' ? ' +south' : ''}`,
+      "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
+      [record.utm_easting, record.utm_northing],
+    );
+    return [lat, long];
+  }
+  return null;
+};
+
+export const getUniqueLocationsFromVideos = (allVideos: Video[]) => {
+  const videos = allVideos.filter(x => x.lat !== null);
   const numVideosPerUniqueLocation = countBy(videos, x => JSON.stringify([x.lat, x.long]));
   const uniqueLocations = Object.entries(numVideosPerUniqueLocation).map(([latLongString, numVideos]) => {
     const [lat, long] = JSON.parse(latLongString);
@@ -34,6 +55,7 @@ export const getUniqueLocationsFromIndividuals = (individuals: Individual[], all
         console.error(`Error when computing individual locations: video ${videoId} not found`);
         continue;
       }
+      if (video.lat === null) continue;
       const latLongString = JSON.stringify([video.lat, video.long]);
       const individualIds = individualIdsPerLocation.get(latLongString) ?? new Set<string>();
       individualIds.add(indiv.id);
