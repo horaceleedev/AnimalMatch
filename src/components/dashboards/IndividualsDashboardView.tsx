@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { Splitter, Tabs, Typography, type TabsProps } from "antd";
 import Icon from "@ant-design/icons";
-import { RuleGroupType } from 'react-querybuilder';
+import type { RuleGroupType } from 'react-querybuilder';
 
 import Table from '../../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Map from '../../assets/material_symbols/map_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -17,7 +17,7 @@ import { filterIndividualsByBodyPart, getAvailableBodyParts } from '../../utils/
 import { getUniqueLocationsFromIndividuals } from '../../utils/utils.ts';
 import { filterByQuery } from '../../lib/filtering/filterEngine.ts';
 import useSearchFilter from '../../hooks/useSearchFilter.ts';
-import { Individual, MetadataFieldsType, Video } from '../../types.ts';
+import type { Individual, MetadataFieldsType, Video } from '../../types.ts';
 
 const viewsTabsItems: TabsProps['items'] = [
   {

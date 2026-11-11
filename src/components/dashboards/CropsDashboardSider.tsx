@@ -1,10 +1,10 @@
-import { FC, useMemo, useState } from "react";
+import { type FC, useMemo, useState } from "react";
 import { Layout, Menu, Typography } from "antd";
 import Icon, { TagOutlined, UserOutlined } from "@ant-design/icons";
 const { Sider } = Layout;
 import CropIcon from "../../assets/material_symbols/crop_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 
-import { MetadataFieldsType, UserRecord, Crop } from "../../types";
+import type { MetadataFieldsType, UserRecord, Crop } from "../../types";
 import "./DashboardSider.scss";
 
 export const useCropsDashboardSiderState = (crops: Crop[], _cropsMetadataFields: MetadataFieldsType, user: UserRecord | null) => {

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Avatar, Button, Dropdown, Layout, Menu } from 'antd';
 const { Header } = Layout;
 
-import { UserRecord } from '../types';
+import type { UserRecord } from '../types';
 
 const headerMenuItems = [
   {

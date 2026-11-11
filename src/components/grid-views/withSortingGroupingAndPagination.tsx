@@ -1,11 +1,11 @@
-import { ComponentType, type Key, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { RecordModel } from "pocketbase";
+import { type ComponentType, type Key, useLayoutEffect, useMemo, useRef, useState } from "react";
+import type { RecordModel } from "pocketbase";
 import { groupBy, orderBy } from "es-toolkit";
 import { Collapse, Space, Pagination } from "antd";
 
 import { IndividualLinkButton, UserLabel, VideoLinkButton } from "../smart-components/LinkButtons";
 import AnnotationStatusLabel from "../ui/AnnotationStatusLabel";
-import { MetadataFieldsType, RecordType } from "../../types";
+import type { MetadataFieldsType, RecordType } from "../../types";
 
 interface BasicGridViewProps {
   openModal?: (type: RecordType, id: string) => void

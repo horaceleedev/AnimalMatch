@@ -1,9 +1,9 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { type FC, useEffect, useMemo, useState } from "react";
 import { Button, Divider, Flex } from "antd";
 import { useNavigate } from "react-router-dom";
 
 import BasicMapView from '../ui/BasicMapView.tsx';
-import { Individual, LocationInfo, RecordType, Video } from '../../types.ts';
+import type { Individual, LocationInfo, RecordType, Video } from '../../types.ts';
 import { individualsMetadataFields, videoMetadataFields } from '../../metadata.tsx';
 import IndividualsGridView from "../grid-views/IndividualsGridView.tsx";
 import RecordMetadataForm from "./RecordMetadataForm.tsx";

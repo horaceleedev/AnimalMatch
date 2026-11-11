@@ -1,6 +1,6 @@
 import { countBy } from "es-toolkit";
 
-import { Individual, LocationInfo, MetadataFieldsType, Video } from "../types";
+import type { Individual, LocationInfo, MetadataFieldsType, Video } from "../types";
 
 const isNonNullString = (value: unknown): value is string => typeof value === "string";
 

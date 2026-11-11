@@ -1,9 +1,9 @@
 import { memo } from "react";
-import { Crop, Individual, RecordType, Video } from "../../types";
+import type { Crop, Individual, RecordType, Video } from "../../types";
 import { generatePath, useNavigate } from "react-router-dom";
 import { Button, Flex, Tooltip } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
-import { RecordModel } from "pocketbase";
+import type { RecordModel } from "pocketbase";
 
 // Factory function for PrevNextVideoButtons, PrevNextIndividualButtons, PrevNextCropButtons
 const makePrevNextRecordButtons = <T extends RecordModel>(recordType: RecordType) => memo(

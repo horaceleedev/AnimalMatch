@@ -8,7 +8,7 @@ import { intersection } from 'es-toolkit';
 import { useIndividualsStoreWithCrops, useVideoStore } from "../DataStores.tsx";
 import IndividualDetailView from '../components/detail-views/IndividualDetailView.tsx';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
-import { RecordDetailModalProps, RecordType } from '../types.ts';
+import type { RecordDetailModalProps, RecordType } from '../types.ts';
 import InnerModal from './InnerModal.tsx';
 import RecordActionsButton from '../components/ui/RecordActionsButton.tsx';
 import "./IndividualDetailModal.scss";

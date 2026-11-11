@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { pick } from 'es-toolkit';
-import { RecordModel } from 'pocketbase';
+import type { RecordModel } from 'pocketbase';
 
-import { MetadataFieldsType } from '../types.ts';
+import type { MetadataFieldsType } from '../types.ts';
 
 /**
  * Filters a list of records by a text search query applied across all metadata fields.

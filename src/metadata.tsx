@@ -10,7 +10,7 @@ import BoundingBoxIcon from "./assets/material_symbols/activity_zone_24dp_5F6368
 import FaceZone from "./assets/material_symbols/familiar_face_and_zone_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 import PendingActions from "./assets/material_symbols/pending_actions_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react";
 
-import { MetadataFieldsType } from './types';
+import type { MetadataFieldsType } from './types';
 
 // -------- Column metadata --------
 

@@ -3,7 +3,7 @@ import { matchPath, Outlet, useLocation } from "react-router-dom";
 import { Layout, Splitter, Tabs } from "antd";
 import type { TabsProps } from 'antd';
 import Icon, { AppstoreOutlined, NumberOutlined } from "@ant-design/icons";
-import { RuleGroupType } from 'react-querybuilder';
+import type { RuleGroupType } from 'react-querybuilder';
 import useSearchFilter from '../hooks/useSearchFilter.ts';
 
 import Table from '../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -18,7 +18,7 @@ import BasicMapView from '../components/ui/BasicMapView.tsx';
 import { useVideosDashboardSiderState, VideosDashboardSider } from '../components/dashboards/VideosDashboardSider.tsx';
 import { filterByQuery } from '../lib/filtering/filterEngine.ts';
 import VideosTableView from '../components/table-views/VideosTableView.tsx';
-import { MetadataFieldsType, Video } from '../types.ts';
+import type { MetadataFieldsType, Video } from '../types.ts';
 import "./VideosDashboardPage.scss";
 
 /**

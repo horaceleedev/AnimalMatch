@@ -1,10 +1,10 @@
 import { AutoComplete, Button, Form, Input, InputNumber, Radio, Select, Tag } from "antd";
 import type { DefaultOptionType, LabelInValueType } from "rc-select/lib/Select";
 import TextArea from 'antd/es/input/TextArea';
-import { RecordModel } from "pocketbase";
+import type { RecordModel } from "pocketbase";
 
 import useFormManager from "../../hooks/useFormManager";
-import { MetadataFieldsType, RecordType } from "../../types";
+import type { MetadataFieldsType, RecordType } from "../../types";
 import { IndividualLinkButton, UserLabel, VideoLinkButton } from "../smart-components/LinkButtons";
 import AnnotationStatusLabel from "../ui/AnnotationStatusLabel";
 import "./RecordMetadataForm.scss";

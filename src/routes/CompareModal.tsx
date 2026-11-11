@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useRef, useState } from 'react'
+import { type FC, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { differenceBy, intersection } from 'es-toolkit';
 import { Button, Flex, Input, Layout, Modal, Popover, Space, Tabs, Tooltip } from "antd";
@@ -23,7 +23,7 @@ import IndividualsDashboardView from '../components/dashboards/IndividualsDashbo
 import CropsDashboardView from '../components/dashboards/CropsDashboardView.tsx';
 import RecordActionsButton from '../components/ui/RecordActionsButton.tsx';
 import IndividualMergeModal from '../components/smart-components/IndividualMergeModal.tsx';
-import { Individual, Video } from '../types.ts';
+import type { Individual, Video } from '../types.ts';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import "./CompareModal.scss";
 

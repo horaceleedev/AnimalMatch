@@ -1,10 +1,10 @@
-import { FC } from "react";
-import { ColumnDataSchemaModel, Editor, RevoGrid, Template, type Editors, type EditorType } from "@revolist/react-datagrid";
+import type { FC } from "react";
+import { type ColumnDataSchemaModel, Editor, RevoGrid, Template, type Editors, type EditorType } from "@revolist/react-datagrid";
 import { generatePath, useNavigate } from "react-router-dom";
 
 import { UsersListLabel } from "../smart-components/LinkButtons";
 import AnnotationStatusLabel from "../ui/AnnotationStatusLabel";
-import { MetadataFieldsType, Video } from "../../types";
+import type { MetadataFieldsType, Video } from "../../types";
 
 const VideoLinkCell = (props: any) => {
   // TODO figure out how to render VideoLinkButton instead of a simple link

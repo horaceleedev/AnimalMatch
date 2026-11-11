@@ -1,4 +1,4 @@
-import { FC, MouseEvent, useCallback } from "react";
+import { type FC, type MouseEvent, useCallback } from "react";
 import { generatePath, Link } from "react-router-dom";
 import { Card, Flex, Tag, Tooltip, Typography } from "antd";
 
