@@ -21,7 +21,7 @@ const BodyPartSelect: React.FC<BodyPartSelectProps> = ({
   const options = useMemo(() => getBodyPartOptions(bodyPartOptions), [bodyPartOptions]);
 
   return (
-    <Space className="body-part-select">
+    <Space size={0}>
       <span>{label}</span>
       <Select
         variant="borderless"
