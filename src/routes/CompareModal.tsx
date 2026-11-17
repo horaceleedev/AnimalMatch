@@ -415,7 +415,7 @@ const CompareModal: FC = () => {
     }
   }
   const modalTitle = (
-    <Flex gap="small" align="center" style={{position: 'relative'}}>
+    <Flex gap="small" align="center" style={{position: 'relative', paddingRight: "30px"}}>
       {
         isCompareView ?
         <Link to={
@@ -477,7 +477,6 @@ const CompareModal: FC = () => {
       {
         isCompareView ?
         <Link
-          style={{marginRight: "32px"}}
           // Back to the /videos/:videoId, /individuals/:individualId, or /crops/:cropId page
           to={routeSplits.slice(0,2).join('/') + "/" + routeSplits[4]}
         >
@@ -487,7 +486,6 @@ const CompareModal: FC = () => {
         </Link>
         :
         <Link
-          style={{marginRight: "32px"}}
           to={`${routeSplits.slice(0,2).join('/')}/compare/${recordTypeLongNameToShortName[routeSplits[1]]}/${routeSplits[2]}`}
         >
           <Tooltip title="Open comparison view">
