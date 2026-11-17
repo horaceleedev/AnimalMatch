@@ -443,6 +443,25 @@ const CompareModal: FC = () => {
       {modalTitleText}
       <div style={{flex: 1}}></div> {/* Spacer */}
       {
+        isCompareView ?
+        <Link
+          // Back to the /videos/:videoId, /individuals/:individualId, or /crops/:cropId page
+          to={routeSplits.slice(0,2).join('/') + "/" + routeSplits[4]}
+        >
+          <Tooltip title="Close comparison view">
+            <Button type="text" icon={<Icon component={RightPanelClose} />} />
+          </Tooltip>
+        </Link>
+        :
+        <Link
+          to={`${routeSplits.slice(0,2).join('/')}/compare/${recordTypeLongNameToShortName[routeSplits[1]]}/${routeSplits[2]}`}
+        >
+          <Button type="primary" icon={<Icon component={RightPanelOpen} />}>
+            Open comparison view
+          </Button>
+        </Link>
+      }
+      {
         !isCompareView &&
         (
           (
@@ -473,25 +492,6 @@ const CompareModal: FC = () => {
             />
           )
         )
-      }
-      {
-        isCompareView ?
-        <Link
-          // Back to the /videos/:videoId, /individuals/:individualId, or /crops/:cropId page
-          to={routeSplits.slice(0,2).join('/') + "/" + routeSplits[4]}
-        >
-          <Tooltip title="Close comparison view">
-            <Button type="text" icon={<Icon component={RightPanelClose} />} />
-          </Tooltip>
-        </Link>
-        :
-        <Link
-          to={`${routeSplits.slice(0,2).join('/')}/compare/${recordTypeLongNameToShortName[routeSplits[1]]}/${routeSplits[2]}`}
-        >
-          <Tooltip title="Open comparison view">
-            <Button type="text" icon={<Icon component={RightPanelOpen} />} />
-          </Tooltip>
-        </Link>
       }
     </Flex>
   );
