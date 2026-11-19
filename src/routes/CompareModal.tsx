@@ -456,7 +456,11 @@ const CompareModal: FC = () => {
         <Link
           to={`${routeSplits.slice(0,2).join('/')}/compare/${recordTypeLongNameToShortName[routeSplits[1]]}/${routeSplits[2]}`}
         >
-          <Button type="primary" icon={<Icon component={RightPanelOpen} />}>
+          <Button
+            // Highlight the button as primary if viewing an individual, otherwise default
+            type={individualDetailProps ? "primary" : "default"}
+            icon={<Icon component={RightPanelOpen} />}
+          >
             Open comparison view
           </Button>
         </Link>
