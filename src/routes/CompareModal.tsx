@@ -419,8 +419,8 @@ const CompareModal: FC = () => {
       {
         isCompareView ?
         <Link to={
-          // Back to the /videos/:videoId, /individuals/:individualId, or /crops/:cropId page
-          routeSplits.slice(0,2).join('/') + "/" + routeSplits[4]
+          // Go (back) to the /videos/:videoId, /individuals/:individualId, or /crops/:cropId page
+          "/" + recordTypeShortNameToLongName[routeSplits[3]] + "/" + routeSplits[4]
         }>
           <Tooltip title={"Back to " + (
             (videoDetailProps && "video " + videoDetailProps.video.filename) ||
@@ -445,8 +445,8 @@ const CompareModal: FC = () => {
       {
         isCompareView ?
         <Link
-          // Back to the /videos/:videoId, /individuals/:individualId, or /crops/:cropId page
-          to={routeSplits.slice(0,2).join('/') + "/" + routeSplits[4]}
+          // Go (back) to the /videos/:videoId, /individuals/:individualId, or /crops/:cropId page
+          to={"/" + recordTypeShortNameToLongName[routeSplits[3]] + "/" + routeSplits[4]}
         >
           <Tooltip title="Close comparison view">
             <Button type="text" icon={<Icon component={RightPanelClose} />} />
