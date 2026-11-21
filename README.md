@@ -6,8 +6,9 @@ AnimalMatch is a web application designed to make wildlife individual identifica
 
 **🗂️ Organise your data**
 - 📁 Keep records organised in one place, with separate sections for videos, individuals, and image crops.
-- 🔎 Find what you need quickly using search and grouping.
 - 🖼️ Browse records in the way that best supports your workflow, including gallery/grid views, tables, and map views where available.
+- 🔎 Find records quickly with search and flexible filters.
+- 🗃️ Sort and group records by any metadata field to review related records together.
 
 **✍️ Annotate individuals**
 - ✂️ Extract image crops for each individual directly in the app using a built-in cropping tool.
@@ -25,9 +26,8 @@ AnimalMatch is a web application designed to make wildlife individual identifica
 - ⚡ Stay up to date with real-time data updates across your team.
 
 
-### Coming soon:
-- Individual profile merging
-- Advanced metadata filtering
+### Coming later:
+- Bulk edits
 - Support for source images (currently, only source videos are supported)
 
 
