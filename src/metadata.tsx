@@ -2,6 +2,7 @@ import { blue, gray, green, orange } from '@ant-design/colors';
 
 import Icon, { ClockCircleOutlined, ColumnHeightOutlined, ColumnWidthOutlined, FileTextOutlined, IdcardOutlined, PlaySquareOutlined, TagsOutlined, UserOutlined } from "@ant-design/icons";
 import Location from './assets/material_symbols/location_on_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
+import Globe from './assets/material_symbols/language_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import CalendarMonth from './assets/material_symbols/calendar_month_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import PIN from './assets/material_symbols/pin_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Cake from './assets/material_symbols/cake_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -57,49 +58,49 @@ export const videoMetadataFields: MetadataFieldsType = {
   },
   'coordinate_system': {
     displayName: 'Coordinate system',
-    icon: <Icon component={Location} />,
+    icon: <Icon component={Globe} />,
     type: 'select',
     valueEditorType: 'select',
     presetOptions: ['latlong', 'utm'],
   },
   'latitude': {
     displayName: 'Latitude',
-    icon: <Icon component={Location} />,
+    icon: <Icon component={Globe} />,
     type: 'number',
     inputType: 'number',
     coordinateSystem: 'latlong',
   },
   'longitude': {
     displayName: 'Longitude',
-    icon: <Icon component={Location} />,
+    icon: <Icon component={Globe} />,
     type: 'number',
     inputType: 'number',
     coordinateSystem: 'latlong',
   },
   'utm_easting': {
     displayName: 'UTM easting',
-    icon: <Icon component={Location} />,
+    icon: <Icon component={Globe} />,
     type: 'number',
     inputType: 'number',
     coordinateSystem: 'utm',
   },
   'utm_northing': {
     displayName: 'UTM northing',
-    icon: <Icon component={Location} />,
+    icon: <Icon component={Globe} />,
     type: 'number',
     inputType: 'number',
     coordinateSystem: 'utm',
   },
   'utm_zone': {
     displayName: 'UTM zone',
-    icon: <Icon component={Location} />,
+    icon: <Icon component={Globe} />,
     type: 'number',
     inputType: 'number',
     coordinateSystem: 'utm',
   },
   'utm_hemisphere': {
     displayName: 'UTM hemisphere',
-    icon: <Icon component={Location} />,
+    icon: <Icon component={Globe} />,
     type: 'select',
     valueEditorType: 'select',
     presetOptions: ['N', 'S'],
