@@ -1,0 +1,177 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="596" viewBox="0 0 960 596" font-family="Inter, -apple-system, Segoe UI, Roboto, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#5f6368"/></marker>
+<style>.title{font-size:18px;font-weight:600;fill:#202124}.sec{font-size:12px;font-weight:600;letter-spacing:.08em;fill:#5f6368}.h{font-size:14px;font-weight:600;fill:#fff;font-family:ui-monospace,Menlo,monospace}.f{font-size:13px;font-family:ui-monospace,Menlo,monospace}.t{font-size:12px;fill:#5f6368}</style></defs>
+<rect width="960" height="596" fill="#f8f9fa"/>
+<text x="20" y="30" class="title">Coordinates: videos → videos + locations</text>
+<text x="20" y="62" class="sec">BEFORE</text><text x="360" y="62" class="sec">AFTER</text>
+<rect x="20" y="74" width="280" height="442" rx="6" fill="#fff" stroke="#9aa0a6"/>
+<path d="M20 108V80a6 6 0 0 1 6-6h268a6 6 0 0 1 6 6V108Z" fill="#3c4043"/>
+<text x="32" y="96" class="h">videos</text>
+<rect x="21" y="108" width="278" height="24" fill="#ffffff"/>
+<text x="32" y="124" class="f" fill="#5f6368">id</text>
+<text x="290" y="124" class="t" text-anchor="end">auto</text>
+<rect x="21" y="132" width="278" height="24" fill="#ffffff"/>
+<line x1="20" x2="300" y1="132" y2="132" stroke="#e8eaed"/>
+<text x="32" y="148" class="f" fill="#5f6368">filename</text>
+<text x="290" y="148" class="t" text-anchor="end">text</text>
+<rect x="21" y="156" width="278" height="24" fill="#ffffff"/>
+<line x1="20" x2="300" y1="156" y2="156" stroke="#e8eaed"/>
+<text x="32" y="172" class="f" fill="#5f6368">file</text>
+<text x="290" y="172" class="t" text-anchor="end">file</text>
+<rect x="21" y="180" width="278" height="24" fill="#ffffff"/>
+<line x1="20" x2="300" y1="180" y2="180" stroke="#e8eaed"/>
+<text x="32" y="196" class="f" fill="#5f6368">thumbnail</text>
+<text x="290" y="196" class="t" text-anchor="end">file</text>
+<rect x="21" y="204" width="278" height="24" fill="#fdecea"/>
+<line x1="20" x2="300" y1="204" y2="204" stroke="#e8eaed"/>
+<text x="32" y="220" class="f" fill="#c5221f" text-decoration="line-through">location_name</text>
+<text x="290" y="220" class="t" text-anchor="end">text</text>
+<rect x="21" y="228" width="278" height="24" fill="#ffffff"/>
+<line x1="20" x2="300" y1="228" y2="228" stroke="#e8eaed"/>
+<text x="32" y="244" class="f" fill="#5f6368">recording_date</text>
+<text x="290" y="244" class="t" text-anchor="end">date</text>
+<rect x="21" y="252" width="278" height="24" fill="#ffffff"/>
+<line x1="20" x2="300" y1="252" y2="252" stroke="#e8eaed"/>
+<text x="32" y="268" class="f" fill="#5f6368">notes</text>
+<text x="290" y="268" class="t" text-anchor="end">editor</text>
+<rect x="21" y="276" width="278" height="24" fill="#fdecea"/>
+<line x1="20" x2="300" y1="276" y2="276" stroke="#e8eaed"/>
+<text x="32" y="292" class="f" fill="#c5221f" text-decoration="line-through">coordinate_system</text>
+<text x="290" y="292" class="t" text-anchor="end">select</text>
+<rect x="21" y="300" width="278" height="24" fill="#fdecea"/>
+<line x1="20" x2="300" y1="300" y2="300" stroke="#e8eaed"/>
+<text x="32" y="316" class="f" fill="#c5221f" text-decoration="line-through">latitude</text>
+<text x="290" y="316" class="t" text-anchor="end">number</text>
+<rect x="21" y="324" width="278" height="24" fill="#fdecea"/>
+<line x1="20" x2="300" y1="324" y2="324" stroke="#e8eaed"/>
+<text x="32" y="340" class="f" fill="#c5221f" text-decoration="line-through">longitude</text>
+<text x="290" y="340" class="t" text-anchor="end">number</text>
+<rect x="21" y="348" width="278" height="24" fill="#fdecea"/>
+<line x1="20" x2="300" y1="348" y2="348" stroke="#e8eaed"/>
+<text x="32" y="364" class="f" fill="#c5221f" text-decoration="line-through">utm_easting</text>
+<text x="290" y="364" class="t" text-anchor="end">number</text>
+<rect x="21" y="372" width="278" height="24" fill="#fdecea"/>
+<line x1="20" x2="300" y1="372" y2="372" stroke="#e8eaed"/>
+<text x="32" y="388" class="f" fill="#c5221f" text-decoration="line-through">utm_northing</text>
+<text x="290" y="388" class="t" text-anchor="end">number</text>
+<rect x="21" y="396" width="278" height="24" fill="#fdecea"/>
+<line x1="20" x2="300" y1="396" y2="396" stroke="#e8eaed"/>
+<text x="32" y="412" class="f" fill="#c5221f" text-decoration="line-through">utm_zone</text>
+<text x="290" y="412" class="t" text-anchor="end">number</text>
+<rect x="21" y="420" width="278" height="24" fill="#fdecea"/>
+<line x1="20" x2="300" y1="420" y2="420" stroke="#e8eaed"/>
+<text x="32" y="436" class="f" fill="#c5221f" text-decoration="line-through">utm_hemisphere</text>
+<text x="290" y="436" class="t" text-anchor="end">select</text>
+<rect x="21" y="444" width="278" height="24" fill="#ffffff"/>
+<line x1="20" x2="300" y1="444" y2="444" stroke="#e8eaed"/>
+<text x="32" y="460" class="f" fill="#5f6368">custom_tags</text>
+<text x="290" y="460" class="t" text-anchor="end">json</text>
+<rect x="21" y="468" width="278" height="24" fill="#ffffff"/>
+<line x1="20" x2="300" y1="468" y2="468" stroke="#e8eaed"/>
+<text x="32" y="484" class="f" fill="#5f6368">assignees</text>
+<text x="290" y="484" class="t" text-anchor="end">relation → users</text>
+<rect x="21" y="492" width="278" height="24" fill="#ffffff"/>
+<line x1="20" x2="300" y1="492" y2="492" stroke="#e8eaed"/>
+<text x="32" y="508" class="f" fill="#5f6368">annotation_status</text>
+<text x="290" y="508" class="t" text-anchor="end">text</text>
+<rect x="360" y="74" width="270" height="274" rx="6" fill="#fff" stroke="#9aa0a6"/>
+<path d="M360 108V80a6 6 0 0 1 6-6h258a6 6 0 0 1 6 6V108Z" fill="#3c4043"/>
+<text x="372" y="96" class="h">videos</text>
+<rect x="361" y="108" width="268" height="24" fill="#ffffff"/>
+<text x="372" y="124" class="f" fill="#5f6368">id</text>
+<text x="620" y="124" class="t" text-anchor="end">auto</text>
+<rect x="361" y="132" width="268" height="24" fill="#ffffff"/>
+<line x1="360" x2="630" y1="132" y2="132" stroke="#e8eaed"/>
+<text x="372" y="148" class="f" fill="#5f6368">filename</text>
+<text x="620" y="148" class="t" text-anchor="end">text</text>
+<rect x="361" y="156" width="268" height="24" fill="#ffffff"/>
+<line x1="360" x2="630" y1="156" y2="156" stroke="#e8eaed"/>
+<text x="372" y="172" class="f" fill="#5f6368">file</text>
+<text x="620" y="172" class="t" text-anchor="end">file</text>
+<rect x="361" y="180" width="268" height="24" fill="#ffffff"/>
+<line x1="360" x2="630" y1="180" y2="180" stroke="#e8eaed"/>
+<text x="372" y="196" class="f" fill="#5f6368">thumbnail</text>
+<text x="620" y="196" class="t" text-anchor="end">file</text>
+<rect x="361" y="204" width="268" height="24" fill="#e6f4ea"/>
+<line x1="360" x2="630" y1="204" y2="204" stroke="#e8eaed"/>
+<text x="372" y="220" class="f" fill="#137333">location</text>
+<text x="620" y="220" class="t" text-anchor="end">relation → locations</text>
+<rect x="361" y="228" width="268" height="24" fill="#ffffff"/>
+<line x1="360" x2="630" y1="228" y2="228" stroke="#e8eaed"/>
+<text x="372" y="244" class="f" fill="#5f6368">recording_date</text>
+<text x="620" y="244" class="t" text-anchor="end">date</text>
+<rect x="361" y="252" width="268" height="24" fill="#ffffff"/>
+<line x1="360" x2="630" y1="252" y2="252" stroke="#e8eaed"/>
+<text x="372" y="268" class="f" fill="#5f6368">notes</text>
+<text x="620" y="268" class="t" text-anchor="end">editor</text>
+<rect x="361" y="276" width="268" height="24" fill="#ffffff"/>
+<line x1="360" x2="630" y1="276" y2="276" stroke="#e8eaed"/>
+<text x="372" y="292" class="f" fill="#5f6368">custom_tags</text>
+<text x="620" y="292" class="t" text-anchor="end">json</text>
+<rect x="361" y="300" width="268" height="24" fill="#ffffff"/>
+<line x1="360" x2="630" y1="300" y2="300" stroke="#e8eaed"/>
+<text x="372" y="316" class="f" fill="#5f6368">assignees</text>
+<text x="620" y="316" class="t" text-anchor="end">relation → users</text>
+<rect x="361" y="324" width="268" height="24" fill="#ffffff"/>
+<line x1="360" x2="630" y1="324" y2="324" stroke="#e8eaed"/>
+<text x="372" y="340" class="f" fill="#5f6368">annotation_status</text>
+<text x="620" y="340" class="t" text-anchor="end">text</text>
+<rect x="680" y="74" width="260" height="298" rx="6" fill="#fff" stroke="#9aa0a6"/>
+<path d="M680 108V80a6 6 0 0 1 6-6h248a6 6 0 0 1 6 6V108Z" fill="#137333"/>
+<text x="692" y="96" class="h">locations</text>
+<rect x="681" y="108" width="258" height="24" fill="#e6f4ea"/>
+<text x="692" y="124" class="f" fill="#137333">id</text>
+<text x="930" y="124" class="t" text-anchor="end">auto</text>
+<rect x="681" y="132" width="258" height="24" fill="#e6f4ea"/>
+<line x1="680" x2="940" y1="132" y2="132" stroke="#e8eaed"/>
+<text x="692" y="148" class="f" fill="#137333">name</text>
+<text x="930" y="148" class="t" text-anchor="end">text, unique</text>
+<rect x="681" y="156" width="258" height="24" fill="#e6f4ea"/>
+<line x1="680" x2="940" y1="156" y2="156" stroke="#e8eaed"/>
+<text x="692" y="172" class="f" fill="#137333">coordinate_system</text>
+<text x="930" y="172" class="t" text-anchor="end">select</text>
+<rect x="681" y="180" width="258" height="24" fill="#e6f4ea"/>
+<line x1="680" x2="940" y1="180" y2="180" stroke="#e8eaed"/>
+<text x="692" y="196" class="f" fill="#137333">latitude</text>
+<text x="930" y="196" class="t" text-anchor="end">number</text>
+<rect x="681" y="204" width="258" height="24" fill="#e6f4ea"/>
+<line x1="680" x2="940" y1="204" y2="204" stroke="#e8eaed"/>
+<text x="692" y="220" class="f" fill="#137333">longitude</text>
+<text x="930" y="220" class="t" text-anchor="end">number</text>
+<rect x="681" y="228" width="258" height="24" fill="#e6f4ea"/>
+<line x1="680" x2="940" y1="228" y2="228" stroke="#e8eaed"/>
+<text x="692" y="244" class="f" fill="#137333">utm_easting</text>
+<text x="930" y="244" class="t" text-anchor="end">number</text>
+<rect x="681" y="252" width="258" height="24" fill="#e6f4ea"/>
+<line x1="680" x2="940" y1="252" y2="252" stroke="#e8eaed"/>
+<text x="692" y="268" class="f" fill="#137333">utm_northing</text>
+<text x="930" y="268" class="t" text-anchor="end">number</text>
+<rect x="681" y="276" width="258" height="24" fill="#e6f4ea"/>
+<line x1="680" x2="940" y1="276" y2="276" stroke="#e8eaed"/>
+<text x="692" y="292" class="f" fill="#137333">utm_zone</text>
+<text x="930" y="292" class="t" text-anchor="end">number 1–60</text>
+<rect x="681" y="300" width="258" height="24" fill="#e6f4ea"/>
+<line x1="680" x2="940" y1="300" y2="300" stroke="#e8eaed"/>
+<text x="692" y="316" class="f" fill="#137333">utm_hemisphere</text>
+<text x="930" y="316" class="t" text-anchor="end">select N/S</text>
+<rect x="681" y="324" width="258" height="24" fill="#e6f4ea"/>
+<line x1="680" x2="940" y1="324" y2="324" stroke="#e8eaed"/>
+<text x="692" y="340" class="f" fill="#137333">notes</text>
+<text x="930" y="340" class="t" text-anchor="end">editor</text>
+<rect x="681" y="348" width="258" height="24" fill="#e6f4ea"/>
+<line x1="680" x2="940" y1="348" y2="348" stroke="#e8eaed"/>
+<text x="692" y="364" class="f" fill="#137333">created / updated</text>
+<text x="930" y="364" class="t" text-anchor="end">autodate</text>
+<path d="M630 216.0H655V91.0H680" fill="none" stroke="#137333" stroke-width="2"/>
+<path d="M630 209.0L642 216.0M630 223.0L642 216.0M630 216.0H642" stroke="#137333" stroke-width="2"/>
+<path d="M672 84.0V98.0" stroke="#137333" stroke-width="2"/>
+<text x="655" y="234.0" class="t" text-anchor="middle" fill="#137333">N : 1</text>
+<path d="M308 250H350" stroke="#5f6368" stroke-width="2" marker-end="url(#a)"/>
+<rect x="20" y="534" width="16" height="16" rx="3" fill="#fdecea" stroke="#c5221f"/>
+<text x="44" y="547" class="t">removed from videos</text>
+<rect x="250" y="534" width="16" height="16" rx="3" fill="#e6f4ea" stroke="#137333"/>
+<text x="274" y="547" class="t">new / moved to locations</text>
+<rect x="480" y="534" width="16" height="16" rx="3" fill="#ffffff" stroke="#5f6368"/>
+<text x="504" y="547" class="t">unchanged</text>
+<text x="20" y="576" class="t">individuals.videos and crops.source_video still point at videos (unchanged). One location row per trap; many videos share it.</text>
+</svg>
