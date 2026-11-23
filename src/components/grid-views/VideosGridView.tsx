@@ -5,6 +5,7 @@ import { Card, Flex, Tag, Tooltip, Typography } from "antd";
 import type { RecordType, Video } from "../../types.ts";
 import type { MetadataFieldsType } from "../../types.ts";
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
+import { DeploymentLabel } from '../smart-components/LinkButtons.tsx';
 import "./VideosGridView.scss"
 
 interface BasicVideosGridViewProps {
@@ -112,7 +113,7 @@ const BasicVideosGridView: FC<BasicVideosGridViewProps> = ({
                 </Typography.Title>
                 <Flex wrap gap={4}>
                   {[
-                    "location_name",
+                    "deployment",
                     "recording_date",
                   ].map((field) => (
                     <Tooltip
@@ -120,7 +121,7 @@ const BasicVideosGridView: FC<BasicVideosGridViewProps> = ({
                       key={field}
                     >
                       <Tag icon={videoMetadataFields[field].icon}>
-                        {video[field]}
+                        {field === "deployment" ? <DeploymentLabel id={video.deployment} /> : video[field]}
                       </Tag>
                     </Tooltip>
                   ))}

@@ -26,6 +26,10 @@ const headerMenuItems = [
     label: <Link to={`individuals`}>Individuals</Link>,
   },
   {
+    key: 'deployments',
+    label: <Link to={`deployments`}>Deployments</Link>,
+  },
+  {
     key: 'project-settings',
     label: 'Project Settings',
   },
@@ -50,7 +54,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({currentMenuPage, user, logout}: Ap
         items={headerMenuItems}
         style={{
           flex: "0 0 auto",
-          minWidth: "307px" // 307px = width of 4 menu items
+          minWidth: "420px" // approx. width of 5 menu items
         }}
       />
       <Dropdown

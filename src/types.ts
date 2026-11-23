@@ -26,6 +26,27 @@ export interface User extends UserRecord {
 
 export type CoordinateSystem = 'latlong' | 'utm';
 
+// A camera at a location for a period of time (Camtrap DP deployment, https://camtrap-dp.tdwg.org/data/#deployments).
+// camelCase fields are from the spec; snake_case fields are our extensions.
+export interface DeploymentRecord extends RecordModel {
+  id: string;
+  locationID: string;
+  locationName: string;
+  latitude: number;
+  longitude: number;
+  deploymentStart: string;
+  deploymentEnd: string;
+  cameraID: string;
+  cameraModel: string;
+  habitat: string;
+  deploymentComments: string;
+  coordinate_system: '' | CoordinateSystem;
+  utm_easting: number;
+  utm_northing: number;
+  utm_zone: number;
+  utm_hemisphere: '' | 'N' | 'S';
+};
+
 export interface VideoRecord extends RecordModel {
   collectionId: string;
   collectionName: string;
@@ -35,16 +56,9 @@ export interface VideoRecord extends RecordModel {
   filename: string;
   file: string;
   thumbnail: string;
-  location_name: string;
+  deployment: string;
   notes: string;
   recording_date: string;
-  utm_easting: number;
-  utm_northing: number;
-  coordinate_system: '' | CoordinateSystem;
-  utm_zone: number;
-  utm_hemisphere: '' | 'N' | 'S';
-  latitude: number;
-  longitude: number;
   custom_tags: string[];
   assignees: string[];
   annotation_status: string;
@@ -52,7 +66,7 @@ export interface VideoRecord extends RecordModel {
 export interface Video extends VideoRecord {
   url: string;
   thumbnailUrl: string;
-  // Derived from latitude/longitude or UTM fields, only used for the map; null if the video has no coordinates
+  // Derived from the video's deployment, only used for the map; null if the video has no coordinates
   lat: number | null;
   long: number | null;
 };
@@ -108,7 +122,7 @@ export type MetadataFieldsType = Record<string, {
   valueEditorType?: ValueEditorType;
   presetOptions?: string[];
   extraData?: Record<string, any>;
-  renderType?: 'user_label' | 'video_link' | 'individual_link' | 'annotation_status_label';
+  renderType?: 'user_label' | 'video_link' | 'individual_link' | 'annotation_status_label' | 'deployment_label';
   displayBooleanValuesAs?: string[];
   allowAddingNewOptions?: boolean;
   isInternal?: boolean;

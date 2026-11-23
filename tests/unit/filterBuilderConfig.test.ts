@@ -7,11 +7,11 @@ describe('buildQueryBuilderFields', () => {
   it('uses a multi-select editor for select fields with in/notIn operators', () => {
     const fields = buildQueryBuilderFields(videoMetadataFields, {
       annotation_status: ['to annotate', 'annotated'],
-      location_name: ['Meru', 'Nairobi'],
+      deployment: ['Meru', 'Nairobi'],
     });
-    const locationNameField = fields.find(field => field.name === 'location_name');
+    const deploymentField = fields.find(field => field.name === 'deployment');
 
-    expect(locationNameField?.operators?.map(operator => operator.value)).toEqual([
+    expect(deploymentField?.operators?.map(operator => operator.value)).toEqual([
       '=',
       '!=',
       'in',
@@ -19,10 +19,10 @@ describe('buildQueryBuilderFields', () => {
       'null',
       'notNull',
     ]);
-    expect(typeof locationNameField?.valueEditorType).toBe('function');
-    expect(locationNameField?.valueEditorType?.('=')).toBe('select');
-    expect(locationNameField?.valueEditorType?.('in')).toBe('multiselect');
-    expect(locationNameField?.valueEditorType?.('notIn')).toBe('multiselect');
+    expect(typeof deploymentField?.valueEditorType).toBe('function');
+    expect(deploymentField?.valueEditorType?.('=')).toBe('select');
+    expect(deploymentField?.valueEditorType?.('in')).toBe('multiselect');
+    expect(deploymentField?.valueEditorType?.('notIn')).toBe('multiselect');
   });
 
   it('preserves render-aware field metadata for UI value rendering', () => {

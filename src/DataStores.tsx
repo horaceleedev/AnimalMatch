@@ -7,9 +7,9 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { App } from 'antd';
 
-import type { Video, VideoRecord, LocationInfo, Individual, IndividualRecord, CropRecord, Crop, UserRecord, User } from "./types.ts";
-import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from "./metadata.tsx";
-import { getUniqueLocationsFromVideos, getUniqueValuesPerField, getVideoLatLong } from './utils/utils.ts';
+import type { Video, VideoRecord, LocationInfo, Individual, IndividualRecord, CropRecord, Crop, UserRecord, User, DeploymentRecord } from "./types.ts";
+import { cropsMetadataFields, deploymentsMetadataFields, individualsMetadataFields, videoMetadataFields } from "./metadata.tsx";
+import { getDeploymentLatLong, getUniqueLocationsFromVideos, getUniqueValuesPerField } from './utils/utils.ts';
 
 const pocketBaseUrl = import.meta.env.VITE_DATABASE_URL || 'http://127.0.0.1:8090';
 const pb = new PocketBase(pocketBaseUrl);
@@ -122,6 +122,8 @@ interface CollectionStore<TRecord, TProcessed, TExtra> {
   uniqueValuesPerField: Record<string, string[]>;
   extra: TExtra;
   fetch: () => Promise<void>;
+  // Re-run processRecords, e.g. when data from another store that processRecords reads has changed
+  reprocess: () => void;
   subscribe: () => void;
   unsubscribe: () => void;
   create: (data: Partial<TProcessed>) => Promise<TProcessed>;
@@ -154,6 +156,9 @@ const createRealtimeCollectionStore = <TRecord extends RecordModel, TProcessed e
       }
       const { processedRecords, uniqueValuesPerField, extra } = processRecords(records);
       set({ unprocessedRecords: records, processedRecords, uniqueValuesPerField, extra });
+    },
+    reprocess: () => {
+      set((state) => processRecords(state.unprocessedRecords));
     },
     subscribe: () => {
       console.log(`Subscribing to ${collectionName}`);
@@ -284,14 +289,29 @@ export const useUsersStore = createRealtimeCollectionStore<UserRecord, User>({
 });
 
 
+// --- Deployments store ---
+export const useDeploymentsStore = createRealtimeCollectionStore<DeploymentRecord, DeploymentRecord>({
+  collectionName: 'deployments',
+  sortField: 'locationName',
+  processRecords: (records: DeploymentRecord[]) => ({
+    processedRecords: records,
+    uniqueValuesPerField: getUniqueValuesPerField(deploymentsMetadataFields, records),
+  }),
+});
+
+
 // --- Video store ---
 export const useVideoStore = createRealtimeCollectionStore<VideoRecord, Video, { uniqueLocations: LocationInfo[] }>({
   collectionName: 'videos',
   sortField: 'filename',
   extraInitialState: { uniqueLocations: [] },
   processRecords: (records: VideoRecord[]) => {
+    // Videos get their coordinates from their deployment (see the subscription below the store)
+    const deployments = useDeploymentsStore.getState().processedRecords;
+    const deploymentsById = new Map(deployments.map(d => [d.id, d]));
     const processedVideos: Video[] = records.map((record: VideoRecord) => {
-      const [lat, long] = getVideoLatLong(record) ?? [null, null];
+      const deployment = deploymentsById.get(record.deployment);
+      const [lat, long] = (deployment && getDeploymentLatLong(deployment)) ?? [null, null];
       return {
         ...record,
         // Parse timestamp in UTC to avoid converting to local timezone
@@ -306,13 +326,23 @@ export const useVideoStore = createRealtimeCollectionStore<VideoRecord, Video, {
 
     const uniqueLocations = getUniqueLocationsFromVideos(processedVideos);
     // console.log(uniqueLocations)
-    const uniqueValuesPerField = getUniqueValuesPerField(videoMetadataFields, processedVideos);
+    const uniqueValuesPerField = {
+      ...getUniqueValuesPerField(videoMetadataFields, processedVideos),
+      // Offer every deployment, not just those already used by a video
+      deployment: deployments.map(d => d.id),
+    };
 
     return { processedRecords: processedVideos, uniqueValuesPerField, extra: { uniqueLocations } };
   },
   // For now ignore the recording_date/url/lat/long key
   // TODO later maybe convert back from URLs to filenames (and verify what happens in the backend)
   ignoredUpdateKeys: ['recording_date', 'url', 'thumbnailUrl', 'lat', 'long'],
+});
+
+
+// Recompute video coordinates whenever deployments load or change
+useDeploymentsStore.subscribe((state, prevState) => {
+  if (state.processedRecords !== prevState.processedRecords) useVideoStore.getState().reprocess();
 });
 
 

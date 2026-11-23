@@ -5,7 +5,7 @@ import { RecordModel } from "pocketbase";
 
 import useFormManager from "../../hooks/useFormManager";
 import { MetadataFieldsType, RecordType } from "../../types";
-import { IndividualLinkButton, UserLabel, VideoLinkButton } from "../smart-components/LinkButtons";
+import { DeploymentLabel, IndividualLinkButton, UserLabel, VideoLinkButton } from "../smart-components/LinkButtons";
 import AnnotationStatusLabel from "../ui/AnnotationStatusLabel";
 import "./RecordMetadataForm.scss";
 
@@ -97,6 +97,13 @@ const RecordMetadataForm = <T extends RecordModel>({
               } else if (metadataField.renderType === 'annotation_status_label') {
                 optionRender = (option: DefaultOptionType) => <AnnotationStatusLabel status={option.value as string} />;
                 labelRender = (option) => <AnnotationStatusLabel status={option.value as string} />;
+              } else if (metadataField.renderType === 'deployment_label') {
+                optionRender = (option: DefaultOptionType) => <DeploymentLabel id={option.value as string} />;
+                labelRender = (option) => (
+                  <Tag icon={showIconInSelectionFields ? metadataField.icon : undefined}>
+                    <DeploymentLabel id={option.value as string} />
+                  </Tag>
+                );
               }
 
               inputElement = (

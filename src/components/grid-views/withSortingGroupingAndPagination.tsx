@@ -3,7 +3,7 @@ import { RecordModel } from "pocketbase";
 import { groupBy, orderBy } from "es-toolkit";
 import { Collapse, Space, Pagination } from "antd";
 
-import { IndividualLinkButton, UserLabel, VideoLinkButton } from "../smart-components/LinkButtons";
+import { DeploymentLabel, IndividualLinkButton, UserLabel, VideoLinkButton } from "../smart-components/LinkButtons";
 import AnnotationStatusLabel from "../ui/AnnotationStatusLabel";
 import { MetadataFieldsType, RecordType } from "../../types";
 
@@ -97,6 +97,8 @@ const withSortingAndGrouping = <P extends BasicGridViewProps, T extends RecordMo
         }
       } else if (renderType === 'annotation_status_label') {
         renderedGroupValue = <AnnotationStatusLabel status={groupValue as string} />;
+      } else if (renderType === 'deployment_label') {
+        renderedGroupValue = <DeploymentLabel id={groupValue as string} />;
       }
 
       const basicGridViewProps = {

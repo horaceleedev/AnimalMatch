@@ -19,7 +19,7 @@ const makeVideo = (overrides: Partial<Video> = {}): Video => ({
   habitat: 'forest',
   id: 'video-1',
   lat: 0,
-  location_name: 'Meru',
+  deployment: 'Meru',
   long: 0,
   month_of_SD_retrieval: 'January',
   notes: '',
@@ -29,27 +29,20 @@ const makeVideo = (overrides: Partial<Video> = {}): Video => ({
   thumbnailUrl: 'https://example.com/thumb.jpg',
   updated: '2026-01-01T00:00:00.000Z',
   url: 'https://example.com/video.mp4',
-  utm_easting: 0,
-  utm_northing: 0,
-  utm_zone: 0,
-  utm_hemisphere: '',
-  coordinate_system: '',
-  latitude: 0,
-  longitude: 0,
   ...overrides,
 });
 
 // Mirrors production metadata fields, which include `id` so the hook can tell records apart.
 const metadataFields: MetadataFieldsType = {
   id: { displayName: 'Id', type: 'text', inputType: 'text', isInternal: true },
-  location_name: { displayName: 'Location', type: 'text', inputType: 'text' },
+  deployment: { displayName: 'Location', type: 'text', inputType: 'text' },
   habitat: { displayName: 'Habitat', type: 'select', valueEditorType: 'select' },
   notes: { displayName: 'Notes', type: 'rich_text' },
 };
 
 const formValues = (overrides: Partial<Video> = {}): Partial<Video> => ({
   id: 'video-1',
-  location_name: 'Meru',
+  deployment: 'Meru',
   habitat: 'forest',
   notes: '',
   ...overrides,
@@ -113,7 +106,7 @@ describe('useFormManager', () => {
     const { result } = renderFormManager(makeVideo({ notes: 'Before' }), updateFunction);
 
     act(() => {
-      result.current.handleValuesChange({}, formValues({ location_name: 'Nairobi', notes: 'After' }));
+      result.current.handleValuesChange({}, formValues({ deployment: 'Nairobi', notes: 'After' }));
     });
 
     let pendingSave!: Promise<void>;
@@ -123,12 +116,12 @@ describe('useFormManager', () => {
 
     expect(result.current.isSavingChanges).toBe(true);
     expect(updateFunction).toHaveBeenCalledWith('video-1', {
-      location_name: 'Nairobi',
+      deployment: 'Nairobi',
       notes: 'After',
     });
 
     await act(async () => {
-      resolveUpdate(makeVideo({ location_name: 'Nairobi', notes: 'After' }));
+      resolveUpdate(makeVideo({ deployment: 'Nairobi', notes: 'After' }));
       await pendingSave;
     });
     expect(message.success).toHaveBeenCalledWith('Changes saved successfully');
@@ -138,11 +131,11 @@ describe('useFormManager', () => {
   });
 
   it('stays dirty after a successful save until the refreshed record arrives', async () => {
-    const updateFunction = vi.fn().mockResolvedValue(makeVideo({ location_name: 'Nairobi' }));
+    const updateFunction = vi.fn().mockResolvedValue(makeVideo({ deployment: 'Nairobi' }));
     const { result, rerender } = renderFormManager(makeVideo(), updateFunction);
 
     act(() => {
-      result.current.handleValuesChange({}, formValues({ location_name: 'Nairobi' }));
+      result.current.handleValuesChange({}, formValues({ deployment: 'Nairobi' }));
     });
 
     await act(async () => {
@@ -151,13 +144,13 @@ describe('useFormManager', () => {
 
     expect(message.success).toHaveBeenCalledWith('Changes saved successfully');
     expect(result.current.hasUnsavedChanges).toBe(true);
-    expect(result.current.formData).toEqual(formValues({ location_name: 'Nairobi' }));
+    expect(result.current.formData).toEqual(formValues({ deployment: 'Nairobi' }));
 
-    rerender({ record: makeVideo({ location_name: 'Nairobi' }) });
+    rerender({ record: makeVideo({ deployment: 'Nairobi' }) });
 
     expect(message.warning).not.toHaveBeenCalled();
     expect(result.current.hasUnsavedChanges).toBe(false);
-    expect(result.current.formData).toEqual(formValues({ location_name: 'Nairobi' }));
+    expect(result.current.formData).toEqual(formValues({ deployment: 'Nairobi' }));
   });
 
   it('uses the server message for ClientResponseError failures', async () => {
@@ -169,7 +162,7 @@ describe('useFormManager', () => {
     const { result } = renderFormManager(makeVideo(), updateFunction);
 
     act(() => {
-      result.current.handleValuesChange({}, formValues({ location_name: 'Changed' }));
+      result.current.handleValuesChange({}, formValues({ deployment: 'Changed' }));
     });
 
     await act(async () => {
@@ -186,7 +179,7 @@ describe('useFormManager', () => {
     const { result } = renderFormManager(makeVideo(), updateFunction);
 
     act(() => {
-      result.current.handleValuesChange({}, formValues({ location_name: 'Changed' }));
+      result.current.handleValuesChange({}, formValues({ deployment: 'Changed' }));
     });
 
     await act(async () => {
@@ -206,7 +199,7 @@ describe('useFormManager', () => {
     const { result } = renderFormManager(makeVideo(), updateFunction);
 
     act(() => {
-      result.current.handleValuesChange({}, formValues({ location_name: 'Changed', notes: 'Draft' }));
+      result.current.handleValuesChange({}, formValues({ deployment: 'Changed', notes: 'Draft' }));
     });
 
     await act(async () => {
@@ -214,7 +207,7 @@ describe('useFormManager', () => {
     });
 
     expect(message.error).toHaveBeenCalled();
-    expect(result.current.formData).toEqual(formValues({ location_name: 'Changed', notes: 'Draft' }));
+    expect(result.current.formData).toEqual(formValues({ deployment: 'Changed', notes: 'Draft' }));
     expect(result.current.hasUnsavedChanges).toBe(true);
   });
 
@@ -222,15 +215,15 @@ describe('useFormManager', () => {
     const { result, rerender } = renderFormManager(makeVideo());
 
     act(() => {
-      result.current.handleValuesChange({}, formValues({ location_name: 'Locally edited' }));
+      result.current.handleValuesChange({}, formValues({ deployment: 'Locally edited' }));
     });
 
-    rerender({ record: makeVideo({ location_name: 'Server updated' }) });
+    rerender({ record: makeVideo({ deployment: 'Server updated' }) });
 
     expect(message.warning).toHaveBeenCalledWith(
       'Your changes have been overwritten by new data from the server',
     );
-    expect(result.current.formData).toEqual(formValues({ location_name: 'Server updated' }));
+    expect(result.current.formData).toEqual(formValues({ deployment: 'Server updated' }));
     expect(result.current.hasUnsavedChanges).toBe(false);
   });
 
@@ -238,13 +231,13 @@ describe('useFormManager', () => {
     const { result, rerender } = renderFormManager(makeVideo());
 
     act(() => {
-      result.current.handleValuesChange({}, formValues({ location_name: 'Locally edited' }));
+      result.current.handleValuesChange({}, formValues({ deployment: 'Locally edited' }));
     });
 
-    rerender({ record: makeVideo({ id: 'video-2', location_name: 'Elsewhere' }) });
+    rerender({ record: makeVideo({ id: 'video-2', deployment: 'Elsewhere' }) });
 
     expect(message.warning).not.toHaveBeenCalled();
-    expect(result.current.formData).toEqual(formValues({ id: 'video-2', location_name: 'Elsewhere' }));
+    expect(result.current.formData).toEqual(formValues({ id: 'video-2', deployment: 'Elsewhere' }));
     expect(result.current.hasUnsavedChanges).toBe(false);
   });
 
@@ -252,13 +245,13 @@ describe('useFormManager', () => {
     const { result, rerender } = renderFormManager(makeVideo());
 
     act(() => {
-      result.current.handleValuesChange({}, formValues({ location_name: 'Nairobi' }));
+      result.current.handleValuesChange({}, formValues({ deployment: 'Nairobi' }));
     });
 
-    rerender({ record: makeVideo({ location_name: 'Nairobi' }) });
+    rerender({ record: makeVideo({ deployment: 'Nairobi' }) });
 
     expect(message.warning).not.toHaveBeenCalled();
-    expect(result.current.formData).toEqual(formValues({ location_name: 'Nairobi' }));
+    expect(result.current.formData).toEqual(formValues({ deployment: 'Nairobi' }));
     expect(result.current.hasUnsavedChanges).toBe(false);
   });
 

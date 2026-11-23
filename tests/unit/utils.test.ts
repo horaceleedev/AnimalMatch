@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { Individual, MetadataFieldsType, Video } from '../../src/types';
+import type { DeploymentRecord, Individual, MetadataFieldsType, Video } from '../../src/types';
 import {
   getUniqueLocationsFromIndividuals,
   getUniqueLocationsFromVideos,
   getUniqueValuesPerField,
-  getVideoLatLong,
+  getDeploymentLatLong,
 } from '../../src/utils/utils';
 
 // This is an example of a pure unit test, identical to unit tests in any non frontend codebase.
@@ -23,7 +23,7 @@ const makeVideo = (overrides: Partial<Video> = {}): Video => ({
   habitat: 'forest',
   id: 'video-1',
   lat: 0,
-  location_name: 'Meru',
+  deployment: 'Meru',
   long: 0,
   month_of_SD_retrieval: 'January',
   notes: '',
@@ -33,13 +33,6 @@ const makeVideo = (overrides: Partial<Video> = {}): Video => ({
   thumbnailUrl: 'https://example.com/thumb.jpg',
   updated: '2026-01-01T00:00:00.000Z',
   url: 'https://example.com/video.mp4',
-  utm_easting: 0,
-  utm_northing: 0,
-  utm_zone: 0,
-  utm_hemisphere: '',
-  coordinate_system: '',
-  latitude: 0,
-  longitude: 0,
   ...overrides,
 });
 
@@ -60,32 +53,54 @@ const makeIndividual = (overrides: Partial<Individual> = {}): Individual => ({
   ...overrides,
 });
 
-describe('getVideoLatLong', () => {
+const makeDeployment = (overrides: Partial<DeploymentRecord> = {}): DeploymentRecord => ({
+  id: 'deployment-1',
+  collectionId: 'deployments',
+  collectionName: 'deployments',
+  locationID: '',
+  locationName: '',
+  latitude: 0,
+  longitude: 0,
+  deploymentStart: '',
+  deploymentEnd: '',
+  cameraID: '',
+  cameraModel: '',
+  habitat: '',
+  deploymentComments: '',
+  coordinate_system: '',
+  utm_easting: 0,
+  utm_northing: 0,
+  utm_zone: 0,
+  utm_hemisphere: '',
+  ...overrides,
+});
+
+describe('getDeploymentLatLong', () => {
   it('uses lat/long when coordinate_system is latlong, ignoring UTM fields', () => {
-    expect(getVideoLatLong(makeVideo({
+    expect(getDeploymentLatLong(makeDeployment({
       coordinate_system: 'latlong', latitude: 11.5, longitude: -15.6, utm_easting: 500000, utm_northing: 1000000, utm_zone: 29, utm_hemisphere: 'N',
     }))).toEqual([11.5, -15.6]);
     // 0 is a real coordinate once the system is explicit
-    expect(getVideoLatLong(makeVideo({ coordinate_system: 'latlong' }))).toEqual([0, 0]);
+    expect(getDeploymentLatLong(makeDeployment({ coordinate_system: 'latlong' }))).toEqual([0, 0]);
   });
 
   it('converts UTM using the stored zone and hemisphere, ignoring lat/long fields', () => {
     // Easting 500000 is the zone's central meridian: zone 29 is centred on -9 degrees longitude
-    const [lat, long] = getVideoLatLong(makeVideo({
+    const [lat, long] = getDeploymentLatLong(makeDeployment({
       coordinate_system: 'utm', latitude: 50, longitude: 50, utm_easting: 500000, utm_northing: 1000000, utm_zone: 29, utm_hemisphere: 'N',
     }))!;
     expect(lat).toBeCloseTo(9.047, 3);
     expect(long).toBeCloseTo(-9, 5);
 
-    const [southLat, southLong] = getVideoLatLong(makeVideo({ coordinate_system: 'utm', utm_easting: 500000, utm_northing: 9000000, utm_zone: 33, utm_hemisphere: 'S' }))!;
+    const [southLat, southLong] = getDeploymentLatLong(makeDeployment({ coordinate_system: 'utm', utm_easting: 500000, utm_northing: 9000000, utm_zone: 33, utm_hemisphere: 'S' }))!;
     expect(southLat).toBeCloseTo(-9.047, 3);
     expect(southLong).toBeCloseTo(15, 5);
   });
 
   it('returns null when there are no usable coordinates', () => {
-    expect(getVideoLatLong(makeVideo({ latitude: 11.5, longitude: -15.6 }))).toBeNull();
+    expect(getDeploymentLatLong(makeDeployment({ latitude: 11.5, longitude: -15.6 }))).toBeNull();
     // UTM without a zone can't be converted
-    expect(getVideoLatLong(makeVideo({ coordinate_system: 'utm', utm_easting: 500000, utm_northing: 1000000 }))).toBeNull();
+    expect(getDeploymentLatLong(makeDeployment({ coordinate_system: 'utm', utm_easting: 500000, utm_northing: 1000000 }))).toBeNull();
   });
 });
 

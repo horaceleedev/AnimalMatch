@@ -18,7 +18,7 @@ const makeVideo = (overrides: Partial<Video> = {}): Video => ({
   habitat: 'forest',
   id: 'video-1',
   lat: 0,
-  location_name: 'Meru',
+  deployment: 'Meru',
   long: 0,
   month_of_SD_retrieval: 'January',
   notes: '',
@@ -28,18 +28,11 @@ const makeVideo = (overrides: Partial<Video> = {}): Video => ({
   thumbnailUrl: 'https://example.com/thumb.jpg',
   updated: '2026-01-01T00:00:00.000Z',
   url: 'https://example.com/video.mp4',
-  utm_easting: 0,
-  utm_northing: 0,
-  utm_zone: 0,
-  utm_hemisphere: '',
-  coordinate_system: '',
-  latitude: 0,
-  longitude: 0,
   ...overrides,
 });
 
 const metadataFields: MetadataFieldsType = {
-  location_name: { displayName: 'Location', type: 'text' },
+  deployment: { displayName: 'Location', type: 'text' },
   habitat: { displayName: 'Habitat', type: 'select' },
   annotation_status: { displayName: 'Annotation status', type: 'select' },
   custom_tags: { displayName: 'Custom tags', type: 'multiselect' },
@@ -47,9 +40,9 @@ const metadataFields: MetadataFieldsType = {
 };
 
 const videos = [
-  makeVideo({ id: 'v1', location_name: 'Meru', habitat: 'forest', annotation_status: 'to annotate', custom_tags: [] }),
-  makeVideo({ id: 'v2', location_name: 'Nairobi', habitat: 'savanna', annotation_status: 'annotated', custom_tags: ['rare'] }),
-  makeVideo({ id: 'v3', location_name: 'Mombasa', habitat: 'beach', annotation_status: 'to annotate', custom_tags: ['elephant', 'herd'] }),
+  makeVideo({ id: 'v1', deployment: 'Meru', habitat: 'forest', annotation_status: 'to annotate', custom_tags: [] }),
+  makeVideo({ id: 'v2', deployment: 'Nairobi', habitat: 'savanna', annotation_status: 'annotated', custom_tags: ['rare'] }),
+  makeVideo({ id: 'v3', deployment: 'Mombasa', habitat: 'beach', annotation_status: 'to annotate', custom_tags: ['elephant', 'herd'] }),
 ];
 
 describe('useSearchFilter', () => {
@@ -115,7 +108,7 @@ describe('useSearchFilter', () => {
 
   it('only searches within the declared metadataFields, not every record field', () => {
     // 'filename' is not in metadataFields, so a search for its value should match nothing.
-    const videoWithDistinctFilename = makeVideo({ id: 'v4', filename: 'uniquefilename123.mp4', location_name: 'other' });
+    const videoWithDistinctFilename = makeVideo({ id: 'v4', filename: 'uniquefilename123.mp4', deployment: 'other' });
     const { result } = renderHook(() =>
       useSearchFilter([...videos, videoWithDistinctFilename], metadataFields),
     );

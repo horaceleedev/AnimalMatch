@@ -3,7 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { Layout, App as AntApp } from 'antd';
 import { useShallow } from 'zustand/react/shallow'
 
-import { useCropsStore, useIndividualsStore, useDisconnectedMessage, useVideoStore, useAuth, useUsersStore } from "./DataStores.tsx";
+import { useCropsStore, useIndividualsStore, useDisconnectedMessage, useVideoStore, useAuth, useUsersStore, useDeploymentsStore } from "./DataStores.tsx";
 import AppHeader from "./components/AppHeader.tsx";
 import { useWebGPU } from './hooks/useWebGPU.ts';
 import WebGPUBanner from './components/ui/WebGPUBanner.tsx';
@@ -15,6 +15,9 @@ const App: React.FC = () => {
   const { user, logout } = useAuth();
 
   const [fetchUsers, subscribeToUsers, unsubscribeFromUsers] = useUsersStore(
+    useShallow((state) => [state.fetch, state.subscribe, state.unsubscribe])
+  );
+  const [fetchDeployments, subscribeToDeployments, unsubscribeFromDeployments] = useDeploymentsStore(
     useShallow((state) => [state.fetch, state.subscribe, state.unsubscribe])
   );
   const [fetchVideos, subscribeToVideos, unsubscribeFromVideos] = useVideoStore(
@@ -38,7 +41,7 @@ const App: React.FC = () => {
       content: 'Loading...',
       duration: 0,
     });
-    Promise.all([fetchUsers(), fetchVideos(), fetchIndividuals(), fetchCrops()]).then(() => {
+    Promise.all([fetchUsers(), fetchDeployments(), fetchVideos(), fetchIndividuals(), fetchCrops()]).then(() => {
       message.destroy(key);
     }).catch((e) => {
       message.error({
@@ -48,11 +51,13 @@ const App: React.FC = () => {
       console.error(e);
     });
     subscribeToUsers();
+    subscribeToDeployments();
     subscribeToVideos();
     subscribeToIndividuals();
     subscribeToCrops();
     return () => {
       unsubscribeFromUsers();
+      unsubscribeFromDeployments();
       unsubscribeFromVideos();
       unsubscribeFromIndividuals();
       unsubscribeFromCrops();

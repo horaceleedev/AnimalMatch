@@ -1,13 +1,13 @@
 import { countBy } from "es-toolkit";
 import proj4 from "proj4";
 
-import { Individual, LocationInfo, MetadataFieldsType, Video, VideoRecord } from "../types";
+import { DeploymentRecord, Individual, LocationInfo, MetadataFieldsType, Video } from "../types";
 
 const isNonNullString = (value: unknown): value is string => typeof value === "string";
 
-// Returns [lat, long] for placing a video on the map, using the video's coordinate_system (UTM is converted).
-// Returns null if the video has no usable coordinates.
-export const getVideoLatLong = (record: VideoRecord): [number, number] | null => {
+// Returns [lat, long] for a deployment, using its coordinate_system (UTM is converted).
+// Returns null if the deployment has no usable coordinates.
+export const getDeploymentLatLong = (record: DeploymentRecord): [number, number] | null => {
   if (record.coordinate_system === 'latlong') {
     return [record.latitude, record.longitude];
   }
