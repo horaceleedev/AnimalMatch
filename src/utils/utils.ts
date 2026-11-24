@@ -25,7 +25,7 @@ export const getDeploymentLatLong = (record: DeploymentRecord): [number, number]
 
 // Cameras sharing a location are told apart by camera ID
 export const getDeploymentLabel = (d: DeploymentRecord) =>
-  [d.locationName || 'Unnamed location', d.cameraID].filter(Boolean).join(' · ');
+  [d.locationID || 'Unnamed location', d.cameraID].filter(Boolean).join(' · ');
 
 // One map location per deployment with coordinates (location id = deployment id)
 export const getLocationsFromDeployments = (deployments: Deployment[], videos: Video[]): LocationInfo[] => {

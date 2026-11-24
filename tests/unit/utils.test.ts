@@ -56,14 +56,9 @@ const makeDeployment = (overrides: Partial<Deployment> = {}): Deployment => ({
   collectionId: 'deployments',
   collectionName: 'deployments',
   locationID: '',
-  locationName: '',
   latitude: 0,
   longitude: 0,
-  deploymentStart: '',
-  deploymentEnd: '',
   cameraID: '',
-  cameraModel: '',
-  habitat: '',
   deploymentComments: '',
   coordinate_system: '',
   utm_easting: 0,
@@ -108,8 +103,8 @@ describe('getLocationsFromDeployments', () => {
   it('gives one location per deployment with coordinates, keyed by deployment id', () => {
     const locations = getLocationsFromDeployments(
       [
-        makeDeployment({ id: 'd1', locationName: 'Meru', cameraID: 'cam-1', lat: 0.123, long: 36.456 }),
-        makeDeployment({ id: 'd2', locationName: '', lat: 1.5, long: 37.5 }),
+        makeDeployment({ id: 'd1', locationID: 'Meru', cameraID: 'cam-1', lat: 0.123, long: 36.456 }),
+        makeDeployment({ id: 'd2', locationID: '', lat: 1.5, long: 37.5 }),
         makeDeployment({ id: 'd3', lat: null, long: null }),
       ],
       [

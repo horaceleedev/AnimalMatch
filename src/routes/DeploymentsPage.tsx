@@ -37,7 +37,7 @@ const DeploymentsPage: React.FC = () => {
 
   const addDeployment = async () => {
     try {
-      const created = await createDeployment({ locationName: 'New deployment' });
+      const created = await createDeployment({ locationID: 'New deployment' });
       selectDeployment(created.id);
     } catch (e) {
       message.error(e instanceof ClientResponseError ? e.message : 'Unable to create deployment', 10);

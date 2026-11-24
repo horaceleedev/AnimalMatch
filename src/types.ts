@@ -27,19 +27,14 @@ export interface User extends UserRecord {
 
 export type CoordinateSystem = 'latlong' | 'utm';
 
-// A camera at a location for a period of time (Camtrap DP deployment, https://camtrap-dp.tdwg.org/data/#deployments).
+// A camera at a location (Camtrap DP deployment, https://camtrap-dp.tdwg.org/data/#deployments).
 // camelCase fields are from the spec; snake_case fields are our extensions.
 export interface DeploymentRecord extends RecordModel {
   id: string;
   locationID: string;
-  locationName: string;
   latitude: number;
   longitude: number;
-  deploymentStart: string;
-  deploymentEnd: string;
   cameraID: string;
-  cameraModel: string;
-  habitat: string;
   deploymentComments: string;
   coordinate_system: '' | CoordinateSystem;
   utm_easting: number;

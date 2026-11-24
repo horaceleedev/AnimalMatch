@@ -2,7 +2,6 @@
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import proj4 from "proj4";
 import PocketBase, { ClientResponseError, type RecordModel } from 'pocketbase';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -288,7 +287,7 @@ export const useUsersStore = createRealtimeCollectionStore<UserRecord, User>({
 // --- Deployments store ---
 export const useDeploymentsStore = createRealtimeCollectionStore<DeploymentRecord, Deployment>({
   collectionName: 'deployments',
-  sortField: 'locationName',
+  sortField: 'locationID',
   processRecords: (records: DeploymentRecord[]) => ({
     processedRecords: records.map(record => {
       const [lat, long] = getDeploymentLatLong(record) ?? [null, null];

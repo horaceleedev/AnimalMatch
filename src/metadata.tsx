@@ -246,12 +246,6 @@ export const cropsMetadataFields: MetadataFieldsType = {
 
 // based on DeploymentRecord fields (Camtrap DP deployments, plus snake_case extensions)
 export const deploymentsMetadataFields: MetadataFieldsType = {
-  'locationName': {
-    displayName: 'Location name',
-    icon: <Icon component={Location} />,
-    type: 'text',
-    inputType: 'text',
-  },
   'locationID': {
     displayName: 'Location ID',
     icon: <Icon component={Location} />,
@@ -311,33 +305,9 @@ export const deploymentsMetadataFields: MetadataFieldsType = {
     presetOptions: ['N', 'S'],
     coordinateSystem: 'utm',
   },
-  'deploymentStart': {
-    displayName: 'Deployment start',
-    icon: <Icon component={CalendarMonth} />,
-    type: 'date',
-    inputType: 'date',
-  },
-  'deploymentEnd': {
-    displayName: 'Deployment end',
-    icon: <Icon component={CalendarMonth} />,
-    type: 'date',
-    inputType: 'date',
-  },
   'cameraID': {
     displayName: 'Camera ID',
     icon: <IdcardOutlined />,
-    type: 'text',
-    inputType: 'text',
-  },
-  'cameraModel': {
-    displayName: 'Camera model',
-    icon: <IdcardOutlined />,
-    type: 'text',
-    inputType: 'text',
-  },
-  'habitat': {
-    displayName: 'Habitat',
-    icon: <TagsOutlined />,
     type: 'text',
     inputType: 'text',
   },
