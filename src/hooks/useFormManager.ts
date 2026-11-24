@@ -1,9 +1,9 @@
 import { App } from "antd";
 import { isEqual, pick, pickBy } from "es-toolkit";
 import { useEffect, useState } from "react";
-import { ClientResponseError, RecordModel } from "pocketbase";
+import { ClientResponseError, type RecordModel } from "pocketbase";
 
-import { MetadataFieldsType } from "../types";
+import type { MetadataFieldsType } from "../types";
 
 const useFormManager = <T extends RecordModel>(
   processedRecord: T,

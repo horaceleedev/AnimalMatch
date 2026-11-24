@@ -7,7 +7,7 @@ import { useVideoStore, useIndividualsStoreWithCrops, useAuth } from "../DataSto
 import InnerModal from './InnerModal.tsx';
 import AnnotationStatusLabel from '../components/ui/AnnotationStatusLabel.tsx';
 import { PrevNextVideoButtons } from '../components/ui/PrevNextButtons.tsx';
-import { Individual, RecordType, Video, Crop } from '../types.ts';
+import type { Individual, RecordType, Video, Crop } from '../types.ts';
 
 // TODO: Once this component is in the repo then we can remove this hack
 type VideoAnnotatorComponentType = React.ComponentType<{

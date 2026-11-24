@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { Splitter, Tabs, Typography, type TabsProps } from "antd";
 import Icon from "@ant-design/icons";
-import { RuleGroupType } from 'react-querybuilder';
+import type { RuleGroupType } from 'react-querybuilder';
 
 import Table from '../../assets/material_symbols/table_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import Map from '../../assets/material_symbols/map_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
@@ -9,6 +9,7 @@ import ViewList from '../../assets/material_symbols/view_list_24dp_5F6368_FILL0_
 
 import QueryOperationsButtons from './QueryOperationsButtons.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
+import type { PaginationResetProps } from '../grid-views/withSortingGroupingAndPagination.tsx';
 import IndividualsTableView from '../table-views/IndividualsTableView.tsx';
 import BasicMapView from '../ui/BasicMapView.tsx';
 import BodyPartSelect from '../ui/BodyPartSelect.tsx';
@@ -17,7 +18,7 @@ import { getUniqueLocationsFromIndividuals } from '../../utils/utils.ts';
 import { useDeploymentsStore } from '../../DataStores.tsx';
 import { filterByQuery } from '../../lib/filtering/filterEngine.ts';
 import useSearchFilter from '../../hooks/useSearchFilter.ts';
-import { Individual, MetadataFieldsType, Video } from '../../types.ts';
+import type { Individual, MetadataFieldsType, Video } from '../../types.ts';
 
 const viewsTabsItems: TabsProps['items'] = [
   {
@@ -38,7 +39,7 @@ const viewsTabsItems: TabsProps['items'] = [
 ];
 const initialQuery: RuleGroupType = { combinator: 'and', rules: [] };
 
-interface IndividualsDashboardViewProps {
+interface IndividualsDashboardViewProps extends PaginationResetProps {
   individuals: Individual[];
   videos: Video[];
   uniqueValuesPerField: Record<string, string[]>;
@@ -55,6 +56,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
   individuals, videos, uniqueValuesPerField, bodyPartOptions, individualsMetadataFields,
   onlyShowListView, listDescription, linkTemplate, listViewButtons,
   defaultGroupFields, defaultGroupOrders,
+  paginationResetKey,
 }: IndividualsDashboardViewProps) => {
   const [view, setView] = useState(viewsTabsItems[0].key);
 
@@ -138,6 +140,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
           groupFields={groupFields}
           groupOrders={groupOrders}
           cropBodyPart={selectedBodyPart}
+          paginationResetKey={paginationResetKey}
         />
         :
         (
@@ -161,6 +164,7 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
                 groupFields={groupFields}
                 groupOrders={groupOrders}
                 cropBodyPart={selectedBodyPart}
+                paginationResetKey={paginationResetKey}
               />
             </Splitter.Panel>
             <Splitter.Panel style={{paddingLeft: 12}}>

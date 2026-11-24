@@ -2,7 +2,7 @@ import React from 'react'
 import IndividualDetailModal from './IndividualDetailModal';
 import VideoDetailModal from './VideoDetailModal';
 import CropDetailModal from './CropDetailModal';
-import { RecordType } from '../types';
+import type { RecordType } from '../types';
 
 interface InnerModalProps {
   type?: RecordType;

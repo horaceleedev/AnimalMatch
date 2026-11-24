@@ -33,6 +33,7 @@ const CropsDashboardPage: React.FC = () => {
             crops={cropsFiltered}
             uniqueValuesPerField={uniqueValuesPerField}
             cropsMetadataFields={cropsMetadataFields}
+            paginationResetKey={selectedSiderKey}
           />
         </DashboardContent>
       </Layout>

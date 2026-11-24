@@ -1,10 +1,10 @@
-import { FC, useMemo, useState } from "react";
+import { type FC, useMemo, useState } from "react";
 import { Layout, Menu, Typography } from "antd";
 import { PlaySquareOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
 const { Sider } = Layout;
 
 import AnnotationStatusLabel from "../ui/AnnotationStatusLabel";
-import { MetadataFieldsType, UserRecord, Video } from "../../types";
+import type { MetadataFieldsType, UserRecord, Video } from "../../types";
 import "./DashboardSider.scss";
 
 export const useVideosDashboardSiderState = (videos: Video[], videoMetadataFields: MetadataFieldsType, user: UserRecord | null) => {

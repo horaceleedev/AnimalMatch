@@ -1,10 +1,11 @@
-import { FC, MouseEvent, useCallback } from "react";
+import { type FC, type MouseEvent, useCallback } from "react";
 import { generatePath, Link } from "react-router-dom";
 import { Card, Flex, Tag, Tooltip, Typography } from "antd";
 
 import type { RecordType, Video } from "../../types.ts";
 import type { MetadataFieldsType } from "../../types.ts";
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
+import AnnotationStatusLabel from "../ui/AnnotationStatusLabel.tsx";
 import { DeploymentLabel } from '../smart-components/LinkButtons.tsx';
 import "./VideosGridView.scss"
 
@@ -115,14 +116,22 @@ const BasicVideosGridView: FC<BasicVideosGridViewProps> = ({
                   {[
                     "deployment",
                     "recording_date",
+                    "annotation_status"
                   ].map((field) => (
                     <Tooltip
                       title={videoMetadataFields[field].displayName}
                       key={field}
                     >
-                      <Tag icon={videoMetadataFields[field].icon}>
-                        {field === "deployment" ? <DeploymentLabel id={video.deployment} /> : video[field]}
-                      </Tag>
+                      {
+                        (field === "annotation_status") ?
+                        <Tag>
+                          <AnnotationStatusLabel status={video[field]} />
+                        </Tag>
+                        :
+                        <Tag icon={videoMetadataFields[field].icon}>
+                          {field === "deployment" ? <DeploymentLabel id={video.deployment} /> : video[field]}
+                        </Tag>
+                      }
                     </Tooltip>
                   ))}
                 </Flex>

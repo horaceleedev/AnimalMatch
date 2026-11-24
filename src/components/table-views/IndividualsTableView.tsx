@@ -1,9 +1,9 @@
-import { FC } from "react";
-import { ColumnDataSchemaModel, RevoGrid, Template } from "@revolist/react-datagrid";
+import type { FC } from "react";
+import { type ColumnDataSchemaModel, RevoGrid, Template } from "@revolist/react-datagrid";
 import { generatePath, useNavigate } from "react-router-dom";
 
 import { UserLabel } from "../smart-components/LinkButtons";
-import { MetadataFieldsType, Individual } from "../../types";
+import type { MetadataFieldsType, Individual } from "../../types";
 
 const IndividualLinkCell = (props: any) => {
   // Similar to VideoLinkCell in VideosTableView, this is a temporary implementation

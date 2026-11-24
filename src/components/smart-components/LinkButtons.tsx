@@ -2,7 +2,7 @@ import { Avatar, Card, Flex, Space, Tooltip, Typography } from "antd";
 import { generatePath, Link } from "react-router-dom";
 
 import { useDeploymentsStore, useIndividualsStoreWithCrops, useUsersStore, useVideoStore } from "../../DataStores";
-import { RecordType } from "../../types";
+import type { RecordType } from "../../types";
 import { getDeploymentLabel } from "../../utils/utils";
 import "./LinkButtons.scss";
 

@@ -2,7 +2,8 @@
 import { create } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import PocketBase, { ClientResponseError, RecordModel } from 'pocketbase';
+import proj4 from "proj4";
+import PocketBase, { ClientResponseError, type RecordModel } from 'pocketbase';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { App } from 'antd';

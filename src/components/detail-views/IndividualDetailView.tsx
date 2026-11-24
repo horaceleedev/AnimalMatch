@@ -6,7 +6,7 @@ import { generatePath, Link } from 'react-router-dom';
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from '../../metadata.tsx';
 import VideosGridView from '../grid-views/VideosGridView.tsx';
 import IndividualsGridView from '../grid-views/IndividualsGridView.tsx';
-import { Individual, LocationInfo, RecordType, Video } from '../../types.ts';
+import type { Individual, LocationInfo, RecordType, Video } from '../../types.ts';
 import BasicMapView from '../ui/BasicMapView.tsx';
 import RecordMetadataForm from './RecordMetadataForm.tsx';
 import CropsDashboardView from '../dashboards/CropsDashboardView.tsx';

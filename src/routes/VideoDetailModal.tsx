@@ -6,7 +6,7 @@ import { Flex, Modal } from "antd";
 
 import { useIndividualsStoreWithCrops, useVideosStoreWithUsers } from "../DataStores.tsx";
 import VideoDetailView from '../components/detail-views/VideoDetailView.tsx';
-import { RecordDetailModalProps, RecordType } from '../types.ts';
+import type { RecordDetailModalProps, RecordType } from '../types.ts';
 import InnerModal from './InnerModal.tsx';
 import RecordActionsButton from '../components/ui/RecordActionsButton.tsx';
 import "./VideoDetailModal.scss";

@@ -1,7 +1,7 @@
 import { countBy } from "es-toolkit";
 import proj4 from "proj4";
 
-import { Deployment, DeploymentRecord, Individual, LocationInfo, MetadataFieldsType, Video } from "../types";
+import type { Deployment, DeploymentRecord, Individual, LocationInfo, MetadataFieldsType, Video } from "../types";
 
 const isNonNullString = (value: unknown): value is string => typeof value === "string";
 

@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useRef, useState } from 'react'
+import { type FC, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import { differenceBy, intersection } from 'es-toolkit';
 import { Button, Flex, Input, Layout, Modal, Popover, Space, Tabs, Tooltip } from "antd";
@@ -23,7 +23,7 @@ import IndividualsDashboardView from '../components/dashboards/IndividualsDashbo
 import CropsDashboardView from '../components/dashboards/CropsDashboardView.tsx';
 import RecordActionsButton from '../components/ui/RecordActionsButton.tsx';
 import IndividualMergeModal from '../components/smart-components/IndividualMergeModal.tsx';
-import { Individual, Video } from '../types.ts';
+import type { Individual, Video } from '../types.ts';
 import { getUniqueLocationsFromIndividuals } from '../utils/utils.ts';
 import "./CompareModal.scss";
 
@@ -416,12 +416,12 @@ const CompareModal: FC = () => {
     }
   }
   const modalTitle = (
-    <Flex gap="small" align="center" style={{position: 'relative'}}>
+    <Flex gap="small" align="center" style={{position: 'relative', paddingRight: "30px"}}>
       {
         isCompareView ?
         <Link to={
-          // Back to the /videos/:videoId, /individuals/:individualId, or /crops/:cropId page
-          routeSplits.slice(0,2).join('/') + "/" + routeSplits[4]
+          // Go (back) to the /videos/:videoId, /individuals/:individualId, or /crops/:cropId page
+          "/" + recordTypeShortNameToLongName[routeSplits[3]] + "/" + routeSplits[4]
         }>
           <Tooltip title={"Back to " + (
             (videoDetailProps && "video " + videoDetailProps.video.filename) ||
@@ -443,6 +443,29 @@ const CompareModal: FC = () => {
       }
       {modalTitleText}
       <div style={{flex: 1}}></div> {/* Spacer */}
+      {
+        isCompareView ?
+        <Link
+          // Go (back) to the /videos/:videoId, /individuals/:individualId, or /crops/:cropId page
+          to={"/" + recordTypeShortNameToLongName[routeSplits[3]] + "/" + routeSplits[4]}
+        >
+          <Tooltip title="Close comparison view">
+            <Button type="text" icon={<Icon component={RightPanelClose} />} />
+          </Tooltip>
+        </Link>
+        :
+        <Link
+          to={`${routeSplits.slice(0,2).join('/')}/compare/${recordTypeLongNameToShortName[routeSplits[1]]}/${routeSplits[2]}`}
+        >
+          <Button
+            // Highlight the button as primary if viewing an individual, otherwise default
+            type={individualDetailProps ? "primary" : "default"}
+            icon={<Icon component={RightPanelOpen} />}
+          >
+            Open comparison view
+          </Button>
+        </Link>
+      }
       {
         !isCompareView &&
         (
@@ -474,27 +497,6 @@ const CompareModal: FC = () => {
             />
           )
         )
-      }
-      {
-        isCompareView ?
-        <Link
-          style={{marginRight: "32px"}}
-          // Back to the /videos/:videoId, /individuals/:individualId, or /crops/:cropId page
-          to={routeSplits.slice(0,2).join('/') + "/" + routeSplits[4]}
-        >
-          <Tooltip title="Close comparison view">
-            <Button type="text" icon={<Icon component={RightPanelClose} />} />
-          </Tooltip>
-        </Link>
-        :
-        <Link
-          style={{marginRight: "32px"}}
-          to={`${routeSplits.slice(0,2).join('/')}/compare/${recordTypeLongNameToShortName[routeSplits[1]]}/${routeSplits[2]}`}
-        >
-          <Tooltip title="Open comparison view">
-            <Button type="text" icon={<Icon component={RightPanelOpen} />} />
-          </Tooltip>
-        </Link>
       }
     </Flex>
   );

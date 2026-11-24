@@ -35,6 +35,7 @@ const IndividualsDashboardPage: React.FC = () => {
             uniqueValuesPerField={uniqueValuesPerField}
             bodyPartOptions={cropsUniqueValuesPerField['body_part'] ?? []}
             individualsMetadataFields={individualsMetadataFields}
+            paginationResetKey={selectedSiderKey}
           />
         </DashboardContent>
       </Layout>

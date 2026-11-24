@@ -1,9 +1,9 @@
-import { FC, useMemo, useState } from "react";
+import { type FC, useMemo, useState } from "react";
 import { Layout, Menu, Typography } from "antd";
 import { CheckOutlined, IdcardOutlined, QuestionOutlined, TagOutlined, UserOutlined } from "@ant-design/icons";
 const { Sider } = Layout;
 
-import { MetadataFieldsType, UserRecord, Individual } from "../../types";
+import type { MetadataFieldsType, UserRecord, Individual } from "../../types";
 import "./DashboardSider.scss";
 
 export const useIndividualsDashboardSiderState = (individuals: Individual[], individualsMetadataFields: MetadataFieldsType, user: UserRecord | null) => {

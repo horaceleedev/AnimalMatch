@@ -2,7 +2,7 @@ import React from 'react';
 import { generatePath, Link } from 'react-router-dom';
 import { Card, Select, Space, Tag, Tooltip } from 'antd';
 
-import { Individual, MetadataFieldsType, RecordType } from '../../types.ts';
+import type { Individual, MetadataFieldsType, RecordType } from '../../types.ts';
 import { filterCropsByBodyPart } from '../../utils/bodyPartFilters.ts';
 import withSortingGroupingAndPagination from './withSortingGroupingAndPagination.tsx';
 import CropWithSkeleton from './CropWithSkeleton.tsx';
