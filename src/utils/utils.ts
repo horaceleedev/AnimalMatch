@@ -1,7 +1,7 @@
 import { countBy } from "es-toolkit";
 import proj4 from "proj4";
 
-import { DeploymentRecord, Individual, LocationInfo, MetadataFieldsType, Video } from "../types";
+import { Deployment, DeploymentRecord, Individual, LocationInfo, MetadataFieldsType, Video } from "../types";
 
 const isNonNullString = (value: unknown): value is string => typeof value === "string";
 
@@ -23,30 +23,30 @@ export const getDeploymentLatLong = (record: DeploymentRecord): [number, number]
   return null;
 };
 
-export const getUniqueLocationsFromVideos = (allVideos: Video[]) => {
-  const videos = allVideos.filter(x => x.lat !== null);
-  const numVideosPerUniqueLocation = countBy(videos, x => JSON.stringify([x.lat, x.long]));
-  const uniqueLocations = Object.entries(numVideosPerUniqueLocation).map(([latLongString, numVideos]) => {
-    const [lat, long] = JSON.parse(latLongString);
-    return {
-      id: latLongString,
-      lat: lat,
-      long: long,
-      tooltipText: `${numVideos} videos in this location`,
-    } as LocationInfo;
-  });
-  return uniqueLocations;
+// Cameras sharing a location are told apart by camera ID
+export const getDeploymentLabel = (d: DeploymentRecord) =>
+  [d.locationName || 'Unnamed location', d.cameraID].filter(Boolean).join(' · ');
+
+// One map location per deployment with coordinates (location id = deployment id)
+export const getLocationsFromDeployments = (deployments: Deployment[], videos: Video[]): LocationInfo[] => {
+  const numVideosPerDeployment = countBy(videos, v => v.deployment);
+  return deployments.filter(d => d.lat !== null && d.long !== null).map(d => ({
+    id: d.id,
+    lat: d.lat!,
+    long: d.long!,
+    tooltipText: `${getDeploymentLabel(d)}: ${numVideosPerDeployment[d.id] ?? 0} videos`,
+  }));
 };
 
-export const getUniqueLocationsFromIndividuals = (individuals: Individual[], allVideos: Video[]) => {
+export const getUniqueLocationsFromIndividuals = (individuals: Individual[], allVideos: Video[], deployments: Deployment[]): LocationInfo[] => {
   if (allVideos.length === 0) {
     console.warn("Warning when computing individual locations: allVideos is empty (possibly because videos are still loading), returning empty unique locations");
     return [];
   }
 
   const videosById = new Map(allVideos.map(v => [v.id, v]));
-  // Map from a unique location (as a JSON string of [lat, long]) to a set of individual IDs seen at that location
-  const individualIdsPerLocation = new Map<string, Set<string>>();
+  // Map from a deployment ID to a set of individual IDs seen there
+  const individualIdsPerDeployment = new Map<string, Set<string>>();
   for (const indiv of individuals) {
     for (const videoId of indiv.videos) {
       const video = videosById.get(videoId);
@@ -54,23 +54,19 @@ export const getUniqueLocationsFromIndividuals = (individuals: Individual[], all
         console.error(`Error when computing individual locations: video ${videoId} not found`);
         continue;
       }
-      if (video.lat === null) continue;
-      const latLongString = JSON.stringify([video.lat, video.long]);
-      const individualIds = individualIdsPerLocation.get(latLongString) ?? new Set<string>();
+      if (!video.deployment) continue;
+      const individualIds = individualIdsPerDeployment.get(video.deployment) ?? new Set<string>();
       individualIds.add(indiv.id);
-      individualIdsPerLocation.set(latLongString, individualIds);
+      individualIdsPerDeployment.set(video.deployment, individualIds);
     }
   }
 
-  return Array.from(individualIdsPerLocation, ([latLongString, individualIds]) => {
-    const [lat, long] = JSON.parse(latLongString);
-    return {
-      id: latLongString,
-      lat: lat,
-      long: long,
-      tooltipText: `${individualIds.size} individuals in this location`,
-    } as LocationInfo;
-  });
+  return deployments.filter(d => d.lat !== null && d.long !== null && individualIdsPerDeployment.has(d.id)).map(d => ({
+    id: d.id,
+    lat: d.lat!,
+    long: d.long!,
+    tooltipText: `${individualIdsPerDeployment.get(d.id)!.size} individuals in this location`,
+  }));
 }
 
 export const getUniqueValuesPerField = (metadataFields: MetadataFieldsType, processedRecords: Record<string, any>[]) => {

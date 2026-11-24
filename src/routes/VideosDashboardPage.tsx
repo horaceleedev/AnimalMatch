@@ -13,7 +13,8 @@ import { videoMetadataFields } from "../metadata.tsx";
 import DashboardContent from '../components/dashboards/DashboardContent.tsx';
 import VideosGridView from "../components/grid-views/VideosGridView.tsx";
 import QueryOperationsButtons from "../components/dashboards/QueryOperationsButtons.tsx";
-import { useAuth, useIndividualsStore, useVideoStore } from "../DataStores.tsx";
+import { useAuth, useDeploymentsStore, useIndividualsStore, useVideoStore } from "../DataStores.tsx";
+import { getLocationsFromDeployments } from '../utils/utils.ts';
 import BasicMapView from '../components/ui/BasicMapView.tsx';
 import { useVideosDashboardSiderState, VideosDashboardSider } from '../components/dashboards/VideosDashboardSider.tsx';
 import { filterByQuery } from '../lib/filtering/filterEngine.ts';
@@ -96,7 +97,8 @@ const VideosDashboardPage: React.FC = () => {
   const [view, setView] = useState(viewsTabsItems[0].key);
   const videos = useVideoStore((state) => state.processedRecords);
   const individuals = useIndividualsStore((state) => state.processedRecords);
-  const uniqueLocations = useVideoStore((state) => state.extra.uniqueLocations);
+  const deployments = useDeploymentsStore((state) => state.processedRecords);
+  const uniqueLocations = useMemo(() => getLocationsFromDeployments(deployments, videos), [deployments, videos]);
   const uniqueValuesPerField = useVideoStore((state) => state.uniqueValuesPerField);
 
   const { user } = useAuth();
@@ -153,7 +155,7 @@ const VideosDashboardPage: React.FC = () => {
   const { outletContext, onSelectGroup } = useNavigationVideosManager(videosFiltered);
 
   const highlightLocationIds = useMemo(
-    () => new Set(videosFiltered.map(video => JSON.stringify([video.lat, video.long]))),
+    () => new Set(videosFiltered.map(video => video.deployment)),
     [videosFiltered]
   );
 

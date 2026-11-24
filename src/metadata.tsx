@@ -270,6 +270,7 @@ export const deploymentsMetadataFields: MetadataFieldsType = {
     icon: <Icon component={Globe} />,
     type: 'number',
     inputType: 'number',
+    inputNumberProps: { min: -90, max: 90 },
     coordinateSystem: 'latlong',
   },
   'longitude': {
@@ -277,6 +278,7 @@ export const deploymentsMetadataFields: MetadataFieldsType = {
     icon: <Icon component={Globe} />,
     type: 'number',
     inputType: 'number',
+    inputNumberProps: { min: -180, max: 180 },
     coordinateSystem: 'latlong',
   },
   'utm_easting': {
@@ -298,6 +300,7 @@ export const deploymentsMetadataFields: MetadataFieldsType = {
     icon: <Icon component={Globe} />,
     type: 'number',
     inputType: 'number',
+    inputNumberProps: { min: 1, max: 60, precision: 0 },
     coordinateSystem: 'utm',
   },
   'utm_hemisphere': {

@@ -8,6 +8,7 @@ import { individualsMetadataFields, videoMetadataFields } from '../../metadata.t
 import IndividualsGridView from "../grid-views/IndividualsGridView.tsx";
 import RecordMetadataForm from "./RecordMetadataForm.tsx";
 import { PrevNextVideoButtons } from "../ui/PrevNextButtons.tsx";
+import { DeploymentLink } from "../smart-components/LinkButtons.tsx";
 
 import "./VideoDetailView.scss";
 
@@ -47,7 +48,7 @@ const VideoDetailView: FC<VideoDetailViewProps> = ({
   };
 
   const highlightLocationIds = useMemo(
-    () => new Set([JSON.stringify([video.lat, video.long])]),
+    () => new Set([video.deployment]),
     [video]
   );
 
@@ -93,12 +94,14 @@ const VideoDetailView: FC<VideoDetailViewProps> = ({
         updateFunction={updateVideo}
         showIconInSelectionFields={true}
       />
+      {video.deployment && <p>Deployment: <DeploymentLink id={video.deployment} /></p>}
       {
         showMap && // Temporary hack needed because map wasn't showing up properly
         <BasicMapView
           style={{height: 400, width: 600}}
           uniqueLocations={uniqueLocations}
           highlightLocationIds={highlightLocationIds}
+          onLocationClick={(id) => navigate(`/deployments/${id}`)}
         />
       }
     </>

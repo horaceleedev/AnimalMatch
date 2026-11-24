@@ -12,7 +12,7 @@ import classnames from 'classnames';
 import RightPanelOpen from '../assets/material_symbols/right_panel_open_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 import RightPanelClose from '../assets/material_symbols/right_panel_close_24dp_5F6368_FILL0_wght400_GRAD0_opsz24.svg?react';
 
-import { useIndividualsStoreWithCrops, useCropsStore, useVideosStoreWithUsers } from "../DataStores.tsx";
+import { useIndividualsStoreWithCrops, useCropsStore, useVideosStoreWithUsers, useDeploymentsStore } from "../DataStores.tsx";
 import { cropsMetadataFields, individualsMetadataFields, videoMetadataFields } from '../metadata.tsx';
 import VideoDetailView from '../components/detail-views/VideoDetailView.tsx';
 import IndividualDetailView from '../components/detail-views/IndividualDetailView.tsx';
@@ -62,11 +62,12 @@ const CompareModal: FC = () => {
   };
 
   const { videos, updateVideo, videosUniqueValuesPerField, uniqueVideoLocations } = useVideosStoreWithUsers();
+  const deployments = useDeploymentsStore((state) => state.processedRecords);
   const { individuals, updateIndividual, deleteIndividual, individualsUniqueValuesPerField, cropsUniqueValuesPerField } = useIndividualsStoreWithCrops();
   // TODO figure out if I should compute this (uniqueIndividualLocations) here or inside DataStores.tsx
   const uniqueIndividualLocations = useMemo(() => {
-    return getUniqueLocationsFromIndividuals(individuals, videos);
-  }, [individuals, videos]);
+    return getUniqueLocationsFromIndividuals(individuals, videos, deployments);
+  }, [individuals, videos, deployments]);
 
   const [crops, updateCrop, deleteCrop] = useCropsStore(
     useShallow((state) => [state.processedRecords, state.update, state.delete])

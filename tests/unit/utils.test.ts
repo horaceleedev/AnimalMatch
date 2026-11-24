@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { DeploymentRecord, Individual, MetadataFieldsType, Video } from '../../src/types';
+import type { Deployment, Individual, MetadataFieldsType, Video } from '../../src/types';
 import {
   getUniqueLocationsFromIndividuals,
-  getUniqueLocationsFromVideos,
+  getLocationsFromDeployments,
   getUniqueValuesPerField,
   getDeploymentLatLong,
 } from '../../src/utils/utils';
@@ -22,9 +22,7 @@ const makeVideo = (overrides: Partial<Video> = {}): Video => ({
   filename: 'video.mp4',
   habitat: 'forest',
   id: 'video-1',
-  lat: 0,
   deployment: 'Meru',
-  long: 0,
   month_of_SD_retrieval: 'January',
   notes: '',
   num_individuals: 1,
@@ -53,7 +51,7 @@ const makeIndividual = (overrides: Partial<Individual> = {}): Individual => ({
   ...overrides,
 });
 
-const makeDeployment = (overrides: Partial<DeploymentRecord> = {}): DeploymentRecord => ({
+const makeDeployment = (overrides: Partial<Deployment> = {}): Deployment => ({
   id: 'deployment-1',
   collectionId: 'deployments',
   collectionName: 'deployments',
@@ -72,6 +70,8 @@ const makeDeployment = (overrides: Partial<DeploymentRecord> = {}): DeploymentRe
   utm_northing: 0,
   utm_zone: 0,
   utm_hemisphere: '',
+  lat: null,
+  long: null,
   ...overrides,
 });
 
@@ -104,33 +104,24 @@ describe('getDeploymentLatLong', () => {
   });
 });
 
-describe('getUniqueLocationsFromVideos', () => {
-  it('skips videos without coordinates', () => {
-    expect(getUniqueLocationsFromVideos([makeVideo({ lat: null, long: null })])).toEqual([]);
-  });
+describe('getLocationsFromDeployments', () => {
+  it('gives one location per deployment with coordinates, keyed by deployment id', () => {
+    const locations = getLocationsFromDeployments(
+      [
+        makeDeployment({ id: 'd1', locationName: 'Meru', cameraID: 'cam-1', lat: 0.123, long: 36.456 }),
+        makeDeployment({ id: 'd2', locationName: '', lat: 1.5, long: 37.5 }),
+        makeDeployment({ id: 'd3', lat: null, long: null }),
+      ],
+      [
+        makeVideo({ id: 'video-1', deployment: 'd1' }),
+        makeVideo({ id: 'video-2', deployment: 'd1' }),
+        makeVideo({ id: 'video-3', deployment: 'd3' }),
+      ],
+    );
 
-  // A small fixture builder like makeVideo keeps the test focused on the fields that matter for this behaviour.
-  it('groups videos that share the same coordinates', () => {
-    const locations = getUniqueLocationsFromVideos([
-      makeVideo({ id: 'video-1', lat: 0.123, long: 36.456 }),
-      makeVideo({ id: 'video-2', lat: 0.123, long: 36.456 }),
-      makeVideo({ id: 'video-3', lat: 1.5, long: 37.5 }),
-    ]);
-
-    // For a pure function test we usually assert directly on the returned structure.
     expect(locations).toEqual([
-      {
-        id: '[0.123,36.456]',
-        lat: 0.123,
-        long: 36.456,
-        tooltipText: '2 videos in this location',
-      },
-      {
-        id: '[1.5,37.5]',
-        lat: 1.5,
-        long: 37.5,
-        tooltipText: '1 videos in this location',
-      },
+      { id: 'd1', lat: 0.123, long: 36.456, tooltipText: 'Meru · cam-1: 2 videos' },
+      { id: 'd2', lat: 1.5, long: 37.5, tooltipText: 'Unnamed location: 0 videos' },
     ]);
   });
 });
@@ -140,12 +131,18 @@ describe('getUniqueLocationsFromIndividuals', () => {
     vi.restoreAllMocks();
   });
 
+  const deployments = [
+    makeDeployment({ id: 'd1', lat: 1.23, long: 36.54 }),
+    makeDeployment({ id: 'd2', lat: 2.5, long: 37.5 }),
+    makeDeployment({ id: 'd3', lat: null, long: null }),
+  ];
+
   it('returns an empty array and warns when videos are not yet loaded', () => {
     const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const locations = getUniqueLocationsFromIndividuals([
       makeIndividual({ videos: ['video-1'] }),
-    ], []);
+    ], [], deployments);
 
     expect(locations).toEqual([]);
     expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('allVideos is empty'));
@@ -156,46 +153,34 @@ describe('getUniqueLocationsFromIndividuals', () => {
 
     const locations = getUniqueLocationsFromIndividuals(
       [makeIndividual({ id: 'individual-1', videos: ['video-1', 'missing-video'] })],
-      [makeVideo({ id: 'video-1', lat: 1.23, long: 36.54 })],
+      [makeVideo({ id: 'video-1', deployment: 'd1' })],
+      deployments,
     );
 
     expect(locations).toEqual([
-      {
-        id: '[1.23,36.54]',
-        lat: 1.23,
-        long: 36.54,
-        tooltipText: '1 individuals in this location',
-      },
+      { id: 'd1', lat: 1.23, long: 36.54, tooltipText: '1 individuals in this location' },
     ]);
     expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('missing-video'));
   });
 
-  it('groups individuals by the locations of their linked videos', () => {
+  it('groups individuals by the deployments of their linked videos, skipping deployments without coordinates', () => {
     const locations = getUniqueLocationsFromIndividuals(
       [
         makeIndividual({ id: 'individual-1', videos: ['video-1'] }),
-        makeIndividual({ id: 'individual-2', videos: ['video-2', 'video-3'] }),
+        makeIndividual({ id: 'individual-2', videos: ['video-2', 'video-3', 'video-4'] }),
       ],
       [
-        makeVideo({ id: 'video-1', lat: 1.23, long: 36.54 }),
-        makeVideo({ id: 'video-2', lat: 1.23, long: 36.54 }),
-        makeVideo({ id: 'video-3', lat: 2.5, long: 37.5 }),
+        makeVideo({ id: 'video-1', deployment: 'd1' }),
+        makeVideo({ id: 'video-2', deployment: 'd1' }),
+        makeVideo({ id: 'video-3', deployment: 'd2' }),
+        makeVideo({ id: 'video-4', deployment: 'd3' }),
       ],
+      deployments,
     );
 
     expect(locations).toEqual([
-      {
-        id: '[1.23,36.54]',
-        lat: 1.23,
-        long: 36.54,
-        tooltipText: '2 individuals in this location',
-      },
-      {
-        id: '[2.5,37.5]',
-        lat: 2.5,
-        long: 37.5,
-        tooltipText: '1 individuals in this location',
-      },
+      { id: 'd1', lat: 1.23, long: 36.54, tooltipText: '2 individuals in this location' },
+      { id: 'd2', lat: 2.5, long: 37.5, tooltipText: '1 individuals in this location' },
     ]);
   });
 
@@ -203,18 +188,14 @@ describe('getUniqueLocationsFromIndividuals', () => {
     const locations = getUniqueLocationsFromIndividuals(
       [makeIndividual({ id: 'individual-1', videos: ['video-1', 'video-2'] })],
       [
-        makeVideo({ id: 'video-1', lat: 1.23, long: 36.54 }),
-        makeVideo({ id: 'video-2', lat: 1.23, long: 36.54 }),
+        makeVideo({ id: 'video-1', deployment: 'd1' }),
+        makeVideo({ id: 'video-2', deployment: 'd1' }),
       ],
+      deployments,
     );
 
     expect(locations).toEqual([
-      {
-        id: '[1.23,36.54]',
-        lat: 1.23,
-        long: 36.54,
-        tooltipText: '1 individuals in this location',
-      },
+      { id: 'd1', lat: 1.23, long: 36.54, tooltipText: '1 individuals in this location' },
     ]);
   });
 });

@@ -14,6 +14,7 @@ import BasicMapView from '../ui/BasicMapView.tsx';
 import BodyPartSelect from '../ui/BodyPartSelect.tsx';
 import { filterIndividualsByBodyPart, getAvailableBodyParts } from '../../utils/bodyPartFilters.ts';
 import { getUniqueLocationsFromIndividuals } from '../../utils/utils.ts';
+import { useDeploymentsStore } from '../../DataStores.tsx';
 import { filterByQuery } from '../../lib/filtering/filterEngine.ts';
 import useSearchFilter from '../../hooks/useSearchFilter.ts';
 import { Individual, MetadataFieldsType, Video } from '../../types.ts';
@@ -88,9 +89,10 @@ const IndividualsDashboardView: React.FC<IndividualsDashboardViewProps> = ({
     : '';
   const description = [listDescription, hiddenMessage].filter(Boolean).join(' ');
 
+  const deployments = useDeploymentsStore((state) => state.processedRecords);
   const uniqueLocations = useMemo(() => {
-    return getUniqueLocationsFromIndividuals(visibleIndividuals, videos);
-  }, [visibleIndividuals, videos]);
+    return getUniqueLocationsFromIndividuals(visibleIndividuals, videos, deployments);
+  }, [visibleIndividuals, videos, deployments]);
 
   const bodyPartSelect = (
     <BodyPartSelect

@@ -1,3 +1,4 @@
+import type { InputNumberProps } from "antd";
 import { type RecordModel } from 'pocketbase';
 import { type ValueEditorType } from 'react-querybuilder';
 
@@ -46,6 +47,11 @@ export interface DeploymentRecord extends RecordModel {
   utm_zone: number;
   utm_hemisphere: '' | 'N' | 'S';
 };
+export interface Deployment extends DeploymentRecord {
+  // Derived from coordinate_system (UTM converted); null if the deployment has no coordinates
+  lat: number | null;
+  long: number | null;
+};
 
 export interface VideoRecord extends RecordModel {
   collectionId: string;
@@ -66,9 +72,6 @@ export interface VideoRecord extends RecordModel {
 export interface Video extends VideoRecord {
   url: string;
   thumbnailUrl: string;
-  // Derived from the video's deployment, only used for the map; null if the video has no coordinates
-  lat: number | null;
-  long: number | null;
 };
 
 export interface IndividualRecord extends RecordModel {
@@ -127,6 +130,8 @@ export type MetadataFieldsType = Record<string, {
   allowAddingNewOptions?: boolean;
   isInternal?: boolean;
   isUneditable?: boolean;
+  // Passed to the InputNumber in the edit form, e.g. to match the backend's min/max
+  inputNumberProps?: InputNumberProps;
   // Only shown in the edit form when the record's coordinate_system matches
   coordinateSystem?: CoordinateSystem;
 }>;

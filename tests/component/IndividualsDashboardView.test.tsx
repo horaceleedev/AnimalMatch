@@ -70,8 +70,6 @@ const makeVideo = (overrides: Partial<Video> = {}): Video => ({
   custom_tags: [],
   assignees: [],
   annotation_status: '',
-  lat: 0,
-  long: 0,
   ...overrides,
 });
 

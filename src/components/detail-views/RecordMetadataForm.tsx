@@ -1,4 +1,7 @@
-import { AutoComplete, Button, Form, Input, InputNumber, Radio, Select, Tag } from "antd";
+import { AutoComplete, Button, DatePicker, Form, Input, InputNumber, Radio, Select, Tag } from "antd";
+import type { FormItemProps } from "antd";
+import dayjs, { type Dayjs } from "dayjs";
+import utc from "dayjs/plugin/utc";
 import type { DefaultOptionType, LabelInValueType } from "rc-select/lib/Select";
 import TextArea from 'antd/es/input/TextArea';
 import { RecordModel } from "pocketbase";
@@ -8,6 +11,15 @@ import { MetadataFieldsType, RecordType } from "../../types";
 import { DeploymentLabel, IndividualLinkButton, UserLabel, VideoLinkButton } from "../smart-components/LinkButtons";
 import AnnotationStatusLabel from "../ui/AnnotationStatusLabel";
 import "./RecordMetadataForm.scss";
+
+dayjs.extend(utc);
+
+// Records hold dates as UTC strings, but DatePicker works with Dayjs objects. Dates are shown and edited
+// as UTC wall-clock times, like recording_date, so no local timezone conversion happens.
+export const dateFormItemProps: FormItemProps = {
+  getValueProps: (value?: string) => ({ value: value ? dayjs.utc(value) : null }),
+  normalize: (value: Dayjs | null) => value ? value.format('YYYY-MM-DD HH:mm:ss.SSS') + 'Z' : '',
+};
 
 type RecordMetadataFormProps<T extends RecordModel> = {
   processedRecord: T;
@@ -142,11 +154,9 @@ const RecordMetadataForm = <T extends RecordModel>({
               );
             }
           } else if (metadataField.inputType === 'date') {
-            // inputElement = <DatePicker showTime needConfirm={false} disabled={disabled} />;
-            // Temporary hack TODO fix issue with DatePicker above
-            inputElement = <Input disabled={disabled} />;
+            inputElement = <DatePicker showTime needConfirm={false} disabled={disabled} />;
           } else if (metadataField.inputType === 'number') {
-            inputElement = <InputNumber disabled={disabled} />;
+            inputElement = <InputNumber disabled={disabled} {...metadataField.inputNumberProps} />;
           }
           return (
             // Use `hidden` rather than not rendering: hidden items stay registered, so useFormManager's
@@ -156,6 +166,7 @@ const RecordMetadataForm = <T extends RecordModel>({
               label={metadataField.displayName}
               name={fieldName}
               hidden={!!metadataField.coordinateSystem && metadataField.coordinateSystem !== (formData as Record<string, unknown>).coordinate_system}
+              {...(metadataField.inputType === 'date' ? dateFormItemProps : {})}
             >
               {inputElement}
             </Form.Item>

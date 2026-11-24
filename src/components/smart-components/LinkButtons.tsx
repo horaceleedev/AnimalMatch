@@ -3,6 +3,7 @@ import { generatePath, Link } from "react-router-dom";
 
 import { useDeploymentsStore, useIndividualsStoreWithCrops, useUsersStore, useVideoStore } from "../../DataStores";
 import { RecordType } from "../../types";
+import { getDeploymentLabel } from "../../utils/utils";
 import "./LinkButtons.scss";
 
 interface LinkButtonProps {
@@ -106,10 +107,14 @@ export const VideoLabel: React.FC<{id: string}> = ({id}) => {
 export const DeploymentLabel: React.FC<{id: string}> = ({id}) => {
   const deployment = useDeploymentsStore((state) => state.processedRecords.find(d => d.id === id));
 
-  if (!deployment) return <>{id}</>;
-  // Cameras sharing a location are told apart by camera ID
-  return <>{[deployment.locationName || 'Unnamed location', deployment.cameraID].filter(Boolean).join(' · ')}</>;
+  return <>{deployment ? getDeploymentLabel(deployment) : id}</>;
 };
+
+export const DeploymentLink: React.FC<{id: string}> = ({id}) => (
+  <Link to={generatePath("/deployments/:deploymentId", { deploymentId: id })}>
+    <DeploymentLabel id={id} />
+  </Link>
+);
 
 export const UserLabel: React.FC<{id: string}> = ({id}) => {
   const user = useUsersStore((state) => state.processedRecords.find(u => u.id === id));

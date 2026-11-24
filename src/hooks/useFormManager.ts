@@ -49,7 +49,10 @@ const useFormManager = <T extends RecordModel>(
     } catch (e) {
       let errorMessage = "Your changes could not be saved. Please try again later.";
       if (e instanceof ClientResponseError) {
-        errorMessage = e.message;
+        // PocketBase puts per-field validation errors in response.data, e.g. { utm_zone: { message: "Must be no greater than 60." } }
+        const fieldErrors = Object.entries((e.response?.data ?? {}) as Record<string, { message?: string }>)
+          .map(([field, error]) => `${metadataFields[field]?.displayName ?? field}: ${error?.message}`);
+        errorMessage = [e.message, ...fieldErrors].join(' ');
       }
       message.error(errorMessage, 10);
       setIsSavingChanges(false);

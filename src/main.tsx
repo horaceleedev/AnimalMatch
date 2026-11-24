@@ -128,7 +128,7 @@ const router = createBrowserRouter([
         ],
       },
       {
-        path: "deployments",
+        path: "deployments/:deploymentId?",
         element: <DeploymentsPage />,
       },
       {

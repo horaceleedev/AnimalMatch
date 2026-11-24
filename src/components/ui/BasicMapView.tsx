@@ -11,11 +11,12 @@ import "./BasicMapView.scss";
 
 type BasicMapViewProps = {
   uniqueLocations: LocationInfo[];
-  highlightLocationIds?: Set<string>; // each string is created using JSON.stringify([lat, long])
+  highlightLocationIds?: Set<string>; // location ids, i.e. deployment ids
+  onLocationClick?: (id: string) => void;
   style: React.CSSProperties;
 };
 
-const BasicMapView = ({uniqueLocations, highlightLocationIds, style}: BasicMapViewProps) => {
+const BasicMapView = ({uniqueLocations, highlightLocationIds, onLocationClick, style}: BasicMapViewProps) => {
   const mapCenter: LatLngTuple = useMemo(() => [
     mean(uniqueLocations.map(location => location.lat)),
     mean(uniqueLocations.map(location => location.long)),
@@ -63,10 +64,7 @@ const BasicMapView = ({uniqueLocations, highlightLocationIds, style}: BasicMapVi
             key={locationInfo.id}
             position={[locationInfo.lat, locationInfo.long]}
             eventHandlers={{
-              click: (_e) => {
-                // TODO implement filtering based on clicked marker (i.e. only show videos belonging to the clicked marker)
-                // console.log(_e)
-              }
+              click: () => onLocationClick?.(locationInfo.id),
             }}
             // opacity={
             //   !highlightLocationId || (locationInfo.id === highlightLocationId) ? 1 : 0.4

@@ -50,7 +50,7 @@ const IndividualDetailView: React.FC<IndividualDetailViewProps> = ({
   }, []);
 
   const highlightLocationIds = useMemo(
-    () => new Set(videosWithIndividual.map(video => JSON.stringify([video.lat, video.long]))),
+    () => new Set(videosWithIndividual.map(video => video.deployment)),
     [videosWithIndividual]
   );
 
