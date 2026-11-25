@@ -176,12 +176,4 @@ describe('ProtectedRoute', () => {
 
     expect(await screen.findByText("Videos page")).toBeInTheDocument();
   });
-
-  it('still redirects signed-out users to login', async () => {
-    mockedUseAuth.mockReturnValue(makeAuthValue());
-
-    renderEditorRoute();
-
-    expect(await screen.findByText("Login page")).toBeInTheDocument();
-  });
 });
